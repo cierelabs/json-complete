@@ -48,7 +48,7 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 | ✅ ** | ✅             | Top-Level Encoding for All Supported Values   |
 | ❌    | ✅             | Simple Decoder Error Recovery                 |
 
-* \* JSON will encode sparse arrays by injecting null values into the unassigned values
+* \* JSON will encode sparse arrays by injecting null values into the unassigned indices
 * \** JSON will do top-level encoding only for the types it supports elsewhere
 
 ---
