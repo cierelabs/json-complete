@@ -1,6 +1,57 @@
 # json-complete
 
-An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrety and deduplication of data in the encoded output.
+An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.
+
+## Referential Integrity
+
+Any reference type that points to the same memory location will be encoded as the same pointer string in the data. When decoding, these shared pointer strings will allow shared references to be retained.
+
+## Deduplication
+
+Since values are being converted to references first, all value of a given type are encoded together, and are therefore deduplicated. No matter how many times a unique value is used, it will only be stored once. This includes strings and numbers.
+
+## Encode to JSON
+
+The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal numbers, strings, arrays, and a single top-level object.
+
+## Comparison to JSON
+
+| json | json-complete | Feature                                       |
+|------|---------------|-----------------------------------------------|
+| ❌    | ✅             | undefined                                     |
+| ✅    | ✅             | null                                          |
+| ✅    | ✅             | Booleans                                      |
+| ✅    | ✅             | Normal Numbers                                |
+| ❌    | ✅             | Number: NaN                                   |
+| ❌    | ✅             | Number: -Infinity                             |
+| ❌    | ✅             | Number: Infinity                              |
+| ❌    | ✅             | Number: -0                                    |
+| ✅    | ✅             | Strings                                       |
+| ❌    | ✅             | Regex                                         |
+| ❌    | ✅             | Retained Regex lastIndex                      |
+| ❌    | ✅             | Dates                                         |
+| ❌    | ✅             | Invalid Dates                                 |
+| ❌    | ✅             | Symbols                                       |
+| ❌    | ✅             | Registered Symbols                            |
+| ❌    | ✅             | Function Expressions                          |
+| ❌    | ✅             | Named Function Expressions                    |
+| ❌    | ✅             | Arrow Functions                               |
+| ❌    | ✅             | Method Functions                              |
+| ✅    | ✅             | Objects                                       |
+| ❌    | ✅             | Symbol Keys in Objects                        |
+| ✅    | ✅             | Arrays                                        |
+| ❌ *  | ✅             | Sparse Arrays                                 |
+| ✅    | ✅             | Arbitrarily Deep Nesting                      |
+| ❌    | ✅             | Circular References                           |
+| ❌    | ✅             | Shared Key and Value Symbol References        |
+| ❌    | ✅             | Referencial Integrity for All Reference Types |
+| ✅ ** | ✅             | Top-Level Encoding for All Supported Values   |
+| ❌    | ✅             | Simple Decoder Error Recovery                 |
+
+* \* JSON will encode sparse arrays by injecting null values into the unassigned values
+* \** JSON will do top-level encoding only for the types it supports elsewhere
+
+---
 
 ## Data about JS primitive types for storage
 
@@ -29,7 +80,6 @@ An encoder that can turn any standard JavaScript object or value into a form tha
 * Can represent numbers between `-2^53 - 1` and `2^53 - 1`
 * Has special number values:
   - `-0`
-  - `+0`
   - `Infinity`
   - `-Infinity`
   - `NaN`
@@ -40,13 +90,17 @@ An encoder that can turn any standard JavaScript object or value into a form tha
 
 ### Regex
 * Regular pattern specified with slashes and optional flags afterward
-* Regex to string => String(REGEX) and copy lastIndex if flags contains 'y' for sticky
-* String representation to Regex => new Regex(STRING, flags), then, if flags contains 'y' for sticky, apply the lastIndex to the generated regex
+* Regex to data => [REGEX.source, REGEX.flags, REGEX.lastIndex]
+* Data representation to Regex => new Regex(DATA[0], DATA[1]), then, set the lastIndex value to DATA[2]
 
 ### Date
 * Object containing date/time data
-* Date to string => DATE.getTime()
-* String to Date => new Date(STRING)
+* Date to Number => DATE.getTime()
+* Number to Date => new Date(TIME_NUMBER)
+* Note: If a Date was constructed with a value that cannot be converted into a date, the result is a Date Object with a value of "Invalid Date".
+  - This can be detected by checking for NaN value when calling getTime()
+  - Invalid Date objects do not equal each other by default
+  - This type of Date object can be encoded with any non-number value
 
 ### Object
 * key/value pairs
@@ -64,12 +118,18 @@ An encoder that can turn any standard JavaScript object or value into a form tha
 ### Array
 * A set of indexed values
 * Can store anything, including a reference to the array object
-* Can be sparse, in which case, when converting to string, store undefined in cells in-between the maximum index extents that don't have values
+* Can be a sparce array, so only store values at used indices
 
 ### Function
 * Can save function expression, but will only be useful if the function is pure and side-effect free
-* Function to string => String(FUNCTION_REF)
-* String to Function => var o; eval(`o.f = ${FUNCTION_STRING};`); return o.f;
+* TODO: There are many different function forms, each with different encoding and decoding aspects
+
+### File
+TODO
+
+
+### Blob
+TODO
 
 
 ### Int8Array
@@ -128,12 +188,10 @@ TODO
 TODO
 
 
+## To Fix and Add
 
-File
-Blob
-Special Multivalues - like adding a string key to an array
-
-Special cases
-typeof new Boolean(true) === 'object';
-typeof new Number(1) === 'object';
-typeof new String('abc') === 'object';
+* Many Object-based types, such as Dates, Arrays, Functions, and Regex can accept arbitrary keys onto themselves as if they were plain objects, while retaining their value and type. This can be encoded by adding an additional, optional pair set to these encode/decode functions.
+* Object wrapping primitives can cause non-standard objects that need to also store a value. For example, in `var test = new Number(3);`, `test` will store an object, to which arbitrary key/value pairs can be added. However, running `test.valueOf()` will return `3`.
+* Symbols made with the construtor can accept arbitrary strings for identification purposes that do not affect their uniqueness. This information needs to also be stored to completely duplicate the value.
+* The Method form of function definitions inside objects can currently be encoded. However, the decoder does not reconstruct the value exactly the same way, but instead recreates the same behavior using a key/value pair. This could be accounted for by special casing the object generation in the decoder.
+* There are additional function forms like async functions, getters, and setters to consider.

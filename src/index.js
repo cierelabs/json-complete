@@ -225,6 +225,7 @@ const symbolsTest = () => {
         'keyed symbol 1': Symbol.for('symbol1'),
         'keyed symbol 2': Symbol.for('symbol1'),
         'normal symbol': Symbol(),
+
     }));
 
     console.log(decoded['shared symbol 1'] === decoded['shared symbol 2']);
@@ -327,6 +328,20 @@ const objectsTest = () => {
     console.log(isSymbol(decodedKeyedSymbolKeys[0]));
     console.log(Symbol.keyFor(decodedKeyedSymbolKeys[0]) === 'keyed');
     console.log(decodedKeyedSymbolObj[decodedKeyedSymbolKeys[0]] === 4);
+
+    // Ensure shared references in Symbol object keys
+    const sharedSymbol = Symbol('shared');
+    const decodedSharedSymbolObj = decode(encode({
+        [sharedSymbol]: 1,
+        b: {
+            [sharedSymbol]: 2,
+        },
+    }));
+    const decodedSharedSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj);
+    const decodedSharedInnerSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj.b);
+    console.log(decodedSharedSymbolKeys[0] === decodedSharedInnerSymbolKeys[0]);
+    console.log(decodedSharedSymbolObj[decodedSharedSymbolKeys[0]] === 1);
+    console.log(decodedSharedSymbolObj.b[decodedSharedInnerSymbolKeys[0]] === 2);
 
     // Nested objects
     const nestedObj = decode(encode({
