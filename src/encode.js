@@ -61,6 +61,55 @@ const basicEncode = (data, value, pointerKey) => {
     return encounterNewValue(data, value, pointerKey, pointerIndex);
 };
 
+const containerEncode = (data, box, pointerKey, getPairs) => {
+    data[pointerKey] = data[pointerKey] || [];
+
+    let pointerIndex;
+    let pointer;
+
+    // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
+    const existingPointer = tryGetExistingPointer(data, box, pointerKey);
+
+    if (existingPointer) {
+        pointerIndex = pointers.extractPointerIndex(existingPointer);
+        pointer = existingPointer;
+    }
+    else {
+        pointerIndex = data[pointerKey].length;
+        pointer = encounterNewValue(data, box, pointerKey, pointerIndex);
+    }
+
+    data[pointerKey][pointerIndex] = data[pointerKey][pointerIndex] || [];
+    const container = data[pointerKey][pointerIndex];
+
+    getPairs(box).forEach((pair) => {
+        const valuePointerKey = pointers.getPointerKey(pair[1]);
+        const existingPointer = tryGetExistingPointer(data, pair[1], valuePointerKey);
+
+        let valuePointer;
+
+        if (existingPointer) {
+            valuePointer = existingPointer;
+        }
+        else if (pointers.isContainerPointerKey(valuePointerKey)) {
+            // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
+            data[valuePointerKey] = data[valuePointerKey] || [];
+            valuePointer = encounterNewContainer(data, pair[1], valuePointerKey, data[valuePointerKey].length);
+            data[valuePointerKey][data[valuePointerKey].length] = [];
+        }
+        else {
+            valuePointer = encodeValue(data, pair[1]);
+        }
+
+        container.push([
+            encodeValue(data, pair[0]),
+            valuePointer,
+        ]);
+    });
+
+    return pointer;
+};
+
 const encoders = {
     'nm': basicEncode,
     'st': basicEncode,
@@ -121,101 +170,24 @@ const encoders = {
         return encounterNewValue(data, value, pointerKey, pointerIndex);
     },
     'ob': (data, obj, pointerKey) => {
-        data[pointerKey] = data[pointerKey] || [];
-
-        // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
-        const existingPointer = tryGetExistingPointer(data, obj, pointerKey);
-
-        let pointer;
-        let pointerIndex;
-
-        if (existingPointer) {
-            pointerIndex = pointers.extractPointerIndex(existingPointer);
-            pointer = existingPointer;
-        }
-        else {
-            pointerIndex = data[pointerKey].length;
-            pointer = encounterNewValue(data, obj, pointerKey, pointerIndex);
-        }
-
-        data[pointerKey][pointerIndex] = data[pointerKey][pointerIndex] || [];
-        const container = data[pointerKey][pointerIndex];
-
-        Object.keys(obj).concat(Object.getOwnPropertySymbols(obj)).forEach((key) => {
-            const value = obj[key];
-            let valuePointer;
-
-            const valuePointerKey = pointers.getPointerKey(value);
-            const existingPointer = tryGetExistingPointer(data, value, valuePointerKey);
-
-            if (existingPointer) {
-                valuePointer = existingPointer;
-            }
-            else if (pointers.isContainerPointerKey(valuePointerKey)) {
-                // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-                data[valuePointerKey] = data[valuePointerKey] || [];
-                valuePointer = encounterNewContainer(data, value, valuePointerKey, data[valuePointerKey].length);
-                data[valuePointerKey][data[valuePointerKey].length] = [];
-            }
-            else {
-                valuePointer = encodeValue(data, value);
-            }
-
-            container.push([
-                encodeValue(data, key),
-                valuePointer,
-            ]);
+        return containerEncode(data, obj, pointerKey, (obj) => {
+            return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj)).map((key) => {
+                return [
+                    key,
+                    obj[key],
+                ];
+            });
         });
-
-        return pointer;
     },
     'ar': (data, arr, pointerKey) => {
-        data[pointerKey] = data[pointerKey] || [];
-
-        // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
-        const existingPointer = tryGetExistingPointer(data, arr, pointerKey);
-
-        let pointer;
-        let pointerIndex;
-
-        if (existingPointer) {
-            pointerIndex = pointers.extractPointerIndex(existingPointer);
-            pointer = existingPointer;
-        }
-        else {
-            pointerIndex = data[pointerKey].length;
-            pointer = encounterNewValue(data, arr, pointerKey, pointerIndex);
-        }
-
-        data[pointerKey][pointerIndex] = data[pointerKey][pointerIndex] || [];
-        const container = data[pointerKey][pointerIndex];
-
-        arr.forEach((value, index) => {
-            let valuePointer;
-
-            const valuePointerKey = pointers.getPointerKey(value);
-            const existingPointer = tryGetExistingPointer(data, value, valuePointerKey);
-
-            if (existingPointer) {
-                valuePointer = existingPointer;
-            }
-            else if (pointers.isContainerPointerKey(valuePointerKey)) {
-                // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-                data[valuePointerKey] = data[valuePointerKey] || [];
-                valuePointer = encounterNewContainer(data, value, valuePointerKey, data[valuePointerKey].length);
-                data[valuePointerKey][data[valuePointerKey].length] = [];
-            }
-            else {
-                valuePointer = encodeValue(data, value);
-            }
-
-            container.push([
-                encodeValue(data, index),
-                valuePointer,
-            ]);
+        return containerEncode(data, arr, pointerKey, (arr) => {
+            return arr.map((value, key) => {
+                return [
+                    key,
+                    value,
+                ];
+            });
         });
-
-        return pointer;
     },
 };
 
