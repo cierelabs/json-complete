@@ -51,6 +51,23 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 * \* JSON will encode sparse arrays by injecting null values into the unassigned indices
 * \** JSON will do top-level encoding only for the types it supports elsewhere
 
+
+---
+
+## Install
+
+```
+npm i
+```
+
+
+## Run Tests
+
+```
+npm run test
+```
+
+
 ---
 
 ## Data about JS primitive types for storage

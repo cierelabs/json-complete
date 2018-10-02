@@ -4,7 +4,7 @@
   "description": "An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrety and deduplication of data in the encoded output.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/gulp/bin/gulp.js test"
   },
   "repository": {
     "type": "git",
@@ -13,7 +13,9 @@
   "author": "Dwight House",
   "license": "MIT",
   "devDependencies": {
-    "browser-sync": "2.24.7",
-    "gulp": "3.9.1"
+    "browserify": "16.2.3",
+    "gulp": "3.9.1",
+    "gulp-tape": "1.0.0",
+    "tape": "4.9.1"
   }
 }

@@ -1,4 +1,4 @@
-import pointers from '/pointers.js';
+const pointers = require('./pointers.js');
 
 const tryGetExistingPointer = (data, value, pointerKey) => {
     // Simple PointerKeys are their own Pointers
@@ -75,7 +75,7 @@ const encoders = {
         const pointerIndex = data[pointerKey].length;
 
         // Encode as number, or string if Invalid Date
-        data[pointerKey][pointerIndex] = encode(data, encodedValue);
+        data[pointerKey][pointerIndex] = encodeValue(data, encodedValue);
 
         return encounterNewValue(data, value, pointerKey, pointerIndex);
     },
@@ -92,7 +92,7 @@ const encoders = {
         const pointerIndex = data[pointerKey].length;
 
         // Encode as number, or string if Invalid Date
-        data[pointerKey][pointerIndex] = encode(data, encodedValue);
+        data[pointerKey][pointerIndex] = encodeValue(data, encodedValue);
 
         return encounterNewValue(data, value, pointerKey, pointerIndex);
     },
@@ -106,7 +106,7 @@ const encoders = {
         data[pointerKey] = data[pointerKey] || [];
         const pointerIndex = data[pointerKey].length;
 
-        data[pointerKey][pointerIndex] = encode(data, encodedValue);
+        data[pointerKey][pointerIndex] = encodeValue(data, encodedValue);
 
         return encounterNewValue(data, value, pointerKey, pointerIndex);
     },
@@ -116,7 +116,7 @@ const encoders = {
         data[pointerKey] = data[pointerKey] || [];
         const pointerIndex = data[pointerKey].length;
 
-        data[pointerKey][pointerIndex] = encode(data, functionString);
+        data[pointerKey][pointerIndex] = encodeValue(data, functionString);
 
         return encounterNewValue(data, value, pointerKey, pointerIndex);
     },
@@ -158,11 +158,11 @@ const encoders = {
                 data[valuePointerKey][data[valuePointerKey].length] = [];
             }
             else {
-                valuePointer = encode(data, value);
+                valuePointer = encodeValue(data, value);
             }
 
             container.push([
-                encode(data, key),
+                encodeValue(data, key),
                 valuePointer,
             ]);
         });
@@ -206,11 +206,11 @@ const encoders = {
                 data[valuePointerKey][data[valuePointerKey].length] = [];
             }
             else {
-                valuePointer = encode(data, value);
+                valuePointer = encodeValue(data, value);
             }
 
             container.push([
-                encode(data, index),
+                encodeValue(data, index),
                 valuePointer,
             ]);
         });
@@ -219,7 +219,7 @@ const encoders = {
     },
 };
 
-export const encode = (data, value) => {
+const encodeValue = (data, value) => {
     const pointerKey = pointers.getPointerKey(value);
 
     // Containers values need to handle their own existing Pointer handling
@@ -237,6 +237,28 @@ export const encode = (data, value) => {
     return encoders[pointerKey](data, value, pointerKey);
 };
 
-export default {
-    encode: encode,
+module.exports = (value) => {
+    const data = {
+        root: void 0,
+        _: {
+            known: {},
+            exploreQueue: [],
+        },
+    };
+
+    // Initialize data from the top-most value
+    data.root = encodeValue(data, value);
+
+    // While there are still references to explore, go through them
+    while (data._.exploreQueue.length > 0) {
+        const refItem = data._.exploreQueue.shift();
+
+        data[refItem.pointerKey] = data[refItem.pointerKey] || [];
+        data[refItem.pointerKey][refItem.index] = encodeValue(data, refItem.ref);
+    }
+
+    // Remove data used during encoding process
+    delete data._;
+
+    return data;
 };

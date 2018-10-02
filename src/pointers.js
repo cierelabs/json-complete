@@ -1,56 +1,54 @@
-
-
 const simpleKeys = {
-    'un': true, // undefined
-    'nl': true, // null
-    'Bt': true, // true
-    'Bf': true, // false
-    'Na': true, // NaN
-    '-I': true, // -Infinity
-    '+I': true, // Infinity
-    '-0': true, // -0
+    'un': 1, // undefined
+    'nl': 1, // null
+    'Bt': 1, // true
+    'Bf': 1, // false
+    'Na': 1, // NaN
+    '-I': 1, // -Infinity
+    '+I': 1, // Infinity
+    '-0': 1, // -0
 };
 
-export const isSimplePointerKey = (pointerKey) => {
-    return simpleKeys[pointerKey];
+const isSimplePointerKey = (pointerKey) => {
+    return Boolean(simpleKeys[pointerKey]);
 };
 
 const valueKeys = {
-    'nm': true, // number
-    'st': true, // string
-    're': true, // regex
-    'da': true, // date
-    'sy': true, // symbol
-    'fu': true, // function
-    'Fi': true, // File
-    'Bl': true, // Blob
+    'nm': 1, // number
+    'st': 1, // string
+    're': 1, // regex
+    'da': 1, // date
+    'sy': 1, // symbol
+    'fu': 1, // function
+    'Fi': 1, // File
+    'Bl': 1, // Blob
 };
 
-export const isValuePointerKey = (pointerKey) => {
-    return valueKeys[pointerKey];
+const isValuePointerKey = (pointerKey) => {
+    return Boolean(valueKeys[pointerKey]);
 };
 
 const containerKeys = {
-    'ob': true, // object
-    'ar': true, // array
-    'I1': true, // Int8Array
-    'U1': true, // Uint8Array
-    'C1': true, // Uint8ClampedArray
-    'I2': true, // Int16Array
-    'U2': true, // Uint16Array
-    'I3': true, // Int32Array
-    'U3': true, // Uint32Array
-    'F3': true, // Float32Array
-    'F4': true, // Float64Array
-    'AB': true, // ArrayBuffer
-    'Ma': true, // Map
-    'Se': true, // Set
-    'WM': true, // WeakMap
-    'WS': true, // WeakSet
+    'ob': 1, // object
+    'ar': 1, // array
+    'I1': 1, // Int8Array
+    'U1': 1, // Uint8Array
+    'C1': 1, // Uint8ClampedArray
+    'I2': 1, // Int16Array
+    'U2': 1, // Uint16Array
+    'I3': 1, // Int32Array
+    'U3': 1, // Uint32Array
+    'F3': 1, // Float32Array
+    'F4': 1, // Float64Array
+    'AB': 1, // ArrayBuffer
+    'Ma': 1, // Map
+    'Se': 1, // Set
+    'WM': 1, // WeakMap
+    'WS': 1, // WeakSet
 };
 
-export const isContainerPointerKey = (pointerKey) => {
-    return containerKeys[pointerKey];
+const isContainerPointerKey = (pointerKey) => {
+    return Boolean(containerKeys[pointerKey]);
 };
 
 const typeNameMap = {
@@ -67,7 +65,7 @@ const typeNameMap = {
     // TODO
 };
 
-export const getPointerKey = (v) => {
+const getPointerKey = (v) => {
     if (v === true) {
         return 'Bt';
     }
@@ -104,20 +102,20 @@ export const getPointerKey = (v) => {
     return pointerKey;
 }
 
-export const extractPointerKey = (pointer) => {
+const extractPointerKey = (pointer) => {
     return pointer.substr(0, 2);
 };
 
-export const extractPointerIndex = (pointer) => {
+const extractPointerIndex = (pointer) => {
     const part = pointer.substr(2);
     return part === '' ? -1 : parseInt(part, 10);
 };
 
-export const genIndexedPointer = (pointerKey, index) => {
+const genIndexedPointer = (pointerKey, index) => {
     return `${pointerKey}${index}`;
 };
 
-export default {
+module.exports = {
     isSimplePointerKey: isSimplePointerKey,
     isValuePointerKey: isValuePointerKey,
     isContainerPointerKey: isContainerPointerKey,

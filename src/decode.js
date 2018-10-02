@@ -1,4 +1,4 @@
-import pointers from '/pointers.js';
+const pointers = require('./pointers.js');
 
 const genEmptyFromPointerKey = (pointerKey) => {
     if (pointerKey === 'ob') {
@@ -142,7 +142,7 @@ const generators = {
     'ar': containerGenerator,
 };
 
-export const generate = (data, pointer) => {
+const generate = (data, pointer) => {
     const pointerKey = pointers.extractPointerKey(pointer);
 
     // Containers values need to handle their own existing Pointer handling
@@ -165,6 +165,43 @@ export const generate = (data, pointer) => {
     return generators[pointerKey] === void 0 ? pointer : generators[pointerKey](data, pointer);
 };
 
-export default {
-    generate: generate,
+module.exports = (encoded) => {
+    const data = {
+        _: {
+            encoded: encoded,
+            exploreQueue: [],
+        },
+    };
+
+    // If root value is a not a container, return its value directly
+    if (!pointers.isContainerPointerKey(pointers.extractPointerKey(encoded.root))) {
+        return generate(data, encoded.root);
+    }
+
+    data._.exploreQueue.push(encoded.root);
+
+    var temp = 1000;
+
+    while (data._.exploreQueue.length > 0 && temp--) {
+        const pointer = data._.exploreQueue.shift();
+
+        // Sanity checks
+        const pointerKey = pointers.extractPointerKey(pointer);
+        if (pointers.isSimplePointerKey(pointerKey)) {
+            // Should never happen
+            throw `Simple PointerKey was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+        }
+        if (pointers.isValuePointerKey(pointerKey)) {
+            // Should never happen
+            throw `Value PointerKey was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+        }
+        if (!pointers.isContainerPointerKey(pointerKey)) {
+            // Should never happen
+            throw `Unrecognized PointerKey type was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+        }
+
+        generate(data, pointer);
+    }
+
+    return data[pointers.extractPointerKey(encoded.root)][pointers.extractPointerIndex(encoded.root)];
 };
