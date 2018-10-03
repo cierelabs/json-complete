@@ -181,10 +181,25 @@ const encoders = {
     },
     'ar': (data, arr, pointerKey) => {
         return containerEncode(data, arr, pointerKey, (arr) => {
-            return arr.map((value, key) => {
+            const indexObj = {};
+            const indices = [];
+            const keys = [];
+
+            arr.forEach((v, i) => {
+                indexObj[String(i)] = true;
+                    indices.push(i);
+            }, {});
+
+            (Object.keys(arr).concat(Object.getOwnPropertySymbols(arr))).forEach((key) => {
+                if (!indexObj[key]) {
+                    keys.push(key);
+                }
+            });
+
+            return (indices.concat(keys)).map((key) => {
                 return [
                     key,
-                    value,
+                    arr[key],
                 ];
             });
         });

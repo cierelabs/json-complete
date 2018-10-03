@@ -66,30 +66,15 @@ const typeNameMap = {
 };
 
 const getPointerKey = (v) => {
-    if (v === true) {
-        return 'Bt';
-    }
+    if (typeof v === 'number') {
+        if (v === Infinity) {
+            return '+I';
+        }
 
-    if (v === false) {
-        return 'Bf';
-    }
+        if (v === -Infinity) {
+            return '-I';
+        }
 
-    if (v === Infinity) {
-        return '+I';
-    }
-
-    if (v === -Infinity) {
-        return '-I';
-    }
-
-    const systemName = Object.prototype.toString.call(v);
-    const pointerKey = typeNameMap[systemName];
-
-    if (!pointerKey) {
-        throw `Unrecognized value type. Could not find PointerKey for it. Value: ${v}, Name: ${systemName}`;
-    }
-
-    if (pointerKey === 'nm') {
         if (v !== v) {
             return 'Na';
         }
@@ -97,6 +82,19 @@ const getPointerKey = (v) => {
         if (v === -0 && (1 / v) === -Infinity) {
             return '-0';
         }
+    }
+    else if (v === true) {
+        return 'Bt';
+    }
+    else if (v === false) {
+        return 'Bf';
+    }
+
+    const systemName = Object.prototype.toString.call(v);
+    const pointerKey = typeNameMap[systemName];
+
+    if (!pointerKey) {
+        throw `Could not find PointerKey for unrecognized type. Value: ${v}, Name: ${systemName}`;
     }
 
     return pointerKey;

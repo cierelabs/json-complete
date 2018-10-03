@@ -212,3 +212,116 @@ TODO
 * Symbols made with the construtor can accept arbitrary strings for identification purposes that do not affect their uniqueness. This information needs to also be stored to completely duplicate the value.
 * The Method form of function definitions inside objects can currently be encoded. However, the decoder does not reconstruct the value exactly the same way, but instead recreates the same behavior using a key/value pair. This could be accounted for by special casing the object generation in the decoder.
 * There are additional function forms like async functions, getters, and setters to consider.
+
+## Number Object
+
+```
+var test1 = new Number(3);
+typeof test1 === 'object'
+test1.valueOf() === 3
+```
+
+Primitive types that cannot have arbitrary keys
+```
+var test_un = void 0;
+test_un.x = 2; // => TypeError
+
+var test_nl = null;
+test_nl.x = 2; // => TypeError
+
+var test_Bt = true;
+test_Bt.x = 2;
+console.log(test_Bt.x); // => undefined
+
+var test_nm = 1;
+test_nm.x = 2;
+console.log(test_nm.x); // => undefined
+
+var test_st = '1';
+test_st.x = 2;
+console.log(test_st.x); // => undefined
+
+var test_sy = Symbol();
+test_sy.x = 2;
+console.log(test_sy.x); // => undefined
+```
+
+Primitive types that can have arbitrary keys
+```
+var test_re = /\s+/g;
+test_re.x = 2;
+console.log(test_re.x); // => 2
+console.log(test_re.valueOf() === test_re); // => true
+console.log(typeof test_re); // => 'object'
+
+var test_da = new Date();
+test_da.x = 2;
+console.log(test_da.x); // => 2
+console.log(test_da.valueOf() === test_da); // => false !!!
+console.log(typeof test_da); // => 'object'
+
+var test_fu = () => { return 1; };
+test_fu.x = 2;
+console.log(test_fu.x); // => 2
+console.log(test_fu.valueOf() === test_fu); // => true
+console.log(typeof test_fu); // => 'function'
+```
+
+Primitives with Object wrappers
+```
+var test_w_Bt = new Boolean(true);
+test_w_Bt.x = 2;
+console.log(test_w_Bt.x); // => 2
+console.log(test_w_Bt.valueOf()); // => true
+console.log(test_w_Bt.valueOf() === test_w_Bt); // => false
+console.log(typeof test_w_Bt); // => 'object'
+console.log(Object.prototype.toString.call(test_w_Bt)); // => '[object Boolean]'
+
+var test_w_nm = new Number(1);
+test_w_nm.x = 2;
+console.log(test_w_nm.x); // => 2
+console.log(test_w_nm.valueOf()); // => 1
+console.log(test_w_nm.valueOf() === test_w_nm); // => false
+console.log(typeof test_w_nm); // => 'object'
+console.log(Object.prototype.toString.call(test_w_nm)); // => '[object Number]'
+
+var test_w_st = new String('1');
+test_w_st.x = 2;
+console.log(test_w_st.x); // => 2
+console.log(test_w_st.valueOf()); // => '1'
+console.log(test_w_st.valueOf() === test_w_st); // => false
+console.log(typeof test_w_st); // => 'object'
+console.log(Object.prototype.toString.call(test_w_st)); // => '[object String]'
+
+var test_w_sy = new Symbol(); // => TypeError
+```
+
+Arrays with arbitrary keys
+```
+var array_key_symbol = Symbol();
+var test_ar = [1, 2, 3];
+test_ar.x = 5;
+test_ar[array_key_symbol] = 6;
+console.log(test_ar.x); // => 5
+console.log(test_ar[array_key_symbol]); // => 6
+console.log(test_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
+console.log(test_ar.valueOf() === test_ar); // => true
+console.log(typeof test_ar); // => 'object'
+console.log(Object.prototype.toString.call(test_ar)); // => '[object Array]'
+Object.keys(test_ar); // => ["0", "1", "2", "x"]
+Object.getOwnPropertySymbols(test_ar); // => [Symbol()]
+
+var array_w_key_symbol = Symbol();
+var test_w_ar = new Array(1, 2, 3);
+test_w_ar.x = 5;
+test_w_ar[array_w_key_symbol] = 6;
+console.log(test_w_ar.x); // => 5
+console.log(test_w_ar[array_w_key_symbol]); // => 6
+console.log(test_w_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
+console.log(test_w_ar.valueOf() === test_w_ar); // => true
+console.log(typeof test_w_ar); // => 'object'
+console.log(Object.prototype.toString.call(test_w_ar)); // => '[object Array]'
+Object.keys(test_w_ar); // => ["0", "1", "2", "x"]
+Object.getOwnPropertySymbols(test_w_ar); // => [Symbol()]
+```
+

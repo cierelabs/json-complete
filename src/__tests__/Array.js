@@ -152,3 +152,27 @@ test('Array: Sparse Array', (t) => {
     t.equal(sparse[3], void 0);
     t.equal(sparseArray.length, 6);
 });
+
+test('Array: Non-Index Keys', (t) => {
+    t.plan(6);
+
+    const sharedObj = {
+        a: 1,
+    };
+    const arr = [
+        1,
+        sharedObj,
+    ];
+    arr['x'] = 5;
+    arr['obj'] = sharedObj;
+    arr[Symbol()] = 6;
+
+    const decodedArray = decode(encode(arr));
+
+    t.equal(decodedArray[0], 1);
+    t.equal(decodedArray['x'], 5);
+    t.deepEqual(decodedArray[1], sharedObj);
+    t.equal(Object.getOwnPropertySymbols(decodedArray).length, 1);
+    t.equal(decodedArray[Object.getOwnPropertySymbols(decodedArray)[0]], 6);
+    t.equal(decodedArray[1], decodedArray['obj']);
+});
