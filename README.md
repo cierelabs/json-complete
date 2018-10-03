@@ -33,6 +33,7 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 | ❌    | ✅             | Invalid Dates                                 |
 | ❌    | ✅             | Symbols                                       |
 | ❌    | ✅             | Registered Symbols                            |
+| ❌    | ✅             | Symbols With Retained Identifiers             |
 | ❌    | ✅             | Function Expressions                          |
 | ❌    | ✅             | Named Function Expressions                    |
 | ❌    | ✅             | Arrow Functions                               |
@@ -41,12 +42,14 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 | ❌    | ✅             | Symbol Keys in Objects                        |
 | ✅    | ✅             | Arrays                                        |
 | ❌ *  | ✅             | Sparse Arrays                                 |
+| ❌    | ✅             | Arrays with String and Symbol keys            |
 | ✅    | ✅             | Arbitrarily Deep Nesting                      |
 | ❌    | ✅             | Circular References                           |
 | ❌    | ✅             | Shared Key and Value Symbol References        |
 | ❌    | ✅             | Referencial Integrity for All Reference Types |
 | ✅ ** | ✅             | Top-Level Encoding for All Supported Values   |
 | ❌    | ✅             | Simple Decoder Error Recovery                 |
+| ✅    | ❌             | Built-in                                      |
 
 * \* JSON will encode sparse arrays by injecting null values into the unassigned indices
 * \** JSON will do top-level encoding only for the types it supports elsewhere
@@ -117,7 +120,7 @@ npm run test
 * Note: If a Date was constructed with a value that cannot be converted into a date, the result is a Date Object with a value of "Invalid Date".
   - This can be detected by checking for NaN value when calling getTime()
   - Invalid Date objects do not equal each other by default
-  - This type of Date object can be encoded with any non-number value
+  - This type of Date object can be encoded with an empty string
 
 ### Object
 * key/value pairs
@@ -128,14 +131,19 @@ npm run test
 * Globally unique value, usually
 * Can be used as an Object key
 * Creating Symbol by using Symbol() or Symbol(SOME_STRING) will always be unique, even if the SOME_STRING is used elsewhere
-* Creating Symbol by using Symbol.for(SOME_STRING) will create a shared Symbol with any other Symbol created with the same SOME_STRING using .for()
+* Creating Symbol by using Symbol.for(SOME_STRING) will create a Registered Symbol with any other Symbol created with the same SOME_STRING using .for()
 * Passing a non-string to .for() will convert the value to a string using the String constructor
-* If the Symbol is shared, calling Symbol.keyFor(SOME_SYMBOL) will result in the string key vale for that Symbol
+* If the Symbol is Registered, calling Symbol.keyFor(SOME_SYMBOL) will result in the string key value for that Symbol
+* When creating a unique Symbol with a string `Symbol('my string')`, converting the Symbol to a string will retain the string value:
+  - `String(Symbol('my string')) // => Symbol(my string)`
+  - This includes empty string: `String(Symbol('')) // => Symbol()`
 
 ### Array
 * A set of indexed values
 * Can store anything, including a reference to the array object
 * Can be a sparce array, so only store values at used indices
+* Optionally, non-integer String and Symbol keys can be attached to the Array, because it is build on Object.
+* Specifying integer keys as Strings will overwrite/create refer to the integer position in the Array, not the String key. That is, String keys of integers cannot be used with Arrays.
 
 ### Function
 * Can save function expression, but will only be useful if the function is pure and side-effect free
@@ -209,7 +217,6 @@ TODO
 
 * Many Object-based types, such as Dates, Arrays, Functions, and Regex can accept arbitrary keys onto themselves as if they were plain objects, while retaining their value and type. This can be encoded by adding an additional, optional pair set to these encode/decode functions.
 * Object wrapping primitives can cause non-standard objects that need to also store a value. For example, in `var test = new Number(3);`, `test` will store an object, to which arbitrary key/value pairs can be added. However, running `test.valueOf()` will return `3`.
-* Symbols made with the construtor can accept arbitrary strings for identification purposes that do not affect their uniqueness. This information needs to also be stored to completely duplicate the value.
 * The Method form of function definitions inside objects can currently be encoded. However, the decoder does not reconstruct the value exactly the same way, but instead recreates the same behavior using a key/value pair. This could be accounted for by special casing the object generation in the decoder.
 * There are additional function forms like async functions, getters, and setters to consider.
 
@@ -265,6 +272,13 @@ test_fu.x = 2;
 console.log(test_fu.x); // => 2
 console.log(test_fu.valueOf() === test_fu); // => true
 console.log(typeof test_fu); // => 'function'
+```
+
+Symbols cannot accept arbitrary Keys
+```
+var test_sy_key = Symbol();
+test_sy_key.x = 2;
+console.log(test_sy_key.x); // => undefined
 ```
 
 Primitives with Object wrappers

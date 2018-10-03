@@ -116,9 +116,23 @@ const generators = {
         });
     },
     'sy': (data, pointer) => {
-        return decodeValueIntoData(data, pointer, (decodedValue) => {
-            return decodedValue === 0 ? Symbol() : Symbol.for(decodedValue);
-        });
+        const pointerKey = pointers.extractPointerKey(pointer);
+        const pointerIndex = pointers.extractPointerIndex(pointer);
+
+        // Manually decode the array container format
+        const symbolArray = tryGetContainerValue(data._.encoded, data._.encoded[pointerKey][pointerIndex]);
+
+        let value;
+        const firstValue = basicGenerator(data, symbolArray[0][1]);
+        if (firstValue === 0) {
+            value = Symbol(basicGenerator(data, symbolArray[1][1]));
+        }
+        else {
+            value = Symbol.for(firstValue);
+        }
+
+        data[pointerKey][pointerIndex] = value;
+        return value;
     },
     'fu': (data, pointer) => {
         return decodeValueIntoData(data, pointer, (decodedValue) => {

@@ -10,6 +10,16 @@ test('Symbol: Normal', (t) => {
     t.ok(testHelpers.isSymbol(decode(encode([Symbol()]))[0]));
 });
 
+test('Symbol: Retained Identifier', (t) => {
+    t.plan(3);
+    const originalSymbol = Symbol('myId');
+    const decodedSymbol = decode(encode([originalSymbol]))[0];
+
+    t.notEqual(decodedSymbol, originalSymbol);
+    t.equal(Symbol.keyFor(decodedSymbol), void 0);
+    t.equal(String(decodedSymbol), 'Symbol(myId)');
+});
+
 test('Symbol: Registered Symbols', (t) => {
     t.plan(2);
     t.equal(decode(encode([Symbol.for('symbol 1')]))[0], Symbol.for('symbol 1'));

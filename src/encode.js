@@ -110,6 +110,15 @@ const containerEncode = (data, box, pointerKey, getPairs) => {
     return pointer;
 };
 
+const buildPairs = (box, keys) => {
+    return keys.map((key) => {
+        return [
+            key,
+            box[key],
+        ];
+    });
+};
+
 const encoders = {
     'nm': basicEncode,
     'st': basicEncode,
@@ -148,9 +157,16 @@ const encoders = {
     'sy': (data, value, pointerKey) => {
         const symbolStringKey = Symbol.keyFor(value);
 
-        // Keyed Symbol, encode as key string
-        // Unique Symbol, encode as zero number
-        const encodedValue = symbolStringKey !== void 0 ? symbolStringKey : 0;
+        let encodedValue;
+
+        if (symbolStringKey !== void 0) {
+            // For Registered Symbols, store the registered string value
+            encodedValue = [symbolStringKey];
+        }
+        else {
+            // For unique Symbols, specify with 0 value and also store the optional identifying string
+            encodedValue = [0, String(value).replace(/^Symbol\((.*)\)$/, '$1')]
+        }
 
         data[pointerKey] = data[pointerKey] || [];
         const pointerIndex = data[pointerKey].length;
@@ -171,12 +187,7 @@ const encoders = {
     },
     'ob': (data, obj, pointerKey) => {
         return containerEncode(data, obj, pointerKey, (obj) => {
-            return Object.keys(obj).concat(Object.getOwnPropertySymbols(obj)).map((key) => {
-                return [
-                    key,
-                    obj[key],
-                ];
-            });
+            return buildPairs(obj, Object.keys(obj).concat(Object.getOwnPropertySymbols(obj)));
         });
     },
     'ar': (data, arr, pointerKey) => {
@@ -196,12 +207,7 @@ const encoders = {
                 }
             });
 
-            return (indices.concat(keys)).map((key) => {
-                return [
-                    key,
-                    arr[key],
-                ];
-            });
+            return buildPairs(arr, indices.concat(keys));
         });
     },
 };
