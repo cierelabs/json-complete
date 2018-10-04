@@ -13,9 +13,14 @@
   "author": "Dwight House",
   "license": "MIT",
   "devDependencies": {
+    "browser-sync": "2.24.7",
     "browserify": "16.2.3",
     "gulp": "3.9.1",
     "gulp-tape": "1.0.0",
-    "tape": "4.9.1"
+    "gulp-watch": "5.0.1",
+    "run-sequence": "2.2.1",
+    "tape": "4.9.1",
+    "vinyl-buffer": "1.0.1",
+    "vinyl-source-stream": "2.0.0"
   }
 }

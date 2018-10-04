@@ -137,6 +137,7 @@ npm run test
 * When creating a unique Symbol with a string `Symbol('my string')`, converting the Symbol to a string will retain the string value:
   - `String(Symbol('my string')) // => Symbol(my string)`
   - This includes empty string: `String(Symbol('')) // => Symbol()`
+* Symbols cannot accept arbitrary String or Symbol keys like some other Object-like types.
 
 ### Array
 * A set of indexed values
@@ -219,6 +220,8 @@ TODO
 * Object wrapping primitives can cause non-standard objects that need to also store a value. For example, in `var test = new Number(3);`, `test` will store an object, to which arbitrary key/value pairs can be added. However, running `test.valueOf()` will return `3`.
 * The Method form of function definitions inside objects can currently be encoded. However, the decoder does not reconstruct the value exactly the same way, but instead recreates the same behavior using a key/value pair. This could be accounted for by special casing the object generation in the decoder.
 * There are additional function forms like async functions, getters, and setters to consider.
+* Switch all valueOf(), forEach(), etc functions to use the built in prototype version, so shenanigans with overwritten method functions on objects can't interfere with encoding and decoding.
+* Convert top level data object to array instead, reducing all usage to arrays, strings, and numbers.
 
 ## Number Object
 
@@ -258,19 +261,19 @@ Primitive types that can have arbitrary keys
 var test_re = /\s+/g;
 test_re.x = 2;
 console.log(test_re.x); // => 2
-console.log(test_re.valueOf() === test_re); // => true
+console.log(Object.prototype.valueOf.call(test_re) === test_re); // => true
 console.log(typeof test_re); // => 'object'
 
 var test_da = new Date();
 test_da.x = 2;
 console.log(test_da.x); // => 2
-console.log(test_da.valueOf() === test_da); // => false !!!
+console.log(Object.prototype.valueOf.call(test_da) === test_da); // => true
 console.log(typeof test_da); // => 'object'
 
 var test_fu = () => { return 1; };
 test_fu.x = 2;
 console.log(test_fu.x); // => 2
-console.log(test_fu.valueOf() === test_fu); // => true
+console.log(Object.prototype.valueOf.call(test_fu) === test_fu); // => true
 console.log(typeof test_fu); // => 'function'
 ```
 
@@ -319,7 +322,7 @@ test_ar[array_key_symbol] = 6;
 console.log(test_ar.x); // => 5
 console.log(test_ar[array_key_symbol]); // => 6
 console.log(test_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
-console.log(test_ar.valueOf() === test_ar); // => true
+console.log(Object.prototype.valueOf.call(test_ar) === test_ar); // => true
 console.log(typeof test_ar); // => 'object'
 console.log(Object.prototype.toString.call(test_ar)); // => '[object Array]'
 Object.keys(test_ar); // => ["0", "1", "2", "x"]
@@ -332,7 +335,7 @@ test_w_ar[array_w_key_symbol] = 6;
 console.log(test_w_ar.x); // => 5
 console.log(test_w_ar[array_w_key_symbol]); // => 6
 console.log(test_w_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
-console.log(test_w_ar.valueOf() === test_w_ar); // => true
+console.log(Object.prototype.valueOf.call(test_w_ar) === test_w_ar); // => true
 console.log(typeof test_w_ar); // => 'object'
 console.log(Object.prototype.toString.call(test_w_ar)); // => '[object Array]'
 Object.keys(test_w_ar); // => ["0", "1", "2", "x"]

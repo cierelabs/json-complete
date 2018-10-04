@@ -83,11 +83,8 @@ const getPointerKey = (v) => {
             return '-0';
         }
     }
-    else if (v === true) {
-        return 'Bt';
-    }
-    else if (v === false) {
-        return 'Bf';
+    else if (typeof v === 'boolean') {
+        return v === true ? 'Bt' : 'Bf';
     }
 
     const systemName = Object.prototype.toString.call(v);
@@ -109,10 +106,6 @@ const extractPointerIndex = (pointer) => {
     return part === '' ? -1 : parseInt(part, 10);
 };
 
-const genIndexedPointer = (pointerKey, index) => {
-    return `${pointerKey}${index}`;
-};
-
 module.exports = {
     isSimplePointerKey: isSimplePointerKey,
     isValuePointerKey: isValuePointerKey,
@@ -122,6 +115,4 @@ module.exports = {
 
     extractPointerKey: extractPointerKey,
     extractPointerIndex: extractPointerIndex,
-
-    genIndexedPointer: genIndexedPointer,
 };

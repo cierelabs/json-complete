@@ -1,4 +1,4 @@
-const pointers = require('./pointers.js');
+const pointers = require('./utils/pointers.js');
 
 const genEmptyFromPointerKey = (pointerKey) => {
     if (pointerKey === 'ob') {
