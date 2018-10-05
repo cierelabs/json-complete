@@ -1,12 +1,12 @@
 const simpleKeys = {
     'un': 1, // undefined
     'nl': 1, // null
-    'Bt': 1, // true
-    'Bf': 1, // false
-    'Na': 1, // NaN
-    '-I': 1, // -Infinity
-    '+I': 1, // Infinity
-    '-0': 1, // -0
+    'bt': 1, // true
+    'bf': 1, // false
+    'na': 1, // NaN
+    '-i': 1, // -Infinity
+    '+i': 1, // Infinity
+    'n0': 1, // -0
 };
 
 const isSimplePointerKey = (pointerKey) => {
@@ -53,6 +53,7 @@ const isContainerPointerKey = (pointerKey) => {
 
 const typeNameMap = {
     '[object Array]': 'ar',
+    '[object Boolean]': 'bo',
     '[object Date]': 'da',
     '[object Function]': 'fu',
     '[object Null]': 'nl',
@@ -66,29 +67,36 @@ const typeNameMap = {
 };
 
 const getPointerKey = (v) => {
+    const systemName = Object.prototype.toString.call(v);
+    const pointerKey = typeNameMap[systemName];
+
     if (typeof v === 'number') {
         if (v === Infinity) {
-            return '+I';
+            return '+i';
         }
 
         if (v === -Infinity) {
-            return '-I';
+            return '-i';
         }
 
         if (v !== v) {
-            return 'Na';
+            return 'na';
         }
 
         if (v === -0 && (1 / v) === -Infinity) {
-            return '-0';
+            return 'n0';
         }
     }
     else if (typeof v === 'boolean') {
-        return v === true ? 'Bt' : 'Bf';
+        return v === true ? 'bt' : 'bf';
+    }
+    else if (typeof v === 'object') {
+        if (pointerKey === 'bo') {
+
+        }
     }
 
-    const systemName = Object.prototype.toString.call(v);
-    const pointerKey = typeNameMap[systemName];
+
 
     if (!pointerKey) {
         throw `Could not find PointerKey for unrecognized type. Value: ${v}, Name: ${systemName}`;
@@ -97,22 +105,10 @@ const getPointerKey = (v) => {
     return pointerKey;
 }
 
-const extractPointerKey = (pointer) => {
-    return pointer.substr(0, 2);
-};
-
-const extractPointerIndex = (pointer) => {
-    const part = pointer.substr(2);
-    return part === '' ? -1 : parseInt(part, 10);
-};
-
 module.exports = {
     isSimplePointerKey: isSimplePointerKey,
     isValuePointerKey: isValuePointerKey,
     isContainerPointerKey: isContainerPointerKey,
 
     getPointerKey: getPointerKey,
-
-    extractPointerKey: extractPointerKey,
-    extractPointerIndex: extractPointerIndex,
 };

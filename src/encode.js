@@ -1,4 +1,5 @@
 const genEncodePointer = require('./utils/genEncodePointer.js');
+const extractPointerIndex = require('./utils/extractPointerIndex.js');
 const genPairs = require('./utils/genPairs.js');
 const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
 const getAllKeys = require('./utils/getAllKeys.js');
@@ -29,13 +30,6 @@ const encodePrimitive = (data, value) => {
     return p.p;
 };
 
-const encodeTransformedValue = (data, originalValue, encodedValue) => {
-    const p = genEncodePointer(data, originalValue);
-    data[p.k][p.i] = encodeValue(data, encodedValue);
-    data._.known[p.k].push(p);
-    return p.p;
-};
-
 const encodeContainer = (data, box, pairs) => {
     const p = genEncodePointer(data, box);
 
@@ -43,7 +37,7 @@ const encodeContainer = (data, box, pairs) => {
     const existingPointer = tryGetExistingPointer(data, box, p.k);
 
     if (existingPointer) {
-        p.i = pointers.extractPointerIndex(existingPointer);
+        p.i = extractPointerIndex(existingPointer);
         p.p = existingPointer;
     }
     else {
@@ -119,18 +113,20 @@ const encoders = {
         return encodeContainer(data, value, [[null, encodedValue]].concat(genPairs(value, getAllKeys(value))));
     },
     'sy': (data, value) => {
-        let encodedValue;
+        const p = genEncodePointer(data, value);
+
         const symbolStringKey = Symbol.keyFor(value);
         if (symbolStringKey !== void 0) {
             // For Registered Symbols, specify with 1 value and store the registered string value
-            encodedValue = [1, symbolStringKey];
+            data[p.k][p.i] = encodeValue(data, [1, symbolStringKey]);
         }
         else {
             // For unique Symbols, specify with 0 value and also store the optional identifying string
-            encodedValue = [0, String(value).replace(/^Symbol\((.*)\)$/, '$1')]
+            data[p.k][p.i] = encodeValue(data, [0, String(value).replace(/^Symbol\((.*)\)$/, '$1')]);
         }
 
-        return encodeTransformedValue(data, value, encodedValue);
+        data._.known[p.k].push(p);
+        return p.p;
     },
     'fu': (data, value) => {
         return encodeContainer(data, value, [[null, String(value)]].concat(genPairs(value, getAllKeys(value))));

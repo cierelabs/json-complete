@@ -16,40 +16,47 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 
 ## Comparison to JSON
 
-| json | json-complete | Feature                                       |
-|------|---------------|-----------------------------------------------|
-| ❌    | ✅             | undefined                                     |
-| ✅    | ✅             | null                                          |
-| ✅    | ✅             | Booleans                                      |
-| ✅    | ✅             | Normal Numbers                                |
-| ❌    | ✅             | Number: NaN                                   |
-| ❌    | ✅             | Number: -Infinity                             |
-| ❌    | ✅             | Number: Infinity                              |
-| ❌    | ✅             | Number: -0                                    |
-| ✅    | ✅             | Strings                                       |
-| ❌    | ✅             | Regex                                         |
-| ❌    | ✅             | Retained Regex lastIndex                      |
-| ❌    | ✅             | Dates                                         |
-| ❌    | ✅             | Invalid Dates                                 |
-| ❌    | ✅             | Symbols                                       |
-| ❌    | ✅             | Registered Symbols                            |
-| ❌    | ✅             | Symbols With Retained Identifiers             |
-| ❌    | ✅             | Function Expressions                          |
-| ❌    | ✅             | Named Function Expressions                    |
-| ❌    | ✅             | Arrow Functions                               |
-| ❌    | ✅             | Method Functions                              |
-| ✅    | ✅             | Objects                                       |
-| ❌    | ✅             | Symbol Keys in Objects                        |
-| ✅    | ✅             | Arrays                                        |
-| ❌ *  | ✅             | Sparse Arrays                                 |
-| ❌    | ✅             | Arrays with String and Symbol keys            |
-| ✅    | ✅             | Arbitrarily Deep Nesting                      |
-| ❌    | ✅             | Circular References                           |
-| ❌    | ✅             | Shared Key and Value Symbol References        |
-| ❌    | ✅             | Referencial Integrity for All Reference Types |
-| ✅ ** | ✅             | Top-Level Encoding for All Supported Values   |
-| ❌    | ✅             | Simple Decoder Error Recovery                 |
-| ✅    | ❌             | Built-in                                      |
+| json | json-complete | Feature                                               |
+|------|---------------|-------------------------------------------------------|
+| ❌    | ✅             | undefined                                             |
+| ✅    | ✅             | null                                                  |
+| ✅    | ✅             | Booleans                                              |
+| ✅    | ✅             | Normal Numbers                                        |
+| ❌    | ✅             | Number: NaN                                           |
+| ❌    | ✅             | Number: -Infinity                                     |
+| ❌    | ✅             | Number: Infinity                                      |
+| ❌    | ✅             | Number: -0                                            |
+| ✅    | ✅             | Strings                                               |
+| ❌    | ✅             | Regex                                                 |
+| ❌    | ✅             | Retained Regex lastIndex                              |
+| ❌    | ✅             | Regex Arbitrary Attached Data                         |
+| ❌    | ✅             | Regex Self-Containment                                |
+| ❌    | ✅             | Dates                                                 |
+| ❌    | ✅             | Invalid Dates                                         |
+| ❌    | ✅             | Date Arbitrary Attached Data                          |
+| ❌    | ✅             | Date Self-Containment                                 |
+| ❌    | ✅             | Symbols                                               |
+| ❌    | ✅             | Registered Symbols                                    |
+| ❌    | ✅             | Symbols With Retained Identifiers                     |
+| ❌    | ✅             | Function Expressions                                  |
+| ❌    | ✅             | Named Function Expressions                            |
+| ❌    | ✅             | Arrow Functions                                       |
+| ❌    | ✅             | Method Functions                                      |
+| ❌    | ✅             | Function Expression Arbitrary Attached Data           |
+| ❌    | ✅             | Function Expression Self-Containment                  |
+| ❌    | ✅             | Named Function Expression Attached Data Referencing   |
+| ✅    | ✅             | Objects                                               |
+| ❌    | ✅             | Symbol Keys in Objects                                |
+| ✅    | ✅             | Arrays                                                |
+| ❌ *  | ✅             | Sparse Arrays                                         |
+| ❌    | ✅             | Arrays with String and Symbol keys                    |
+| ✅    | ✅             | Arbitrarily Deep Nesting                              |
+| ❌    | ✅             | Circular References                                   |
+| ❌    | ✅             | Shared Key and Value Symbol References                |
+| ❌    | ✅             | Referencial Integrity for All Reference Types         |
+| ✅ ** | ✅             | Top-Level Encoding for All Supported Values           |
+| ❌    | ✅             | Simple Decoder Error Recovery                         |
+| ✅    | ❌             | Built-in                                              |
 
 * \* JSON will encode sparse arrays by injecting null values into the unassigned indices
 * \** JSON will do top-level encoding only for the types it supports elsewhere
@@ -112,6 +119,7 @@ npm run test
 * Regular pattern specified with slashes and optional flags afterward
 * Regex to data => [REGEX.source, REGEX.flags, REGEX.lastIndex]
 * Data representation to Regex => new Regex(DATA[0], DATA[1]), then, set the lastIndex value to DATA[2]
+* Can store arbitrary data on itself with String or Symbol keys
 
 ### Date
 * Object containing date/time data
@@ -121,6 +129,7 @@ npm run test
   - This can be detected by checking for NaN value when calling getTime()
   - Invalid Date objects do not equal each other by default
   - This type of Date object can be encoded with an empty string
+* Can store arbitrary data on itself with String or Symbol keys
 
 ### Object
 * key/value pairs
@@ -138,6 +147,7 @@ npm run test
   - `String(Symbol('my string')) // => Symbol(my string)`
   - This includes empty string: `String(Symbol('')) // => Symbol()`
 * Symbols cannot accept arbitrary String or Symbol keys like some other Object-like types.
+* **Cannot** store arbitrary data on itself with String or Symbol keys
 
 ### Array
 * A set of indexed values
@@ -147,8 +157,19 @@ npm run test
 * Specifying integer keys as Strings will overwrite/create refer to the integer position in the Array, not the String key. That is, String keys of integers cannot be used with Arrays.
 
 ### Function
-* Can save function expression, but will only be useful if the function is pure and side-effect free
-* TODO: There are many different function forms, each with different encoding and decoding aspects
+* Can save various Function Expressions, but **cannot store Closure or Global state information**, as the Function is converted to a String.
+* Has many forms:
+  - Function Expression: `function(...) { ... }`
+  - Named Function Expression: `function myFunction(...) { ... }`
+  - Arrow Function: `(...) => { ... }`
+  - Bare Arrow Function: `x => x`
+  - Method Function: `{ x(...) { ... } }`
+    - Can only exist in an Object context
+    - Operationally, it is identical to a Function Expression (NOT a Named Function Expression) where the Function name is the key String in the Object, however it serializes to String differently.
+* Can store arbitrary data on itself with string or Symbol keys
+* TODO: Look into async, getter/setter, and other newer types
+
+
 
 ### File
 TODO
@@ -216,12 +237,11 @@ TODO
 
 ## To Fix and Add
 
-* Many Object-based types, such as Dates, Arrays, Functions, and Regex can accept arbitrary keys onto themselves as if they were plain objects, while retaining their value and type. This can be encoded by adding an additional, optional pair set to these encode/decode functions.
 * Object wrapping primitives can cause non-standard objects that need to also store a value. For example, in `var test = new Number(3);`, `test` will store an object, to which arbitrary key/value pairs can be added. However, running `test.valueOf()` will return `3`.
-* The Method form of function definitions inside objects can currently be encoded. However, the decoder does not reconstruct the value exactly the same way, but instead recreates the same behavior using a key/value pair. This could be accounted for by special casing the object generation in the decoder.
 * There are additional function forms like async functions, getters, and setters to consider.
 * Switch all valueOf(), forEach(), etc functions to use the built in prototype version, so shenanigans with overwritten method functions on objects can't interfere with encoding and decoding.
 * Convert top level data object to array instead, reducing all usage to arrays, strings, and numbers.
+* Since functions can be encoded, the decoder for a given set of data can be included.
 
 ## Number Object
 
@@ -239,9 +259,9 @@ test_un.x = 2; // => TypeError
 var test_nl = null;
 test_nl.x = 2; // => TypeError
 
-var test_Bt = true;
-test_Bt.x = 2;
-console.log(test_Bt.x); // => undefined
+var test_bt = true;
+test_bt.x = 2;
+console.log(test_bt.x); // => undefined
 
 var test_nm = 1;
 test_nm.x = 2;
@@ -286,13 +306,13 @@ console.log(test_sy_key.x); // => undefined
 
 Primitives with Object wrappers
 ```
-var test_w_Bt = new Boolean(true);
-test_w_Bt.x = 2;
-console.log(test_w_Bt.x); // => 2
-console.log(test_w_Bt.valueOf()); // => true
-console.log(test_w_Bt.valueOf() === test_w_Bt); // => false
-console.log(typeof test_w_Bt); // => 'object'
-console.log(Object.prototype.toString.call(test_w_Bt)); // => '[object Boolean]'
+var test_w_bt = new Boolean(true);
+test_w_bt.x = 2;
+console.log(test_w_bt.x); // => 2
+console.log(test_w_bt.valueOf()); // => true
+console.log(test_w_bt.valueOf() === test_w_bt); // => false
+console.log(typeof test_w_bt); // => 'object'
+console.log(Object.prototype.toString.call(test_w_bt)); // => '[object Boolean]'
 
 var test_w_nm = new Number(1);
 test_w_nm.x = 2;

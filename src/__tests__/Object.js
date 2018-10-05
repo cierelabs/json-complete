@@ -17,32 +17,32 @@ test('Object: null', (t) => {
 
 test('Object: true', (t) => {
     t.plan(1);
-    t.equal(decode(encode({ 'Bt': true }))['Bt'], true);
+    t.equal(decode(encode({ 'bt': true }))['bt'], true);
 });
 
 test('Object: false', (t) => {
     t.plan(1);
-    t.equal(decode(encode({ 'Bf': false }))['Bf'], false);
+    t.equal(decode(encode({ 'bf': false }))['bf'], false);
 });
 
 test('Object: NaN', (t) => {
     t.plan(1);
-    t.ok(testHelpers.isNanValue(decode(encode({ 'Na': NaN }))['Na']));
+    t.ok(testHelpers.isNanValue(decode(encode({ 'na': NaN }))['na']));
 });
 
 test('Object: -Infinity', (t) => {
     t.plan(1);
-    t.equal(decode(encode({ '-I': -Infinity }))['-I'], -Infinity);
+    t.equal(decode(encode({ '-i': -Infinity }))['-i'], -Infinity);
 });
 
 test('Object: Infinity', (t) => {
     t.plan(1);
-    t.equal(decode(encode({ '+I': Infinity }))['+I'], Infinity);
+    t.equal(decode(encode({ '+i': Infinity }))['+i'], Infinity);
 });
 
 test('Object: -0', (t) => {
     t.plan(1);
-    t.ok(testHelpers.isNegativeZero(decode(encode({ '-0': -0 }))['-0']));
+    t.ok(testHelpers.isNegativeZero(decode(encode({ 'n0': -0 }))['n0']));
 });
 
 test('Object: Number', (t) => {

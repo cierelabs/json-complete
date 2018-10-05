@@ -97,22 +97,22 @@ const generators = {
     'nl': () => {
         return null;
     },
-    'Bt': () => {
+    'bt': () => {
         return true;
     },
-    'Bf': () => {
+    'bf': () => {
         return false;
     },
-    'Na': () => {
+    'na': () => {
         return NaN;
     },
-    '-I': () => {
+    '-i': () => {
         return -Infinity;
     },
-    '+I': () => {
+    '+i': () => {
         return Infinity;
     },
-    '-0': () => {
+    'n0': () => {
         return -0;
     },
     'nm': getEncoded,
