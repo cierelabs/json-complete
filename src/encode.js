@@ -36,7 +36,7 @@ const encodeTransformedValue = (data, originalValue, encodedValue) => {
     return p.p;
 };
 
-const encodeContainer = (data, box, getPairs) => {
+const encodeContainer = (data, box, pairs) => {
     const p = genEncodePointer(data, box);
 
     // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
@@ -54,7 +54,7 @@ const encodeContainer = (data, box, getPairs) => {
     const container = data[p.k][p.i];
 
     // Encode each part of the Container
-    Array.prototype.forEach.call(getPairs(box), (pair) => {
+    Array.prototype.forEach.call(pairs, (pair) => {
         const pointerKey = pointers.getPointerKey(pair[1]);
 
         // Already know of this value, encode its Pointer
@@ -104,9 +104,8 @@ const encoders = {
             value.flags,
             value.lastIndex,
         ];
-        // return [[null, [value.source, value.flags, value.lastIndex]]].concat(genPairs(value, getAllKeys(value)));
 
-        return encodeTransformedValue(data, value, encodedValue);
+        return encodeContainer(data, value, [[null, encodedValue]].concat(genPairs(value, getAllKeys(value))));
     },
     'da': (data, value) => {
         let encodedValue = value.getTime();
@@ -117,9 +116,7 @@ const encoders = {
             encodedValue = '';
         }
 
-        return encodeContainer(data, value, (value) => {
-            return [[null, encodedValue]].concat(genPairs(value, getAllKeys(value)));
-        });
+        return encodeContainer(data, value, [[null, encodedValue]].concat(genPairs(value, getAllKeys(value))));
     },
     'sy': (data, value) => {
         let encodedValue;
@@ -136,19 +133,13 @@ const encoders = {
         return encodeTransformedValue(data, value, encodedValue);
     },
     'fu': (data, value) => {
-        return encodeContainer(data, value, (value) => {
-            return [[null, String(value)]].concat(genPairs(value, getAllKeys(value)));
-        });
+        return encodeContainer(data, value, [[null, String(value)]].concat(genPairs(value, getAllKeys(value))));
     },
     'ob': (data, value) => {
-        return encodeContainer(data, value, (value) => {
-            return genPairs(value, getAllKeys(value));
-        });
+        return encodeContainer(data, value, genPairs(value, getAllKeys(value)));
     },
     'ar': (data, value) => {
-        return encodeContainer(data, value, (value) => {
-            return genPairs(value, getIndicesAndKeys(value));
-        });
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
     },
 };
 

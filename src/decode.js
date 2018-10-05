@@ -21,6 +21,18 @@ const getOrCreateContainer = (data, p) => {
             data[p.k][p.i] = new Date(decodedValue);
         }
 
+        if (p.k === 're') {
+            const pairs = getEncoded(data, p);
+            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
+
+            const source = getEncoded(data, genDecodePointer(decodedValue[0][1]));
+            const flags = getEncoded(data, genDecodePointer(decodedValue[1][1]));
+            const lastIndex = getEncoded(data, genDecodePointer(decodedValue[2][1]));
+
+            data[p.k][p.i] = new RegExp(source, flags);
+            data[p.k][p.i].lastIndex = lastIndex;
+        }
+
         if (p.k === 'fu') {
             const pairs = getEncoded(data, p);
             const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
@@ -105,23 +117,7 @@ const generators = {
     },
     'nm': getEncoded,
     'st': getEncoded,
-    're': (data, p) => {
-        // Manually decode the array container format
-        const regexArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
-        if (regexArray.length !== 3) {
-            throw `Incorrectly constructed Regular Expression data at pointer ${p.p}`;
-        }
-
-        const source = getEncoded(data, genDecodePointer(regexArray[0][1]));
-        const flags = getEncoded(data, genDecodePointer(regexArray[1][1]));
-        const lastIndex = getEncoded(data, genDecodePointer(regexArray[2][1]));
-
-        const value = new RegExp(source, flags);
-        value.lastIndex = lastIndex;
-
-        data[p.k][p.i] = value;
-        return value;
-    },
+    're': containerGenerator,
     'da': containerGenerator,
     'sy': (data, p) => {
         // Manually decode the array container format

@@ -16,7 +16,6 @@ const isSimplePointerKey = (pointerKey) => {
 const valueKeys = {
     'nm': 1, // number
     'st': 1, // string
-    're': 1, // regex
     'sy': 1, // symbol
     'Fi': 1, // File
     'Bl': 1, // Blob
@@ -28,6 +27,7 @@ const isValuePointerKey = (pointerKey) => {
 
 const containerKeys = {
     'da': 1, // date
+    're': 1, // regex
     'fu': 1, // function
     'ob': 1, // object
     'ar': 1, // array

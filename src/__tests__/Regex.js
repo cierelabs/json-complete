@@ -52,3 +52,27 @@ test('Regex: Same Regex is Different Reference', (t) => {
     const decodedRegexArray = decode(encode([/\s+/g, /\s+/g]));
     t.notEqual(decodedRegexArray[0], decodedRegexArray[1]);
 });
+
+test('Regex: Arbitrary Attached Data', (t) => {
+    t.plan(3);
+
+    const regex = /\s+/g;
+    regex.x = 2;
+    regex[Symbol.for('regex')] = 'test';
+
+    const decodedRegex = decode(encode([regex]))[0];
+    t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
+    t.equal(decodedRegex.x, 2);
+    t.equal(decodedRegex[Symbol.for('regex')], 'test');
+});
+
+test('Regex: Self-Containment', (t) => {
+    t.plan(2);
+
+    const regex = /\s+/g;
+    regex.me = regex;
+
+    const decodedRegex = decode(encode([regex]))[0];
+    t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
+    t.equal(decodedRegex.me, decodedRegex);
+});
