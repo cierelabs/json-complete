@@ -1,4 +1,4 @@
-const genPointerItem = require('./utils/genPointerItem.js');
+const genEncodePointer = require('./utils/genEncodePointer.js');
 const genPairs = require('./utils/genPairs.js');
 const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
 const getAllKeys = require('./utils/getAllKeys.js');
@@ -14,8 +14,8 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
     data._.known[pointerKey] = data._.known[pointerKey] || [];
 
     // Try to find existing item matching the value
-    const foundItem = data._.known[pointerKey].find((pointerItem) => {
-        return pointerItem.v === value;
+    const foundItem = data._.known[pointerKey].find((p) => {
+        return p.v === value;
     });
 
     // If found, return its existing pointer
@@ -23,21 +23,21 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
 };
 
 const encodePrimitive = (data, value) => {
-    const p = genPointerItem(data, value);
+    const p = genEncodePointer(data, value);
     data[p.k][p.i] = value;
     data._.known[p.k].push(p);
     return p.p;
 };
 
 const encodeTransformedValue = (data, originalValue, encodedValue) => {
-    const p = genPointerItem(data, originalValue);
+    const p = genEncodePointer(data, originalValue);
     data[p.k][p.i] = encodeValue(data, encodedValue);
     data._.known[p.k].push(p);
     return p.p;
 };
 
 const encodeContainer = (data, box, getPairs) => {
-    const p = genPointerItem(data, box);
+    const p = genEncodePointer(data, box);
 
     // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
     const existingPointer = tryGetExistingPointer(data, box, p.k);
@@ -70,7 +70,7 @@ const encodeContainer = (data, box, getPairs) => {
 
         // Found a new Container, ensure it is prepped for exploration
         if (pointers.isContainerPointerKey(pointerKey)) {
-            const vp = genPointerItem(data, pair[1]);
+            const vp = genEncodePointer(data, pair[1]);
 
             data[vp.k][vp.i] = [];
 
@@ -104,6 +104,7 @@ const encoders = {
             value.flags,
             value.lastIndex,
         ];
+        // return [[null, [value.source, value.flags, value.lastIndex]]].concat(genPairs(value, getAllKeys(value)));
 
         return encodeTransformedValue(data, value, encodedValue);
     },
@@ -116,7 +117,9 @@ const encoders = {
             encodedValue = '';
         }
 
-        return encodeTransformedValue(data, value, encodedValue);
+        return encodeContainer(data, value, (value) => {
+            return [[null, encodedValue]].concat(genPairs(value, getAllKeys(value)));
+        });
     },
     'sy': (data, value) => {
         const symbolStringKey = Symbol.keyFor(value);

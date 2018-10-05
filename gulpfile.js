@@ -7,6 +7,11 @@ const runSequence = require('run-sequence');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
 
+function onError(e) {
+    console.error(e);
+    this.emit('end');
+}
+
 gulp.task('test', () => {
     return gulp.src(['./src/**/__tests__/*.js'])
     .pipe(gulpTape({
@@ -26,8 +31,11 @@ gulp.task('browser-test-js', () => {
     });
 
     return b.bundle()
+        .on('error', onError)
         .pipe(vinylSourceStream('InBrowserTester.js'))
+        .on('error', onError)
         .pipe(vinylBuffer())
+        .on('error', onError)
         .pipe(gulp.dest('./_InBrowserTester/'));
 });
 

@@ -17,7 +17,6 @@ const valueKeys = {
     'nm': 1, // number
     'st': 1, // string
     're': 1, // regex
-    'da': 1, // date
     'sy': 1, // symbol
     'fu': 1, // function
     'Fi': 1, // File
@@ -29,6 +28,7 @@ const isValuePointerKey = (pointerKey) => {
 };
 
 const containerKeys = {
+    'da': 1, // date
     'ob': 1, // object
     'ar': 1, // array
     'I1': 1, // Int8Array

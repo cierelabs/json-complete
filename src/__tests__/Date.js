@@ -15,3 +15,25 @@ test('Date: Invalid Date', (t) => {
     t.plan(1);
     t.ok(testHelpers.isNanValue(decode(encode([new Date('')]))[0].getTime()));
 });
+
+test('Date: Arbitrary Data', (t) => {
+    t.plan(3);
+    const now = Date.now();
+    const date = new Date(now);
+    date.x = 2;
+    date[Symbol.for('date')] = 'test';
+    const decodedDate = decode(encode([date]))[0];
+    t.equal(decodedDate.getTime(), now);
+    t.equal(decodedDate.x, 2);
+    t.equal(decodedDate[Symbol.for('date')], 'test');
+});
+
+test('Date: Self-Containment', (t) => {
+    t.plan(2);
+    const now = Date.now();
+    const date = new Date(now);
+    date.me = date;
+    const decodedDate = decode(encode([date]))[0];
+    t.equal(decodedDate.getTime(), now);
+    t.equal(decodedDate.me, decodedDate);
+});

@@ -1,65 +1,68 @@
 const pointers = require('./utils/pointers.js');
+const genDecodePointer = require('./utils/genDecodePointer.js');
 
-const genEmptyFromPointerKey = (pointerKey) => {
-    if (pointerKey === 'ob') {
-        return {};
-    }
-
-    if (pointerKey === 'ar') {
-        return [];
-    }
-
-    // TODO
-};
-
-const tryAddPointerToExploreQueue = (data, pointer) => {
-    // Only add to the exploreQueue if it hasn't already been created
-    if ((data[pointers.extractPointerKey(pointer)] || [])[pointers.extractPointerIndex(pointer)] === void 0) {
-        data._.exploreQueue.push(pointer);
-    }
-};
-
-const tryGetContainerValue = (source, pointer) => {
-    const pointerKey = pointers.extractPointerKey(pointer);
-    const pointerIndex = pointers.extractPointerIndex(pointer);
-
+const getOrCreateContainer = (data, p) => {
     // Ensure the ref list exists
-    source[pointerKey] = source[pointerKey] || [];
+    data[p.k] = data[p.k] || [];
 
     // Ensure the ref item exists
-    if (source[pointerKey][pointerIndex] === void 0) {
-        source[pointerKey][pointerIndex] = genEmptyFromPointerKey(pointerKey);
+    if (data[p.k][p.i] === void 0) {
+        if (p.k === 'ob') {
+            data[p.k][p.i] = {};
+        }
+
+        if (p.k === 'ar') {
+            data[p.k][p.i] = [];
+        }
+
+        if (p.k === 'da') {
+            const pairs = getEncoded(data, p);
+            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
+            data[p.k][p.i] = new Date(decodedValue);
+        }
     }
 
-    return source[pointerKey][pointerIndex];
+    return data[p.k][p.i];
 };
 
-const basicGenerator = (data, pointer) => {
-    return data._.encoded[pointers.extractPointerKey(pointer)][pointers.extractPointerIndex(pointer)];
+const getEncoded = (data, p) => {
+    return data._.encoded[p.k][p.i];
 };
 
-const containerGenerator = (data, pointer) => {
-    const container = tryGetContainerValue(data, pointer);
+const containerGenerator = (data, p) => {
+    const container = getOrCreateContainer(data, p);
 
-    tryGetContainerValue(data._.encoded, pointer).forEach((pair) => {
-        if (pointers.isContainerPointerKey(pointers.extractPointerKey(pair[1]))) {
-            tryAddPointerToExploreQueue(data, pair[1]);
-            container[generate(data, pair[0])] = tryGetContainerValue(data, pair[1]);
+    let pairs = getEncoded(data, p);
+
+    // First key is null, that was the valueOf, ignore
+    if ((pairs[0] || [])[0] === 'nl') {
+        pairs = pairs.slice(1);
+    }
+
+    Array.prototype.forEach.call(pairs, (pair) => {
+        const pk = genDecodePointer(pair[0]);
+        const pv = genDecodePointer(pair[1]);
+
+        if (pointers.isContainerPointerKey(pv.k)) {
+            // Only add to the exploreQueue if it hasn't already been created
+            if ((data[pv.k] || [])[pv.i] === void 0) {
+                data._.exploreQueue.push(pv);
+            }
+            container[generate(data, pk)] = getOrCreateContainer(data, pv);
         }
         else {
-            container[generate(data, pair[0])] = generate(data, pair[1]);
+            container[generate(data, pk)] = generate(data, pv);
         }
     });
+
+    return container;
 };
 
-const decodeValueIntoData = (data, pointer, generateCallback) => {
-    const pointerKey = pointers.extractPointerKey(pointer);
-    const pointerIndex = pointers.extractPointerIndex(pointer);
-
-    const decodedValue = generate(data, data._.encoded[pointerKey][pointerIndex]);
+const decodeValueIntoData = (data, p, generateCallback) => {
+    const decodedValue = generate(data, genDecodePointer(getEncoded(data, p)));
     const value = generateCallback(decodedValue);
 
-    data[pointerKey][pointerIndex] = value;
+    data[p.k][p.i] = value;
     return value;
 };
 
@@ -88,54 +91,46 @@ const generators = {
     '-0': () => {
         return -0;
     },
-    'nm': basicGenerator,
-    'st': basicGenerator,
-    're': (data, pointer) => {
-        const pointerKey = pointers.extractPointerKey(pointer);
-        const pointerIndex = pointers.extractPointerIndex(pointer);
-
+    'nm': getEncoded,
+    'st': getEncoded,
+    're': (data, p) => {
         // Manually decode the array container format
-        const regexArray = tryGetContainerValue(data._.encoded, data._.encoded[pointerKey][pointerIndex]);
+        const regexArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
         if (regexArray.length !== 3) {
-            throw `Incorrectly constructed Regular Expression data at pointer ${pointer}`;
+            throw `Incorrectly constructed Regular Expression data at pointer ${p.p}`;
         }
 
-        const source = basicGenerator(data, regexArray[0][1]);
-        const flags = basicGenerator(data, regexArray[1][1]);
-        const lastIndex = basicGenerator(data, regexArray[2][1]);
+        const source = getEncoded(data, genDecodePointer(regexArray[0][1]));
+        const flags = getEncoded(data, genDecodePointer(regexArray[1][1]));
+        const lastIndex = getEncoded(data, genDecodePointer(regexArray[2][1]));
 
         const value = new RegExp(source, flags);
         value.lastIndex = lastIndex;
 
-        data[pointerKey][pointerIndex] = value;
+        data[p.k][p.i] = value;
         return value;
     },
-    'da': (data, pointer) => {
-        return decodeValueIntoData(data, pointer, (decodedValue) => {
-            return new Date(decodedValue);
-        });
+    'da': (data, p) => {
+        return containerGenerator(data, p);
     },
-    'sy': (data, pointer) => {
-        const pointerKey = pointers.extractPointerKey(pointer);
-        const pointerIndex = pointers.extractPointerIndex(pointer);
-
+    'sy': (data, p) => {
         // Manually decode the array container format
-        const symbolArray = tryGetContainerValue(data._.encoded, data._.encoded[pointerKey][pointerIndex]);
+        const symbolArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
 
         let value;
-        const firstValue = basicGenerator(data, symbolArray[0][1]);
+        const firstValue = getEncoded(data, genDecodePointer(symbolArray[0][1]));
         if (firstValue === 0) {
-            value = Symbol(basicGenerator(data, symbolArray[1][1]));
+            value = Symbol(getEncoded(data, genDecodePointer(symbolArray[1][1])));
         }
         else {
             value = Symbol.for(firstValue);
         }
 
-        data[pointerKey][pointerIndex] = value;
+        data[p.k][p.i] = value;
         return value;
     },
-    'fu': (data, pointer) => {
-        return decodeValueIntoData(data, pointer, (decodedValue) => {
+    'fu': (data, p) => {
+        return decodeValueIntoData(data, p, (decodedValue) => {
             try {
                 const box = {};
                 eval(`box.fn = ${decodedValue};`);
@@ -152,23 +147,25 @@ const generators = {
             }
         });
     },
-    'ob': containerGenerator,
-    'ar': containerGenerator,
+    'ob': (data, p) => {
+        return containerGenerator(data, p);
+    },
+    'ar': (data, p) => {
+        return containerGenerator(data, p);
+    },
 };
 
-const generate = (data, pointer) => {
-    const pointerKey = pointers.extractPointerKey(pointer);
-
+const generate = (data, p) => {
     // Containers values need to handle their own existing Pointer handling
-    if (!pointers.isContainerPointerKey(pointerKey)) {
+    if (!pointers.isContainerPointerKey(p.k)) {
         // Simple PointerKeys are their own Pointers
-        if (pointers.isSimplePointerKey(pointerKey)) {
-            return generators[pointerKey]();
+        if (pointers.isSimplePointerKey(p.k)) {
+            return generators[p.k]();
         }
 
         // Ensure ref list exists
-        data[pointerKey] = data[pointerKey] || [];
-        const existingValue = data[pointerKey][pointers.extractPointerIndex(pointer)];
+        data[p.k] = data[p.k] || [];
+        const existingValue = data[p.k][p.i];
 
         // If found, return its existing value
         if (existingValue !== void 0) {
@@ -176,7 +173,7 @@ const generate = (data, pointer) => {
         }
     }
 
-    return generators[pointerKey] === void 0 ? pointer : generators[pointerKey](data, pointer);
+    return generators[p.k] === void 0 ? p.p : generators[p.k](data, p);
 };
 
 module.exports = (encoded) => {
@@ -187,35 +184,36 @@ module.exports = (encoded) => {
         },
     };
 
+    const rp = genDecodePointer(encoded.root);
+
     // If root value is a not a container, return its value directly
-    if (!pointers.isContainerPointerKey(pointers.extractPointerKey(encoded.root))) {
-        return generate(data, encoded.root);
+    if (!pointers.isContainerPointerKey(rp.k)) {
+        return generate(data, rp);
     }
 
-    data._.exploreQueue.push(encoded.root);
+    data._.exploreQueue.push(rp);
 
     var temp = 1000;
 
     while (data._.exploreQueue.length > 0 && temp--) {
-        const pointer = data._.exploreQueue.shift();
+        const p = data._.exploreQueue.shift();
 
         // Sanity checks
-        const pointerKey = pointers.extractPointerKey(pointer);
-        if (pointers.isSimplePointerKey(pointerKey)) {
+        if (pointers.isSimplePointerKey(p.k)) {
             // Should never happen
-            throw `Simple PointerKey was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+            throw `Simple PointerKey was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
         }
-        if (pointers.isValuePointerKey(pointerKey)) {
+        if (pointers.isValuePointerKey(p.k)) {
             // Should never happen
-            throw `Value PointerKey was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+            throw `Value PointerKey was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
         }
-        if (!pointers.isContainerPointerKey(pointerKey)) {
+        if (!pointers.isContainerPointerKey(p.k)) {
             // Should never happen
-            throw `Unrecognized PointerKey type was added to the exploreQueue, incorrectly. Pointer: ${pointer}`;
+            throw `Unrecognized PointerKey type was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
         }
 
-        generate(data, pointer);
+        generate(data, p);
     }
 
-    return data[pointers.extractPointerKey(encoded.root)][pointers.extractPointerIndex(encoded.root)];
+    return data[rp.k][rp.i];
 };

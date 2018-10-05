@@ -9,3 +9,12 @@ const RootValue = require('./__tests__/RootValue.js');
 const String = require('./__tests__/String.js');
 const Symbol = require('./__tests__/Symbol.js');
 const UnknownPointerKey = require('./__tests__/UnknownPointerKey.js');
+
+// const jsonComplete = require('./main.js');
+
+// const encode = jsonComplete.encode;
+// const decode = jsonComplete.decode;
+
+// const encoded = encode([{}]);
+
+// console.log(decode(encoded)[0])
