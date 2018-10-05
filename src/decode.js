@@ -20,6 +20,26 @@ const getOrCreateContainer = (data, p) => {
             const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
             data[p.k][p.i] = new Date(decodedValue);
         }
+
+        if (p.k === 'fu') {
+            const pairs = getEncoded(data, p);
+            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
+
+            try {
+                const box = {};
+                eval(`box.fn = ${decodedValue};`);
+                data[p.k][p.i] = box.fn;
+            }
+            catch (e) {
+                // If it was an error, then it's possible that the item was a Method Function
+                if (e instanceof SyntaxError) {
+                    let box = {};
+                    eval(`box = { ${decodedValue} };`);
+                    const key = decodedValue.match(/\s*([^\s(]+)\s*\(/)[1];
+                    data[p.k][p.i] = box[key];
+                }
+            }
+        }
     }
 
     return data[p.k][p.i];
@@ -56,14 +76,6 @@ const containerGenerator = (data, p) => {
     });
 
     return container;
-};
-
-const decodeValueIntoData = (data, p, generateCallback) => {
-    const decodedValue = generate(data, genDecodePointer(getEncoded(data, p)));
-    const value = generateCallback(decodedValue);
-
-    data[p.k][p.i] = value;
-    return value;
 };
 
 const generators = {
@@ -110,49 +122,21 @@ const generators = {
         data[p.k][p.i] = value;
         return value;
     },
-    'da': (data, p) => {
-        return containerGenerator(data, p);
-    },
+    'da': containerGenerator,
     'sy': (data, p) => {
         // Manually decode the array container format
-        const symbolArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
+        const valueArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
 
-        let value;
-        const firstValue = getEncoded(data, genDecodePointer(symbolArray[0][1]));
-        if (firstValue === 0) {
-            value = Symbol(getEncoded(data, genDecodePointer(symbolArray[1][1])));
-        }
-        else {
-            value = Symbol.for(firstValue);
-        }
+        const type = getEncoded(data, genDecodePointer(valueArray[0][1]));
+        const name = getEncoded(data, genDecodePointer(valueArray[1][1]));
 
-        data[p.k][p.i] = value;
-        return value;
+        data[p.k][p.i] = type === 1 ? Symbol.for(name) : Symbol(name);
+
+        return data[p.k][p.i];
     },
-    'fu': (data, p) => {
-        return decodeValueIntoData(data, p, (decodedValue) => {
-            try {
-                const box = {};
-                eval(`box.fn = ${decodedValue};`);
-                return box.fn;
-            }
-            catch (e) {
-                // If it was an error, then it's possible that the item was a Method Function
-                if (e instanceof SyntaxError) {
-                    let box = {};
-                    eval(`box = { ${decodedValue} };`);
-                    const key = decodedValue.match(/\s*([^\s(]+)\s*\(/)[1];
-                    return box[key];
-                }
-            }
-        });
-    },
-    'ob': (data, p) => {
-        return containerGenerator(data, p);
-    },
-    'ar': (data, p) => {
-        return containerGenerator(data, p);
-    },
+    'fu': containerGenerator,
+    'ob': containerGenerator,
+    'ar': containerGenerator,
 };
 
 const generate = (data, p) => {

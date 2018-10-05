@@ -16,7 +16,7 @@ test('Date: Invalid Date', (t) => {
     t.ok(testHelpers.isNanValue(decode(encode([new Date('')]))[0].getTime()));
 });
 
-test('Date: Arbitrary Data', (t) => {
+test('Date: Arbitrary Attached Data', (t) => {
     t.plan(3);
     const now = Date.now();
     const date = new Date(now);

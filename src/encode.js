@@ -122,13 +122,11 @@ const encoders = {
         });
     },
     'sy': (data, value) => {
-        const symbolStringKey = Symbol.keyFor(value);
-
         let encodedValue;
-
+        const symbolStringKey = Symbol.keyFor(value);
         if (symbolStringKey !== void 0) {
-            // For Registered Symbols, store the registered string value
-            encodedValue = [symbolStringKey];
+            // For Registered Symbols, specify with 1 value and store the registered string value
+            encodedValue = [1, symbolStringKey];
         }
         else {
             // For unique Symbols, specify with 0 value and also store the optional identifying string
@@ -138,16 +136,18 @@ const encoders = {
         return encodeTransformedValue(data, value, encodedValue);
     },
     'fu': (data, value) => {
-        return encodeTransformedValue(data, value, String(value));
-    },
-    'ob': (data, obj) => {
-        return encodeContainer(data, obj, (obj) => {
-            return genPairs(obj, getAllKeys(obj));
+        return encodeContainer(data, value, (value) => {
+            return [[null, String(value)]].concat(genPairs(value, getAllKeys(value)));
         });
     },
-    'ar': (data, arr) => {
-        return encodeContainer(data, arr, (arr) => {
-            return genPairs(arr, getIndicesAndKeys(arr));
+    'ob': (data, value) => {
+        return encodeContainer(data, value, (value) => {
+            return genPairs(value, getAllKeys(value));
+        });
+    },
+    'ar': (data, value) => {
+        return encodeContainer(data, value, (value) => {
+            return genPairs(value, getIndicesAndKeys(value));
         });
     },
 };

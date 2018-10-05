@@ -44,3 +44,45 @@ test('Function: Method Function', (t) => {
     t.ok(testHelpers.isFunction(decodedObj.func));
     t.equal(decodedObj.func(), 1);
 });
+
+test('Function: Arbitrary Attached Data', (t) => {
+    t.plan(3);
+
+    const func = function() { return 1; };
+    func.x = 2;
+    func[Symbol.for('function')] = 'test';
+
+    const decodedFunc = decode(encode([func]))[0];
+
+    t.equal(decodedFunc(), 1);
+    t.equal(decodedFunc.x, 2);
+    t.equal(decodedFunc[Symbol.for('function')], 'test');
+});
+
+test('Function: Self-Containment', (t) => {
+    t.plan(2);
+
+    const func = function() { return 1; };
+    func.me = func;
+
+    const decodedFunc = decode(encode([func]))[0];
+
+    t.equal(decodedFunc(), 1);
+    t.equal(decodedFunc.me, decodedFunc);
+});
+
+test('Function: Named Function Expression Attached Data Referencing', (t) => {
+    t.plan(3);
+
+    const func = function myFunction() {
+        myFunction.x += 1;
+        return myFunction.x;
+    };
+    func.x = 0;
+
+    const decodedFunc = decode(encode([func]))[0];
+
+    t.equal(decodedFunc.x, 0);
+    t.equal(decodedFunc(), 1);
+    t.equal(decodedFunc.x, 1);
+});
