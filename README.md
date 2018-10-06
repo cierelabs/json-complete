@@ -12,7 +12,7 @@ Since values are being converted to references first, all value of a given type 
 
 ## Encode to JSON
 
-The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal numbers, strings, arrays, and a single top-level object.
+The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal numbers, strings, and arrays exclusively.
 
 ## Comparison to JSON
 
@@ -260,5 +260,6 @@ TODO
 ## To Fix and Add
 
 * There are additional function forms like async functions, getters, and setters to consider.
-* Convert top level data object to array instead, reducing all usage to arrays, strings, and numbers.
 * Since functions can be encoded, the decoder for a given set of data can be included.
+* Add top-level error handling to the functions to handle encoding / decoding problems
+* Create more meaningful error messages, especially for the decoder.

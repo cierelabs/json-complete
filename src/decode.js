@@ -214,14 +214,20 @@ const types = {
 };
 
 module.exports = (encoded) => {
+    // Convert encoded array into encoded object
+    const encodedObj = {};
+    Array.prototype.forEach.call(encoded, (pair) => {
+        encodedObj[pair[0]] = pair[1];
+    });
+
     const data = {
         _: {
-            encoded: encoded,
+            encoded: encodedObj,
             exploreQueue: [],
         },
     };
 
-    const rp = genDecodePointer(encoded.r);
+    const rp = genDecodePointer(data._.encoded.r);
 
     // If root value is a not a container, return its value directly
     if (!pointers.isContainerPointerKey(rp.k)) {

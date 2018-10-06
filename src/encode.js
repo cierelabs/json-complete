@@ -184,8 +184,14 @@ module.exports = (value) => {
         encodeValue(data, data._.exploreQueue.shift().v);
     }
 
-    // Remove data used during encoding process
+    // Remove encoding data no longer needed
     delete data._;
 
-    return data;
+    // Convert data object to a simple array of pairs
+    const out = [];
+    Array.prototype.forEach.call(getAllKeys(data), (key) => {
+        Array.prototype.push.call(out, [key, data[key]]);
+    });
+
+    return out;
 };

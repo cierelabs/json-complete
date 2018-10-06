@@ -19,3 +19,5 @@ const UnknownPointerKey = require('./__tests__/UnknownPointerKey.js');
 // const decode = jsonComplete.decode;
 
 // console.log(encode(1))
+
+// console.log(decode(encode(1)))
