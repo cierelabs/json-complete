@@ -26,9 +26,9 @@ test('RootValue: false', (t) => {
     t.equal(decode(encode(false)), false);
 });
 
-test('RootValue: NaN', (t) => {
+test('RootValue: Object-Wrapped Boolean', (t) => {
     t.plan(1);
-    t.ok(testHelpers.isNanValue(decode(encode(NaN))));
+    t.equal(Boolean.prototype.valueOf.call(decode(encode(new Boolean(false)))), false);
 });
 
 test('RootValue: Infinity', (t) => {
@@ -41,6 +41,11 @@ test('RootValue: -Infinity', (t) => {
     t.equal(decode(encode(-Infinity)), -Infinity);
 });
 
+test('RootValue: NaN', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNanValue(decode(encode(NaN))));
+});
+
 test('RootValue: -0', (t) => {
     t.plan(1);
     t.ok(testHelpers.isNegativeZero(decode(encode(-0))));
@@ -51,6 +56,31 @@ test('RootValue: Number', (t) => {
     t.equal(decode(encode(1)), 1);
 });
 
+test('RootValue: Object-Wrapped Number', (t) => {
+    t.plan(1);
+    t.equal(Number.prototype.valueOf.call(decode(encode(new Number(1)))), 1);
+});
+
+test('RootValue: Object-Wrapped Number Infinity', (t) => {
+    t.plan(1);
+    t.equal(Number.prototype.valueOf.call(decode(encode(new Number(Infinity)))), Infinity);
+});
+
+test('RootValue: Object-Wrapped Number -Infinity', (t) => {
+    t.plan(1);
+    t.equal(Number.prototype.valueOf.call(decode(encode(new Number(-Infinity)))), -Infinity);
+});
+
+test('RootValue: Object-Wrapped Number NaN', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNanValue(Number.prototype.valueOf.call(decode(encode(new Number(NaN))))));
+});
+
+test('RootValue: Object-Wrapped Number -0', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNegativeZero(Number.prototype.valueOf.call(decode(encode(new Number(-0))))));
+});
+
 test('RootValue: String', (t) => {
     t.plan(1);
     t.equal(decode(encode('y')), 'y');
@@ -59,6 +89,11 @@ test('RootValue: String', (t) => {
 test('RootValue: String: Empty', (t) => {
     t.plan(1);
     t.equal(decode(encode('')), '');
+});
+
+test('RootValue: Object-Wrapped String', (t) => {
+    t.plan(1);
+    t.equal(String.prototype.valueOf.call(decode(encode(new String('y')))), 'y');
 });
 
 test('RootValue: Regex: Source', (t) => {

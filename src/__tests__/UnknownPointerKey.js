@@ -8,7 +8,7 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     t.plan(1);
 
     const innerData = {
-        "root": "ar0",
+        "r": "ar0",
         "ar": [
             [
                 ["nm0", "--0"],
@@ -25,7 +25,7 @@ test('Unknown Pointer Key: Value Data', (t) => {
     t.plan(1);
 
     const valueData = {
-        "root": "--0",
+        "r": "--0",
         "--": ["a"],
     };
 
@@ -36,7 +36,7 @@ test('Unknown Pointer Key: Key Data', (t) => {
     t.plan(2);
 
     const objectKeyData = {
-        "root": "ob0",
+        "r": "ob0",
         "ob": [
             [
                 ["--0","nm0"],

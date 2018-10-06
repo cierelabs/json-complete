@@ -7,68 +7,24 @@ const getOrCreateContainer = (data, p) => {
 
     // Ensure the ref item exists
     if (data[p.k][p.i] === void 0) {
-        if (p.k === 'ob') {
-            data[p.k][p.i] = {};
-        }
-
-        if (p.k === 'ar') {
-            data[p.k][p.i] = [];
-        }
-
-        if (p.k === 'da') {
-            const pairs = getEncoded(data, p);
-            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
-            data[p.k][p.i] = new Date(decodedValue);
-        }
-
-        if (p.k === 're') {
-            const pairs = getEncoded(data, p);
-            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
-
-            const source = getEncoded(data, genDecodePointer(decodedValue[0][1]));
-            const flags = getEncoded(data, genDecodePointer(decodedValue[1][1]));
-            const lastIndex = getEncoded(data, genDecodePointer(decodedValue[2][1]));
-
-            data[p.k][p.i] = new RegExp(source, flags);
-            data[p.k][p.i].lastIndex = lastIndex;
-        }
-
-        if (p.k === 'fu') {
-            const pairs = getEncoded(data, p);
-            const decodedValue = getEncoded(data, genDecodePointer(pairs[0][1]));
-
-            try {
-                const box = {};
-                eval(`box.fn = ${decodedValue};`);
-                data[p.k][p.i] = box.fn;
-            }
-            catch (e) {
-                // If it was an error, then it's possible that the item was a Method Function
-                if (e instanceof SyntaxError) {
-                    let box = {};
-                    eval(`box = { ${decodedValue} };`);
-                    const key = decodedValue.match(/\s*([^\s(]+)\s*\(/)[1];
-                    data[p.k][p.i] = box[key];
-                }
-            }
-        }
+        data[p.k][p.i] = types[p.k].n(data, p);
     }
 
     return data[p.k][p.i];
 };
 
-const getEncoded = (data, p) => {
+const getP = (data, p) => {
     return data._.encoded[p.k][p.i];
 };
 
 const containerGenerator = (data, p) => {
     const container = getOrCreateContainer(data, p);
 
-    let pairs = getEncoded(data, p);
+    let pairs = getP(data, p);
 
     // First key is null, that was the valueOf, ignore
     if ((pairs[0] || [])[0] === 'nl') {
-        pairs = pairs.slice(1);
+        pairs = Array.prototype.slice.call(pairs, 1);
     }
 
     Array.prototype.forEach.call(pairs, (pair) => {
@@ -78,7 +34,7 @@ const containerGenerator = (data, p) => {
         if (pointers.isContainerPointerKey(pv.k)) {
             // Only add to the exploreQueue if it hasn't already been created
             if ((data[pv.k] || [])[pv.i] === void 0) {
-                data._.exploreQueue.push(pv);
+                Array.prototype.push.call(data._.exploreQueue, pv);
             }
             container[generate(data, pk)] = getOrCreateContainer(data, pv);
         }
@@ -90,57 +46,12 @@ const containerGenerator = (data, p) => {
     return container;
 };
 
-const generators = {
-    'un': () => {
-        return void 0;
-    },
-    'nl': () => {
-        return null;
-    },
-    'bt': () => {
-        return true;
-    },
-    'bf': () => {
-        return false;
-    },
-    'na': () => {
-        return NaN;
-    },
-    '-i': () => {
-        return -Infinity;
-    },
-    '+i': () => {
-        return Infinity;
-    },
-    'n0': () => {
-        return -0;
-    },
-    'nm': getEncoded,
-    'st': getEncoded,
-    're': containerGenerator,
-    'da': containerGenerator,
-    'sy': (data, p) => {
-        // Manually decode the array container format
-        const valueArray = getEncoded(data, genDecodePointer(getEncoded(data, p)));
-
-        const type = getEncoded(data, genDecodePointer(valueArray[0][1]));
-        const name = getEncoded(data, genDecodePointer(valueArray[1][1]));
-
-        data[p.k][p.i] = type === 1 ? Symbol.for(name) : Symbol(name);
-
-        return data[p.k][p.i];
-    },
-    'fu': containerGenerator,
-    'ob': containerGenerator,
-    'ar': containerGenerator,
-};
-
 const generate = (data, p) => {
     // Containers values need to handle their own existing Pointer handling
     if (!pointers.isContainerPointerKey(p.k)) {
         // Simple PointerKeys are their own Pointers
         if (pointers.isSimplePointerKey(p.k)) {
-            return generators[p.k]();
+            return types[p.k].g(data, p);
         }
 
         // Ensure ref list exists
@@ -153,7 +64,153 @@ const generate = (data, p) => {
         }
     }
 
-    return generators[p.k] === void 0 ? p.p : generators[p.k](data, p);
+    return types[p.k] === void 0 ? p.p : types[p.k].g(data, p);
+};
+
+const types = {
+    'un': {
+        g: () => {
+            return void 0;
+        }
+    },
+    'nl': {
+        g: () => {
+            return null;
+        }
+    },
+    'bt': {
+        g: () => {
+            return true;
+        }
+    },
+    'bf': {
+        g: () => {
+            return false;
+        }
+    },
+    'na': {
+        g: () => {
+            return NaN;
+        }
+    },
+    '-i': {
+        g: () => {
+            return -Infinity;
+        }
+    },
+    '+i': {
+        g: () => {
+            return Infinity;
+        }
+    },
+    'n0': {
+        g: () => {
+            return -0;
+        }
+    },
+    'nm': {
+        g: getP,
+    },
+    'st': {
+        g: getP,
+    },
+    're': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const ap = genDecodePointer(pairs[0][1]);
+
+            const encodedArray = getP(data, ap);
+            const sp = genDecodePointer(encodedArray[0][1]);
+            const fp = genDecodePointer(encodedArray[1][1]);
+            const lp = genDecodePointer(encodedArray[2][1]);
+
+            const value = new RegExp(getP(data, sp), getP(data, fp));
+            value.lastIndex = getP(data, lp);
+
+            return value;
+        },
+    },
+    'da': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const vp = genDecodePointer(pairs[0][1]);
+            return new Date(types[vp.k].g(data, vp));
+        },
+    },
+    'sy': {
+        g: (data, p) => {
+            // Manually decode the array container format
+            const valueArray = getP(data, genDecodePointer(getP(data, p)));
+
+            const type = getP(data, genDecodePointer(valueArray[0][1]));
+            const name = getP(data, genDecodePointer(valueArray[1][1]));
+
+            data[p.k][p.i] = type === 1 ? Symbol.for(name) : Symbol(name);
+
+            return data[p.k][p.i];
+        },
+    },
+    'fu': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const vp = genDecodePointer(pairs[0][1]);
+            const decodedValue = types[vp.k].g(data, vp);
+
+            try {
+                const box = {};
+                eval(`box.fn = ${decodedValue};`);
+                return box.fn;
+            }
+            catch (e) {
+                // If it was an error, then it's possible that the item was a Method Function
+                if (e instanceof SyntaxError) {
+                    let box = {};
+                    eval(`box = { ${decodedValue} };`);
+                    const key = String.prototype.match.call(decodedValue, /\s*([^\s(]+)\s*\(/)[1];
+                    return box[key];
+                }
+            }
+        },
+    },
+    'ob': {
+        g: containerGenerator,
+        n: () => {
+            return {};
+        },
+    },
+    'ar': {
+        g: containerGenerator,
+        n: () => {
+            return [];
+        },
+    },
+    'BO': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const vp = genDecodePointer(pairs[0][1]);
+            return new Boolean(types[vp.k].g(data, vp));
+        },
+    },
+    'NM': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const vp = genDecodePointer(pairs[0][1]);
+            return new Number(types[vp.k].g(data, vp));
+        },
+    },
+    'ST': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const pairs = getP(data, p);
+            const vp = genDecodePointer(pairs[0][1]);
+            return new String(types[vp.k].g(data, vp));
+        },
+    },
 };
 
 module.exports = (encoded) => {
@@ -164,14 +221,14 @@ module.exports = (encoded) => {
         },
     };
 
-    const rp = genDecodePointer(encoded.root);
+    const rp = genDecodePointer(encoded.r);
 
     // If root value is a not a container, return its value directly
     if (!pointers.isContainerPointerKey(rp.k)) {
         return generate(data, rp);
     }
 
-    data._.exploreQueue.push(rp);
+    Array.prototype.push.call(data._.exploreQueue, rp);
 
     var temp = 1000;
 

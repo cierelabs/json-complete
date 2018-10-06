@@ -2,7 +2,7 @@ module.exports = (v) => {
     let keys = Object.keys(v);
 
     if (Object.getOwnPropertySymbols) {
-        keys = keys.concat(Object.getOwnPropertySymbols(v));
+        keys = Array.prototype.concat.call(keys, Object.getOwnPropertySymbols(v));
     }
 
     return keys;

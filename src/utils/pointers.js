@@ -14,9 +14,9 @@ const isSimplePointerKey = (pointerKey) => {
 };
 
 const valueKeys = {
-    'nm': 1, // number
-    'st': 1, // string
-    'sy': 1, // symbol
+    'nm': 1, // Number
+    'st': 1, // String
+    'sy': 1, // Symbol
     'Fi': 1, // File
     'Bl': 1, // Blob
 };
@@ -26,11 +26,14 @@ const isValuePointerKey = (pointerKey) => {
 };
 
 const containerKeys = {
-    'da': 1, // date
-    're': 1, // regex
-    'fu': 1, // function
-    'ob': 1, // object
-    'ar': 1, // array
+    'da': 1, // Date
+    're': 1, // Regex
+    'fu': 1, // Function
+    'ob': 1, // Object
+    'ar': 1, // Array
+    'BO': 1, // Object-wrapped Boolean
+    'NM': 1, // Object-wrapped Number
+    'ST': 1, // Object-wrapped String
     'I1': 1, // Int8Array
     'U1': 1, // Uint8Array
     'C1': 1, // Uint8ClampedArray
@@ -66,10 +69,13 @@ const typeNameMap = {
     // TODO
 };
 
-const getPointerKey = (v) => {
-    const systemName = Object.prototype.toString.call(v);
-    const pointerKey = typeNameMap[systemName];
+const objectWrapperTypeNameMap = {
+    '[object Boolean]': 'BO',
+    '[object Number]': 'NM',
+    '[object String]': 'ST',
+};
 
+const getPointerKey = (v) => {
     if (typeof v === 'number') {
         if (v === Infinity) {
             return '+i';
@@ -90,13 +96,18 @@ const getPointerKey = (v) => {
     else if (typeof v === 'boolean') {
         return v === true ? 'bt' : 'bf';
     }
-    else if (typeof v === 'object') {
-        if (pointerKey === 'bo') {
 
+    const systemName = Object.prototype.toString.call(v);
+
+    if (typeof v === 'object') {
+        // Primitive types can sometimes be wrapped as Objects and must be handled differently
+        const wrappedPointerKey = objectWrapperTypeNameMap[systemName];
+        if (wrappedPointerKey) {
+            return wrappedPointerKey;
         }
     }
 
-
+    const pointerKey = typeNameMap[systemName];
 
     if (!pointerKey) {
         throw `Could not find PointerKey for unrecognized type. Value: ${v}, Name: ${systemName}`;

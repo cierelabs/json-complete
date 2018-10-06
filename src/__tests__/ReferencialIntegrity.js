@@ -11,6 +11,10 @@ const items = [
     ['Function', () => { return 1; }],
     ['Object', {}],
     ['Array', []],
+    ['Object-Wrapped Boolean', new Boolean(false)],
+    ['Object-Wrapped Number', new Number(1)],
+    ['Object-Wrapped Non-Standard Number', new Number(NaN)],
+    ['Object-Wrapped String', new String('text')],
 ];
 
 items.forEach((item) => {

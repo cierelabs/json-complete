@@ -21,12 +21,21 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 | ❌    | ✅             | undefined                                             |
 | ✅    | ✅             | null                                                  |
 | ✅    | ✅             | Booleans                                              |
+| ❌    | ✅             | Object-Wrapped Booleans                               |
+| ❌    | ✅             | Object-Wrapped Boolean Arbitrary Attached Data        |
+| ❌    | ✅             | Object-Wrapped Boolean Self-Containment               |
 | ✅    | ✅             | Normal Numbers                                        |
 | ❌    | ✅             | Number: NaN                                           |
 | ❌    | ✅             | Number: -Infinity                                     |
 | ❌    | ✅             | Number: Infinity                                      |
 | ❌    | ✅             | Number: -0                                            |
+| ❌    | ✅             | Object-Wrapped Numbers                                |
+| ❌    | ✅             | Object-Wrapped Number Arbitrary Attached Data         |
+| ❌    | ✅             | Object-Wrapped Number Self-Containment                |
 | ✅    | ✅             | Strings                                               |
+| ❌    | ✅             | Object-Wrapped Strings                                |
+| ❌    | ✅             | Object-Wrapped String Arbitrary Attached Data         |
+| ❌    | ✅             | Object-Wrapped String Self-Containment                |
 | ❌    | ✅             | Regex                                                 |
 | ❌    | ✅             | Retained Regex lastIndex                              |
 | ❌    | ✅             | Regex Arbitrary Attached Data                         |
@@ -94,11 +103,20 @@ npm run test
   - true
   - false
 
+### Object-Wrapped Boolean
+* Stores true or false as an Object wrapping a Boolean primitive
+* Can store arbitrary data on itself with String or Symbol keys
+
 ### String
 * Stores text
 * All strings are immutable
 * Two instances of the same string share a reference to the same global string
 * Can hold unicode symbols without special conversions or encodings
+
+### Object-Wrapped String
+* Stores text as an Object wrapping a String primitive
+* Is represented internally as an array of characters
+* Can store arbitrary data on itself with String or Symbol keys
 
 ### Number
 * A double-precision 64-bit binary format IEEE 754 value.
@@ -114,6 +132,10 @@ npm run test
   - binary (0b_)
   - octal (0_, 000_ and 0o_)
   - hexidecimal (0x_)
+
+### Object-Wrapped Number
+* Stores any Number as an Object wrapping a Number primitive
+* Can store arbitrary data on itself with String or Symbol keys
 
 ### Regex
 * Regular pattern specified with slashes and optional flags afterward
@@ -237,128 +259,6 @@ TODO
 
 ## To Fix and Add
 
-* Object wrapping primitives can cause non-standard objects that need to also store a value. For example, in `var test = new Number(3);`, `test` will store an object, to which arbitrary key/value pairs can be added. However, running `test.valueOf()` will return `3`.
 * There are additional function forms like async functions, getters, and setters to consider.
-* Switch all valueOf(), forEach(), etc functions to use the built in prototype version, so shenanigans with overwritten method functions on objects can't interfere with encoding and decoding.
 * Convert top level data object to array instead, reducing all usage to arrays, strings, and numbers.
 * Since functions can be encoded, the decoder for a given set of data can be included.
-
-## Number Object
-
-```
-var test1 = new Number(3);
-typeof test1 === 'object'
-test1.valueOf() === 3
-```
-
-Primitive types that cannot have arbitrary keys
-```
-var test_un = void 0;
-test_un.x = 2; // => TypeError
-
-var test_nl = null;
-test_nl.x = 2; // => TypeError
-
-var test_bt = true;
-test_bt.x = 2;
-console.log(test_bt.x); // => undefined
-
-var test_nm = 1;
-test_nm.x = 2;
-console.log(test_nm.x); // => undefined
-
-var test_st = '1';
-test_st.x = 2;
-console.log(test_st.x); // => undefined
-
-var test_sy = Symbol();
-test_sy.x = 2;
-console.log(test_sy.x); // => undefined
-```
-
-Primitive types that can have arbitrary keys
-```
-var test_re = /\s+/g;
-test_re.x = 2;
-console.log(test_re.x); // => 2
-console.log(Object.prototype.valueOf.call(test_re) === test_re); // => true
-console.log(typeof test_re); // => 'object'
-
-var test_da = new Date();
-test_da.x = 2;
-console.log(test_da.x); // => 2
-console.log(Object.prototype.valueOf.call(test_da) === test_da); // => true
-console.log(typeof test_da); // => 'object'
-
-var test_fu = () => { return 1; };
-test_fu.x = 2;
-console.log(test_fu.x); // => 2
-console.log(Object.prototype.valueOf.call(test_fu) === test_fu); // => true
-console.log(typeof test_fu); // => 'function'
-```
-
-Symbols cannot accept arbitrary Keys
-```
-var test_sy_key = Symbol();
-test_sy_key.x = 2;
-console.log(test_sy_key.x); // => undefined
-```
-
-Primitives with Object wrappers
-```
-var test_w_bt = new Boolean(true);
-test_w_bt.x = 2;
-console.log(test_w_bt.x); // => 2
-console.log(test_w_bt.valueOf()); // => true
-console.log(test_w_bt.valueOf() === test_w_bt); // => false
-console.log(typeof test_w_bt); // => 'object'
-console.log(Object.prototype.toString.call(test_w_bt)); // => '[object Boolean]'
-
-var test_w_nm = new Number(1);
-test_w_nm.x = 2;
-console.log(test_w_nm.x); // => 2
-console.log(test_w_nm.valueOf()); // => 1
-console.log(test_w_nm.valueOf() === test_w_nm); // => false
-console.log(typeof test_w_nm); // => 'object'
-console.log(Object.prototype.toString.call(test_w_nm)); // => '[object Number]'
-
-var test_w_st = new String('1');
-test_w_st.x = 2;
-console.log(test_w_st.x); // => 2
-console.log(test_w_st.valueOf()); // => '1'
-console.log(test_w_st.valueOf() === test_w_st); // => false
-console.log(typeof test_w_st); // => 'object'
-console.log(Object.prototype.toString.call(test_w_st)); // => '[object String]'
-
-var test_w_sy = new Symbol(); // => TypeError
-```
-
-Arrays with arbitrary keys
-```
-var array_key_symbol = Symbol();
-var test_ar = [1, 2, 3];
-test_ar.x = 5;
-test_ar[array_key_symbol] = 6;
-console.log(test_ar.x); // => 5
-console.log(test_ar[array_key_symbol]); // => 6
-console.log(test_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
-console.log(Object.prototype.valueOf.call(test_ar) === test_ar); // => true
-console.log(typeof test_ar); // => 'object'
-console.log(Object.prototype.toString.call(test_ar)); // => '[object Array]'
-Object.keys(test_ar); // => ["0", "1", "2", "x"]
-Object.getOwnPropertySymbols(test_ar); // => [Symbol()]
-
-var array_w_key_symbol = Symbol();
-var test_w_ar = new Array(1, 2, 3);
-test_w_ar.x = 5;
-test_w_ar[array_w_key_symbol] = 6;
-console.log(test_w_ar.x); // => 5
-console.log(test_w_ar[array_w_key_symbol]); // => 6
-console.log(test_w_ar); // => [1, 2, 3, x: 5, Symbol(): 6]
-console.log(Object.prototype.valueOf.call(test_w_ar) === test_w_ar); // => true
-console.log(typeof test_w_ar); // => 'object'
-console.log(Object.prototype.toString.call(test_w_ar)); // => '[object Array]'
-Object.keys(test_w_ar); // => ["0", "1", "2", "x"]
-Object.getOwnPropertySymbols(test_w_ar); // => [Symbol()]
-```
-

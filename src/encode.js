@@ -1,8 +1,9 @@
-const genEncodePointer = require('./utils/genEncodePointer.js');
 const extractPointerIndex = require('./utils/extractPointerIndex.js');
+const genEncodePointer = require('./utils/genEncodePointer.js');
 const genPairs = require('./utils/genPairs.js');
-const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
 const getAllKeys = require('./utils/getAllKeys.js');
+const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
+const getNonIndexKeys = require('./utils/getNonIndexKeys.js');
 const pointers = require('./utils/pointers.js');
 
 const tryGetExistingPointer = (data, value, pointerKey) => {
@@ -26,7 +27,7 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
 const encodePrimitive = (data, value) => {
     const p = genEncodePointer(data, value);
     data[p.k][p.i] = value;
-    data._.known[p.k].push(p);
+    Array.prototype.push.call(data._.known[p.k], p);
     return p.p;
 };
 
@@ -41,7 +42,7 @@ const encodeContainer = (data, box, pairs) => {
         p.p = existingPointer;
     }
     else {
-        data._.known[p.k].push(p);
+        Array.prototype.push.call(data._.known[p.k], p);
     }
 
     data[p.k][p.i] = data[p.k][p.i] || [];
@@ -55,7 +56,7 @@ const encodeContainer = (data, box, pairs) => {
         // Otherwise, we'd encode the same Container more than once
         const existingPointer = tryGetExistingPointer(data, pair[1], pointerKey);
         if (existingPointer) {
-            container.push([
+            Array.prototype.push.call(container, [
                 encodeValue(data, pair[0]),
                 existingPointer,
             ]);
@@ -69,10 +70,10 @@ const encodeContainer = (data, box, pairs) => {
             data[vp.k][vp.i] = [];
 
             // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-            data._.known[vp.k].push(vp);
-            data._.exploreQueue.push(vp);
+            Array.prototype.push.call(data._.known[vp.k], vp);
+            Array.prototype.push.call(data._.exploreQueue, vp);
 
-            container.push([
+            Array.prototype.push.call(container, [
                 encodeValue(data, pair[0]),
                 vp.p,
             ]);
@@ -80,13 +81,31 @@ const encodeContainer = (data, box, pairs) => {
         }
 
         // Unknown and not a container type: encode the encoded pair into container
-        container.push([
+        Array.prototype.push.call(container, [
             encodeValue(data, pair[0]),
             encodeValue(data, pair[1]),
         ]);
     });
 
     return p.p;
+};
+
+const encodeValue = (data, value) => {
+    const pointerKey = pointers.getPointerKey(value);
+
+    // Containers values need to handle their own existing Pointer handling
+    if (!pointers.isContainerPointerKey(pointerKey)) {
+        const existingPointer = tryGetExistingPointer(data, value, pointerKey);
+
+        // If found, return its existing pointer
+        if (existingPointer) {
+            return existingPointer;
+        }
+    }
+
+    // This newly encountered item should be encoded and stored, then return the created pointer
+    // Container types will also add themselves to the exploreQueue for later evaluation
+    return encoders[pointerKey](data, value);
 };
 
 const encoders = {
@@ -122,10 +141,10 @@ const encoders = {
         }
         else {
             // For unique Symbols, specify with 0 value and also store the optional identifying string
-            data[p.k][p.i] = encodeValue(data, [0, String(value).replace(/^Symbol\((.*)\)$/, '$1')]);
+            data[p.k][p.i] = encodeValue(data, [0, String.prototype.replace.call(String(value), /^Symbol\((.*)\)$/, '$1')]);
         }
 
-        data._.known[p.k].push(p);
+        Array.prototype.push.call(data._.known[p.k], p);
         return p.p;
     },
     'fu': (data, value) => {
@@ -137,29 +156,20 @@ const encoders = {
     'ar': (data, value) => {
         return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
     },
-};
-
-const encodeValue = (data, value) => {
-    const pointerKey = pointers.getPointerKey(value);
-
-    // Containers values need to handle their own existing Pointer handling
-    if (!pointers.isContainerPointerKey(pointerKey)) {
-        const existingPointer = tryGetExistingPointer(data, value, pointerKey);
-
-        // If found, return its existing pointer
-        if (existingPointer) {
-            return existingPointer;
-        }
-    }
-
-    // This newly encountered item should be encoded and stored, then return the created pointer
-    // Container types will also add themselves to the exploreQueue for later evaluation
-    return encoders[pointerKey](data, value);
+    'BO': (data, value) => {
+        return encodeContainer(data, value, [[null, Boolean.prototype.valueOf.call(value)]].concat(genPairs(value, getAllKeys(value))));
+    },
+    'NM': (data, value) => {
+        return encodeContainer(data, value, [[null, Number.prototype.valueOf.call(value)]].concat(genPairs(value, getNonIndexKeys(value))));
+    },
+    'ST': (data, value) => {
+        return encodeContainer(data, value, [[null, String.prototype.valueOf.call(value)]].concat(genPairs(value, getNonIndexKeys(value))));
+    },
 };
 
 module.exports = (value) => {
     const data = {
-        root: void 0,
+        r: void 0,
         _: {
             known: {},
             exploreQueue: [],
@@ -167,7 +177,7 @@ module.exports = (value) => {
     };
 
     // Initialize data from the top-most value
-    data.root = encodeValue(data, value);
+    data.r = encodeValue(data, value);
 
     // While there are still references to explore, go through them
     while (data._.exploreQueue.length > 0) {
