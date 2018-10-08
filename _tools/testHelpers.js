@@ -1,5 +1,9 @@
+const systemName = (v) => {
+    return Object.prototype.toString.call(v);
+};
+
 const isNanValue = (v) => {
-    return Object.prototype.toString.call(v) === '[object Number]' && v !== v;
+    return systemName(v) === '[object Number]' && v !== v;
 };
 
 const isNegativeZero = (v) => {
@@ -7,26 +11,27 @@ const isNegativeZero = (v) => {
 };
 
 const isRegex = (v) => {
-    return Object.prototype.toString.call(v) === '[object RegExp]';
+    return systemName(v) === '[object RegExp]';
 };
 
 const isSymbol = (v) => {
-    return Object.prototype.toString.call(v) === '[object Symbol]';
+    return systemName(v) === '[object Symbol]';
 };
 
 const isFunction = (v) => {
-    return Object.prototype.toString.call(v) === '[object Function]';
+    return systemName(v) === '[object Function]';
 };
 
 const isObject = (v) => {
-    return Object.prototype.toString.call(v) === '[object Object]';
+    return systemName(v) === '[object Object]';
 };
 
 const isArray = (v) => {
-    return Object.prototype.toString.call(v) === '[object Array]';
+    return systemName(v) === '[object Array]';
 };
 
 module.exports = {
+    systemName: systemName,
     isNanValue: isNanValue,
     isNegativeZero: isNegativeZero,
     isRegex: isRegex,

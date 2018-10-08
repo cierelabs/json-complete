@@ -165,6 +165,33 @@ const encoders = {
     'ST': (data, value) => {
         return encodeContainer(data, value, [[null, String.prototype.valueOf.call(value)]].concat(genPairs(value, getNonIndexKeys(value))));
     },
+    'I1': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'U1': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'C1': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'I2': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'U2': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'I3': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'U3': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'F3': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'F4': (data, value) => {
+        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
 };
 
 module.exports = (value) => {

@@ -148,3 +148,48 @@ test('RootValue: Array', (t) => {
     t.plan(1);
     t.deepEqual(decode(encode([1, 2])), [1, 2]);
 });
+
+test('RootValue: Int8Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Int8Array([1]))), new Int8Array([1]));
+});
+
+test('RootValue: Uint8Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Uint8Array([1]))), new Uint8Array([1]));
+});
+
+test('RootValue: Uint8ClampedArray', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Uint8ClampedArray([1]))), new Uint8ClampedArray([1]));
+});
+
+test('RootValue: Int16Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Int16Array([1]))), new Int16Array([1]));
+});
+
+test('RootValue: Uint16Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Uint16Array([1]))), new Uint16Array([1]));
+});
+
+test('RootValue: Int32Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Int32Array([1]))), new Int32Array([1]));
+});
+
+test('RootValue: Uint32Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Uint32Array([1]))), new Uint32Array([1]));
+});
+
+test('RootValue: Float32Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Float32Array([1]))), new Float32Array([1]));
+});
+
+test('RootValue: Float64Array', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Float64Array([1]))), new Float64Array([1]));
+});

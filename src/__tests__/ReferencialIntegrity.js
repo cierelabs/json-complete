@@ -15,6 +15,15 @@ const items = [
     ['Object-Wrapped Number', new Number(1)],
     ['Object-Wrapped Non-Standard Number', new Number(NaN)],
     ['Object-Wrapped String', new String('text')],
+    ['Int8Array', new Int8Array(1)],
+    ['Uint8Array', new Uint8Array(1)],
+    ['Uint8ClampedArray', new Uint8ClampedArray(1)],
+    ['Int16Array', new Int16Array(1)],
+    ['Uint16Array', new Uint16Array(1)],
+    ['Int32Array', new Int32Array(1)],
+    ['Uint32Array', new Uint32Array(1)],
+    ['Float32Array', new Float32Array(1)],
+    ['Float64Array', new Float64Array(1)],
 ];
 
 items.forEach((item) => {

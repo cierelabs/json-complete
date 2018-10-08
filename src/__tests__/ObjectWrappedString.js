@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('../main.js');
+const testHelpers = require('../../_tools/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -10,7 +11,7 @@ test('Object-Wrapped String: Normal', (t) => {
     const decodedValue = decode(encode([new String('test')]))[0];
 
     t.equal(typeof decodedValue, 'object');
-    t.equal(Object.prototype.toString.call(decodedValue), '[object String]');
+    t.equal(testHelpers.systemName(decodedValue), '[object String]');
     t.equal(String.prototype.valueOf.call(decodedValue), 'test');
 });
 
@@ -20,7 +21,7 @@ test('Object-Wrapped String: Empty String', (t) => {
     const decodedValue = decode(encode([new String('')]))[0];
 
     t.equal(typeof decodedValue, 'object');
-    t.equal(Object.prototype.toString.call(decodedValue), '[object String]');
+    t.equal(testHelpers.systemName(decodedValue), '[object String]');
     t.equal(String.prototype.valueOf.call(decodedValue), '');
 });
 

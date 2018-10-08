@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('../main.js');
+const testHelpers = require('../../_tools/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -10,7 +11,7 @@ test('Object-Wrapped Boolean: true', (t) => {
     const decodedValue = decode(encode([new Boolean(true)]))[0];
 
     t.equal(typeof decodedValue, 'object');
-    t.equal(Object.prototype.toString.call(decodedValue), '[object Boolean]');
+    t.equal(testHelpers.systemName(decodedValue), '[object Boolean]');
     t.equal(Boolean.prototype.valueOf.call(decodedValue), true);
 });
 
@@ -20,7 +21,7 @@ test('Object-Wrapped Boolean: false', (t) => {
     const decodedValue = decode(encode([new Boolean(false)]))[0];
 
     t.equal(typeof decodedValue, 'object');
-    t.equal(Object.prototype.toString.call(decodedValue), '[object Boolean]');
+    t.equal(testHelpers.systemName(decodedValue), '[object Boolean]');
     t.equal(Boolean.prototype.valueOf.call(decodedValue), false);
 });
 

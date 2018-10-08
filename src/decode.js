@@ -17,6 +17,11 @@ const getP = (data, p) => {
     return data._.encoded[p.k][p.i];
 };
 
+const getEncodedValueOf = (data, p) => {
+    const vp = genDecodePointer(getP(data, p)[0][1]);
+    return types[vp.k].g(data, vp);
+};
+
 const containerGenerator = (data, p) => {
     const container = getOrCreateContainer(data, p);
 
@@ -117,16 +122,9 @@ const types = {
     're': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const ap = genDecodePointer(pairs[0][1]);
-
-            const encodedArray = getP(data, ap);
-            const sp = genDecodePointer(encodedArray[0][1]);
-            const fp = genDecodePointer(encodedArray[1][1]);
-            const lp = genDecodePointer(encodedArray[2][1]);
-
-            const value = new RegExp(getP(data, sp), getP(data, fp));
-            value.lastIndex = getP(data, lp);
+            const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+            const value = new RegExp(getP(data, genDecodePointer(encodedArray[0][1])), getP(data, genDecodePointer(encodedArray[1][1])));
+            value.lastIndex = getP(data, genDecodePointer(encodedArray[2][1]));
 
             return value;
         },
@@ -134,9 +132,7 @@ const types = {
     'da': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const vp = genDecodePointer(pairs[0][1]);
-            return new Date(types[vp.k].g(data, vp));
+            return new Date(getEncodedValueOf(data, p));
         },
     },
     'sy': {
@@ -155,19 +151,17 @@ const types = {
     'fu': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const vp = genDecodePointer(pairs[0][1]);
-            const decodedValue = types[vp.k].g(data, vp);
+            const decodedValue = getEncodedValueOf(data, p);
+
+            let box = {};
 
             try {
-                const box = {};
                 eval(`box.fn = ${decodedValue};`);
                 return box.fn;
             }
             catch (e) {
                 // If it was an error, then it's possible that the item was a Method Function
                 if (e instanceof SyntaxError) {
-                    let box = {};
                     eval(`box = { ${decodedValue} };`);
                     const key = String.prototype.match.call(decodedValue, /\s*([^\s(]+)\s*\(/)[1];
                     return box[key];
@@ -190,25 +184,73 @@ const types = {
     'BO': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const vp = genDecodePointer(pairs[0][1]);
-            return new Boolean(types[vp.k].g(data, vp));
+            return new Boolean(getEncodedValueOf(data, p));
         },
     },
     'NM': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const vp = genDecodePointer(pairs[0][1]);
-            return new Number(types[vp.k].g(data, vp));
+            return new Number(getEncodedValueOf(data, p));
         },
     },
     'ST': {
         g: containerGenerator,
         n: (data, p) => {
-            const pairs = getP(data, p);
-            const vp = genDecodePointer(pairs[0][1]);
-            return new String(types[vp.k].g(data, vp));
+            return new String(getEncodedValueOf(data, p));
+        },
+    },
+    'I1': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Int8Array(getP(data, p).length);
+        },
+    },
+    'U1': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Uint8Array(getP(data, p).length);
+        },
+    },
+    'C1': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Uint8ClampedArray(getP(data, p).length);
+        },
+    },
+    'I2': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Int16Array(getP(data, p).length);
+        },
+    },
+    'U2': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Uint16Array(getP(data, p).length);
+        },
+    },
+    'I3': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Int32Array(getP(data, p).length);
+        },
+    },
+    'U3': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Uint32Array(getP(data, p).length);
+        },
+    },
+    'F3': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Float32Array(getP(data, p).length);
+        },
+    },
+    'F4': {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new Float64Array(getP(data, p).length);
         },
     },
 };
