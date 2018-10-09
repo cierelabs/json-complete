@@ -14,6 +14,7 @@ const ObjectWrappedString = require('./__tests__/ObjectWrappedString.js');
 const ReferencialIntegrity = require('./__tests__/ReferencialIntegrity.js');
 const Regex = require('./__tests__/Regex.js');
 const RootValue = require('./__tests__/RootValue.js');
+const Set = require('./__tests__/Set.js');
 const String = require('./__tests__/String.js');
 const Symbol = require('./__tests__/Symbol.js');
 const Uint16Array = require('./__tests__/Uint16Array.js');
@@ -23,14 +24,7 @@ const Uint8ClampedArray = require('./__tests__/Uint8ClampedArray.js');
 const UnknownPointerKey = require('./__tests__/UnknownPointerKey.js');
 
 
-
 // const jsonComplete = require('./main.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
-
-// const encoded = encode(new Set([1, 3, null, void 0, 'test']));
-
-// console.log(encoded)
-
-// console.log(decode(encoded))

@@ -1,9 +1,5 @@
 const genEncodePointer = require('./utils/genEncodePointer.js');
-const genPairs = require('./utils/genPairs.js');
-const genValues = require('./utils/genValues.js');
-const getAllKeys = require('./utils/getAllKeys.js');
-const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
-const getNonIndexKeys = require('./utils/getNonIndexKeys.js');
+const getAttachmentPairs = require('./utils/getAttachmentPairs.js');
 const getPointerKey = require('./utils/getPointerKey.js');
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
@@ -33,6 +29,32 @@ const encodePrimitive = (data, value) => {
     return p.p;
 };
 
+const genEncodedPart = (data, value) => {
+    const pointerKey = getPointerKey(value);
+
+    // Already know of this value, so use its existing Pointer
+    const existingPointer = tryGetExistingPointer(data, value, pointerKey);
+    if (existingPointer) {
+        return existingPointer;
+    }
+
+    // Unknown and not a container type: encode the encoded pair into container
+    if (!isContainerPointerKey(pointerKey)) {
+        return encodeValue(data, value);
+    }
+
+    // Found a new Container, ensure it is prepped for exploration
+    const p = genEncodePointer(data, value);
+
+    data[p.k][p.i] = [];
+
+    // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
+    Array.prototype.push.call(data._.known[p.k], p);
+    Array.prototype.push.call(data._.exploreQueue, p);
+
+    return p.p;
+};
+
 const encodeContainer = (data, box, pairs) => {
     const p = genEncodePointer(data, box);
 
@@ -52,40 +74,9 @@ const encodeContainer = (data, box, pairs) => {
 
     // Encode each part of the Container
     Array.prototype.forEach.call(pairs, (pair) => {
-        const pointerKey = getPointerKey(pair[1]);
-
-        // Already know of this value, encode its Pointer
-        // Otherwise, we'd encode the same Container more than once
-        const existingPointer = tryGetExistingPointer(data, pair[1], pointerKey);
-        if (existingPointer) {
-            Array.prototype.push.call(container, [
-                encodeValue(data, pair[0]),
-                existingPointer,
-            ]);
-            return;
-        }
-
-        // Found a new Container, ensure it is prepped for exploration
-        if (isContainerPointerKey(pointerKey)) {
-            const vp = genEncodePointer(data, pair[1]);
-
-            data[vp.k][vp.i] = [];
-
-            // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-            Array.prototype.push.call(data._.known[vp.k], vp);
-            Array.prototype.push.call(data._.exploreQueue, vp);
-
-            Array.prototype.push.call(container, [
-                encodeValue(data, pair[0]),
-                vp.p,
-            ]);
-            return;
-        }
-
-        // Unknown and not a container type: encode the encoded pair into container
         Array.prototype.push.call(container, [
-            encodeValue(data, pair[0]),
-            encodeValue(data, pair[1]),
+            genEncodedPart(data, pair[0]),
+            genEncodedPart(data, pair[1]),
         ]);
     });
 
@@ -110,6 +101,16 @@ const encodeValue = (data, value) => {
     return encoders[pointerKey](data, value);
 };
 
+const encodeStandardContainer = (data, value) => {
+    return encodeContainer(data, value, getAttachmentPairs(value));
+};
+
+const genWrappedObjectEncoder = (type) => {
+    return (data, value) => {
+        return encodeContainer(data, value, [[null, type.prototype.valueOf.call(value)]].concat(getAttachmentPairs(value)));
+    };
+};
+
 const encoders = {
     'nm': encodePrimitive,
     'st': encodePrimitive,
@@ -120,7 +121,7 @@ const encoders = {
             value.lastIndex,
         ];
 
-        return encodeContainer(data, value, [[null, encodedValue]].concat(genPairs(value, getAllKeys(value))));
+        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
     },
     'da': (data, value) => {
         let encodedValue = value.getTime();
@@ -131,7 +132,7 @@ const encoders = {
             encodedValue = '';
         }
 
-        return encodeContainer(data, value, [[null, encodedValue]].concat(genPairs(value, getAllKeys(value))));
+        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
     },
     'sy': (data, value) => {
         const p = genEncodePointer(data, value);
@@ -150,52 +151,29 @@ const encoders = {
         return p.p;
     },
     'fu': (data, value) => {
-        return encodeContainer(data, value, [[null, String(value)]].concat(genPairs(value, getAllKeys(value))));
+        return encodeContainer(data, value, [[null, String(value)]].concat(getAttachmentPairs(value)));
     },
-    'ob': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getAllKeys(value)));
-    },
-    'ar': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'BO': (data, value) => {
-        return encodeContainer(data, value, [[null, Boolean.prototype.valueOf.call(value)]].concat(genPairs(value, getAllKeys(value))));
-    },
-    'NM': (data, value) => {
-        return encodeContainer(data, value, [[null, Number.prototype.valueOf.call(value)]].concat(genPairs(value, getNonIndexKeys(value))));
-    },
-    'ST': (data, value) => {
-        return encodeContainer(data, value, [[null, String.prototype.valueOf.call(value)]].concat(genPairs(value, getNonIndexKeys(value))));
-    },
-    'I1': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'U1': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'C1': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'I2': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'U2': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'I3': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'U3': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'F3': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
-    'F4': (data, value) => {
-        return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
-    },
+    'ob': encodeStandardContainer,
+    'ar': encodeStandardContainer,
+    'BO': genWrappedObjectEncoder(Boolean),
+    'NM': genWrappedObjectEncoder(Number),
+    'ST': genWrappedObjectEncoder(String),
+    'I1': encodeStandardContainer,
+    'U1': encodeStandardContainer,
+    'C1': encodeStandardContainer,
+    'I2': encodeStandardContainer,
+    'U2': encodeStandardContainer,
+    'I3': encodeStandardContainer,
+    'U3': encodeStandardContainer,
+    'F3': encodeStandardContainer,
+    'F4': encodeStandardContainer,
     'Se': (data, value) => {
-        return encodeContainer(data, value, genValues(Set, value));
+        const encodedValue = [];
+        Set.prototype.forEach.call(value, (part) => {
+            Array.prototype.push.call(encodedValue, part);
+        });
+
+        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
     },
 };
 
@@ -220,10 +198,5 @@ module.exports = (value) => {
     delete data._;
 
     // Convert data object to a simple array of pairs
-    const out = [];
-    Array.prototype.forEach.call(getAllKeys(data), (key) => {
-        Array.prototype.push.call(out, [key, data[key]]);
-    });
-
-    return out;
+    return getAttachmentPairs(data);
 };

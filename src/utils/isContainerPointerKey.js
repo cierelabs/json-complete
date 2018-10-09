@@ -19,8 +19,6 @@ const containerKeys = {
     'AB': 1, // ArrayBuffer
     'Ma': 1, // Map
     'Se': 1, // Set
-    'WM': 1, // WeakMap
-    'WS': 1, // WeakSet
 };
 
 module.exports = (pointerKey) => {

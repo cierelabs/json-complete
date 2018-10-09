@@ -1,5 +1,6 @@
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
+const isValueContainerKey = require('./utils/isValueContainerKey.js');
 
 const genDecodePointer = (pointer) => {
     return {
@@ -25,7 +26,8 @@ const getExisting = (data, p) => {
 const getExistingOrCreate = (data, p) => {
     const ref = getExisting(data, p);
 
-    if (ref) {
+    // If the ref found, return it
+    if (ref !== void 0) {
         return ref;
     }
 
@@ -66,18 +68,9 @@ const containerGenerator = (data, p) => {
 
     const container = getExistingOrCreate(data, p);
 
-    if (p.k === 'Se' || p.k === 'WS') {
-        const pairLength = pairs.length;
-        for (let i = 0; i < pairLength; i += 1) {
-            container.add(genContainerPart(data, pairs[i][1]));
-        }
-
-        return container;
-    }
-
-    // Skip the first item if it is the valueOf value, indicated by a null key
-    // Since Maps and WeakMaps can have null keys, they need to be accounted for
-    let i = (pairs[0] || [])[0] === 'nl' ? 1 : 0;
+    // Skip the first item if the data's value had to be encoded with other values
+    // These items have null keys
+    let i = isValueContainerKey(p.k) ? 1 : 0;
 
     const pairLength = pairs.length;
     for (; i < pairLength; i += 1) {
@@ -211,8 +204,13 @@ const types = {
     'F4': genTypeArrayGenerator(Float64Array),
     'Se': {
         g: containerGenerator,
-        n: () => {
-            return new Set();
+        n: (data, p) => {
+            const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+            const decodedArray = [];
+            for (let a = 0; a < encodedArray.length; a += 1) {
+                Array.prototype.push.call(decodedArray, genContainerPart(data, encodedArray[a][1]));
+            }
+            return new Set(decodedArray);
         },
     },
 };
