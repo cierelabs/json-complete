@@ -1,14 +1,16 @@
-const extractPointerIndex = require('./utils/extractPointerIndex.js');
 const genEncodePointer = require('./utils/genEncodePointer.js');
 const genPairs = require('./utils/genPairs.js');
+const genValues = require('./utils/genValues.js');
 const getAllKeys = require('./utils/getAllKeys.js');
 const getIndicesAndKeys = require('./utils/getIndicesAndKeys.js');
 const getNonIndexKeys = require('./utils/getNonIndexKeys.js');
-const pointers = require('./utils/pointers.js');
+const getPointerKey = require('./utils/getPointerKey.js');
+const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
+const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 
 const tryGetExistingPointer = (data, value, pointerKey) => {
     // Simple PointerKeys are their own Pointers
-    if (pointers.isSimplePointerKey(pointerKey)) {
+    if (isSimplePointerKey(pointerKey)) {
         return pointerKey;
     }
 
@@ -16,7 +18,7 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
     data._.known[pointerKey] = data._.known[pointerKey] || [];
 
     // Try to find existing item matching the value
-    const foundItem = data._.known[pointerKey].find((p) => {
+    const foundItem = Array.prototype.find.call(data._.known[pointerKey], (p) => {
         return p.v === value;
     });
 
@@ -38,7 +40,7 @@ const encodeContainer = (data, box, pairs) => {
     const existingPointer = tryGetExistingPointer(data, box, p.k);
 
     if (existingPointer) {
-        p.i = extractPointerIndex(existingPointer);
+        p.i = existingPointer.length <= 2 ? -1 : parseInt(String.prototype.substr.call(existingPointer, 2), 10);
         p.p = existingPointer;
     }
     else {
@@ -50,7 +52,7 @@ const encodeContainer = (data, box, pairs) => {
 
     // Encode each part of the Container
     Array.prototype.forEach.call(pairs, (pair) => {
-        const pointerKey = pointers.getPointerKey(pair[1]);
+        const pointerKey = getPointerKey(pair[1]);
 
         // Already know of this value, encode its Pointer
         // Otherwise, we'd encode the same Container more than once
@@ -64,7 +66,7 @@ const encodeContainer = (data, box, pairs) => {
         }
 
         // Found a new Container, ensure it is prepped for exploration
-        if (pointers.isContainerPointerKey(pointerKey)) {
+        if (isContainerPointerKey(pointerKey)) {
             const vp = genEncodePointer(data, pair[1]);
 
             data[vp.k][vp.i] = [];
@@ -91,10 +93,10 @@ const encodeContainer = (data, box, pairs) => {
 };
 
 const encodeValue = (data, value) => {
-    const pointerKey = pointers.getPointerKey(value);
+    const pointerKey = getPointerKey(value);
 
     // Containers values need to handle their own existing Pointer handling
-    if (!pointers.isContainerPointerKey(pointerKey)) {
+    if (!isContainerPointerKey(pointerKey)) {
         const existingPointer = tryGetExistingPointer(data, value, pointerKey);
 
         // If found, return its existing pointer
@@ -191,6 +193,9 @@ const encoders = {
     },
     'F4': (data, value) => {
         return encodeContainer(data, value, genPairs(value, getIndicesAndKeys(value)));
+    },
+    'Se': (data, value) => {
+        return encodeContainer(data, value, genValues(Set, value));
     },
 };
 

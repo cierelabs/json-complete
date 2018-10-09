@@ -22,11 +22,15 @@ const Uint8Array = require('./__tests__/Uint8Array.js');
 const Uint8ClampedArray = require('./__tests__/Uint8ClampedArray.js');
 const UnknownPointerKey = require('./__tests__/UnknownPointerKey.js');
 
+
+
 // const jsonComplete = require('./main.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
 
-// console.log(encode(1))
+// const encoded = encode(new Set([1, 3, null, void 0, 'test']));
 
-// console.log(decode(encode(1)))
+// console.log(encoded)
+
+// console.log(decode(encoded))

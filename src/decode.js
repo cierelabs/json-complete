@@ -1,69 +1,96 @@
-const pointers = require('./utils/pointers.js');
-const genDecodePointer = require('./utils/genDecodePointer.js');
+const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
+const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 
-const getOrCreateContainer = (data, p) => {
-    // Ensure the ref list exists
-    data[p.k] = data[p.k] || [];
+const genDecodePointer = (pointer) => {
+    return {
+        k: String.prototype.substr.call(pointer, 0, 2),
+        i: pointer.length <= 2 ? -1 : parseInt(String.prototype.substr.call(pointer, 2), 10),
+        p: pointer,
+    };
+};
 
-    // Ensure the ref item exists
-    if (data[p.k][p.i] === void 0) {
-        data[p.k][p.i] = types[p.k].n(data, p);
+const getExisting = (data, p) => {
+    // Simple PointerKeys are their own Pointers
+    if (isSimplePointerKey(p.k)) {
+        return types[p.k].g(data, p);
     }
 
+    // Ensure that the value storage list exists
+    data[p.k] = data[p.k] || [];
+
+    // Return any value that exists at the Pointer location
+    return data[p.k][p.i];
+};
+
+const getExistingOrCreate = (data, p) => {
+    const ref = getExisting(data, p);
+
+    if (ref) {
+        return ref;
+    }
+
+    // If it doesn't exist, create it and store it
+    data[p.k][p.i] = types[p.k].n(data, p);
     return data[p.k][p.i];
 };
 
 const getP = (data, p) => {
-    return data._.encoded[p.k][p.i];
+    return data.e[p.k][p.i];
 };
 
-const getEncodedValueOf = (data, p) => {
+const genValueOf = (data, p) => {
     const vp = genDecodePointer(getP(data, p)[0][1]);
     return types[vp.k].g(data, vp);
 };
 
-const containerGenerator = (data, p) => {
-    const container = getOrCreateContainer(data, p);
+const tryEnqueuePointerItem = (data, p) => {
+    if ((data[p.k] || [])[p.i] === void 0) {
+        Array.prototype.push.call(data.q, p);
+    }
+};
 
+const genContainerPart = (data, pointer) => {
+    const p = genDecodePointer(pointer);
+
+    if (isContainerPointerKey(p.k)) {
+        tryEnqueuePointerItem(data, p);
+        return getExistingOrCreate(data, p);
+    }
+    else {
+        return generate(data, p);
+    }
+};
+
+const containerGenerator = (data, p) => {
     let pairs = getP(data, p);
 
-    // First key is null, that was the valueOf, ignore
-    if ((pairs[0] || [])[0] === 'nl') {
-        pairs = Array.prototype.slice.call(pairs, 1);
+    const container = getExistingOrCreate(data, p);
+
+    if (p.k === 'Se' || p.k === 'WS') {
+        const pairLength = pairs.length;
+        for (let i = 0; i < pairLength; i += 1) {
+            container.add(genContainerPart(data, pairs[i][1]));
+        }
+
+        return container;
     }
 
-    Array.prototype.forEach.call(pairs, (pair) => {
-        const pk = genDecodePointer(pair[0]);
-        const pv = genDecodePointer(pair[1]);
+    // Skip the first item if it is the valueOf value, indicated by a null key
+    // Since Maps and WeakMaps can have null keys, they need to be accounted for
+    let i = (pairs[0] || [])[0] === 'nl' ? 1 : 0;
 
-        if (pointers.isContainerPointerKey(pv.k)) {
-            // Only add to the exploreQueue if it hasn't already been created
-            if ((data[pv.k] || [])[pv.i] === void 0) {
-                Array.prototype.push.call(data._.exploreQueue, pv);
-            }
-            container[generate(data, pk)] = getOrCreateContainer(data, pv);
-        }
-        else {
-            container[generate(data, pk)] = generate(data, pv);
-        }
-    });
+    const pairLength = pairs.length;
+    for (; i < pairLength; i += 1) {
+        container[genContainerPart(data, pairs[i][0])] = genContainerPart(data, pairs[i][1]);
+    }
 
     return container;
 };
 
 const generate = (data, p) => {
     // Containers values need to handle their own existing Pointer handling
-    if (!pointers.isContainerPointerKey(p.k)) {
-        // Simple PointerKeys are their own Pointers
-        if (pointers.isSimplePointerKey(p.k)) {
-            return types[p.k].g(data, p);
-        }
-
-        // Ensure ref list exists
-        data[p.k] = data[p.k] || [];
-        const existingValue = data[p.k][p.i];
-
-        // If found, return its existing value
+    if (!isContainerPointerKey(p.k)) {
+        const existingValue = getExisting(data, p);
         if (existingValue !== void 0) {
             return existingValue;
         }
@@ -72,47 +99,41 @@ const generate = (data, p) => {
     return types[p.k] === void 0 ? p.p : types[p.k].g(data, p);
 };
 
+const genIdentityGenerator = (v) => {
+    return {
+        g: () => {
+            return v;
+        },
+    }
+};
+
+const genTypeArrayGenerator = (type) => {
+    return {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new type(getP(data, p).length);
+        },
+    };
+};
+
+const genValueObjectGenerator = (type) => {
+    return {
+        g: containerGenerator,
+        n: (data, p) => {
+            return new type(genValueOf(data, p));
+        },
+    };
+}
+
 const types = {
-    'un': {
-        g: () => {
-            return void 0;
-        }
-    },
-    'nl': {
-        g: () => {
-            return null;
-        }
-    },
-    'bt': {
-        g: () => {
-            return true;
-        }
-    },
-    'bf': {
-        g: () => {
-            return false;
-        }
-    },
-    'na': {
-        g: () => {
-            return NaN;
-        }
-    },
-    '-i': {
-        g: () => {
-            return -Infinity;
-        }
-    },
-    '+i': {
-        g: () => {
-            return Infinity;
-        }
-    },
-    'n0': {
-        g: () => {
-            return -0;
-        }
-    },
+    'un': genIdentityGenerator(void 0),
+    'nl': genIdentityGenerator(null),
+    'bt': genIdentityGenerator(true),
+    'bf': genIdentityGenerator(false),
+    'na': genIdentityGenerator(NaN),
+    '-i': genIdentityGenerator(-Infinity),
+    '+i': genIdentityGenerator(Infinity),
+    'n0': genIdentityGenerator(-0),
     'nm': {
         g: getP,
     },
@@ -127,12 +148,6 @@ const types = {
             value.lastIndex = getP(data, genDecodePointer(encodedArray[2][1]));
 
             return value;
-        },
-    },
-    'da': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Date(getEncodedValueOf(data, p));
         },
     },
     'sy': {
@@ -151,7 +166,7 @@ const types = {
     'fu': {
         g: containerGenerator,
         n: (data, p) => {
-            const decodedValue = getEncodedValueOf(data, p);
+            const decodedValue = genValueOf(data, p);
 
             let box = {};
 
@@ -181,123 +196,51 @@ const types = {
             return [];
         },
     },
-    'BO': {
+    'da': genValueObjectGenerator(Date),
+    'BO': genValueObjectGenerator(Boolean),
+    'NM': genValueObjectGenerator(Number),
+    'ST': genValueObjectGenerator(String),
+    'I1': genTypeArrayGenerator(Int8Array),
+    'U1': genTypeArrayGenerator(Uint8Array),
+    'C1': genTypeArrayGenerator(Uint8ClampedArray),
+    'I2': genTypeArrayGenerator(Int16Array),
+    'U2': genTypeArrayGenerator(Uint16Array),
+    'I3': genTypeArrayGenerator(Int32Array),
+    'U3': genTypeArrayGenerator(Uint32Array),
+    'F3': genTypeArrayGenerator(Float32Array),
+    'F4': genTypeArrayGenerator(Float64Array),
+    'Se': {
         g: containerGenerator,
-        n: (data, p) => {
-            return new Boolean(getEncodedValueOf(data, p));
-        },
-    },
-    'NM': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Number(getEncodedValueOf(data, p));
-        },
-    },
-    'ST': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new String(getEncodedValueOf(data, p));
-        },
-    },
-    'I1': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Int8Array(getP(data, p).length);
-        },
-    },
-    'U1': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Uint8Array(getP(data, p).length);
-        },
-    },
-    'C1': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Uint8ClampedArray(getP(data, p).length);
-        },
-    },
-    'I2': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Int16Array(getP(data, p).length);
-        },
-    },
-    'U2': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Uint16Array(getP(data, p).length);
-        },
-    },
-    'I3': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Int32Array(getP(data, p).length);
-        },
-    },
-    'U3': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Uint32Array(getP(data, p).length);
-        },
-    },
-    'F3': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Float32Array(getP(data, p).length);
-        },
-    },
-    'F4': {
-        g: containerGenerator,
-        n: (data, p) => {
-            return new Float64Array(getP(data, p).length);
+        n: () => {
+            return new Set();
         },
     },
 };
 
-module.exports = (encoded) => {
-    // Convert encoded array into encoded object
-    const encodedObj = {};
-    Array.prototype.forEach.call(encoded, (pair) => {
-        encodedObj[pair[0]] = pair[1];
-    });
+module.exports = (encodedData) => {
+    const encodedDataObj = {};
+    for (let e = 0; e < encodedData.length; e += 1) {
+        encodedDataObj[encodedData[e][0]] = encodedData[e][1];
+    }
 
     const data = {
-        _: {
-            encoded: encodedObj,
-            exploreQueue: [],
-        },
+        q: [], // Exploration Queue
+        e: encodedDataObj, // Encoded Data
     };
 
-    const rp = genDecodePointer(data._.encoded.r);
+    // Create PointerItem from root
+    const rp = genDecodePointer(data.e.r);
 
     // If root value is a not a container, return its value directly
-    if (!pointers.isContainerPointerKey(rp.k)) {
+    if (!isContainerPointerKey(rp.k)) {
         return generate(data, rp);
     }
 
-    Array.prototype.push.call(data._.exploreQueue, rp);
+    // Prep the Exploration Queue to explore from the root
+    Array.prototype.push.call(data.q, rp);
 
-    var temp = 1000;
-
-    while (data._.exploreQueue.length > 0 && temp--) {
-        const p = data._.exploreQueue.shift();
-
-        // Sanity checks
-        if (pointers.isSimplePointerKey(p.k)) {
-            // Should never happen
-            throw `Simple PointerKey was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
-        }
-        if (pointers.isValuePointerKey(p.k)) {
-            // Should never happen
-            throw `Value PointerKey was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
-        }
-        if (!pointers.isContainerPointerKey(p.k)) {
-            // Should never happen
-            throw `Unrecognized PointerKey type was added to the exploreQueue, incorrectly. Pointer: ${p.p}`;
-        }
-
-        generate(data, p);
+    while (data.q.length > 0) {
+        generate(data, Array.prototype.shift.call(data.q));
     }
 
     return data[rp.k][rp.i];

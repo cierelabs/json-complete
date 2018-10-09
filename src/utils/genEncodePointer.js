@@ -1,7 +1,7 @@
-const pointers = require('./pointers.js');
+const getPointerKey = require('./getPointerKey.js');
 
 module.exports = (data, value) => {
-    const pointerKey = pointers.getPointerKey(value);
+    const pointerKey = getPointerKey(value);
     data[pointerKey] = data[pointerKey] || [];
     const pointerIndex = data[pointerKey].length;
 

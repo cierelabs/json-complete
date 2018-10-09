@@ -2,75 +2,6 @@
 
 An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.
 
-## Referential Integrity
-
-Any reference type that points to the same memory location will be encoded as the same pointer string in the data. When decoding, these shared pointer strings will allow shared references to be retained.
-
-## Deduplication
-
-Since values are being converted to references first, all value of a given type are encoded together, and are therefore deduplicated. No matter how many times a unique value is used, it will only be stored once. This includes strings and numbers.
-
-## Encode to JSON
-
-The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal numbers, strings, and arrays exclusively.
-
-## Comparison to JSON
-
-| json | json-complete | Feature                                               |
-|------|---------------|-------------------------------------------------------|
-| ❌    | ✅             | undefined                                             |
-| ✅    | ✅             | null                                                  |
-| ✅    | ✅             | Booleans                                              |
-| ❌    | ✅             | Object-Wrapped Booleans                               |
-| ❌    | ✅             | Object-Wrapped Boolean Arbitrary Attached Data        |
-| ❌    | ✅             | Object-Wrapped Boolean Self-Containment               |
-| ✅    | ✅             | Normal Numbers                                        |
-| ❌    | ✅             | Number: NaN                                           |
-| ❌    | ✅             | Number: -Infinity                                     |
-| ❌    | ✅             | Number: Infinity                                      |
-| ❌    | ✅             | Number: -0                                            |
-| ❌    | ✅             | Object-Wrapped Numbers                                |
-| ❌    | ✅             | Object-Wrapped Number Arbitrary Attached Data         |
-| ❌    | ✅             | Object-Wrapped Number Self-Containment                |
-| ✅    | ✅             | Strings                                               |
-| ❌    | ✅             | Object-Wrapped Strings                                |
-| ❌    | ✅             | Object-Wrapped String Arbitrary Attached Data         |
-| ❌    | ✅             | Object-Wrapped String Self-Containment                |
-| ❌    | ✅             | Regex                                                 |
-| ❌    | ✅             | Retained Regex lastIndex                              |
-| ❌    | ✅             | Regex Arbitrary Attached Data                         |
-| ❌    | ✅             | Regex Self-Containment                                |
-| ❌    | ✅             | Dates                                                 |
-| ❌    | ✅             | Invalid Dates                                         |
-| ❌    | ✅             | Date Arbitrary Attached Data                          |
-| ❌    | ✅             | Date Self-Containment                                 |
-| ❌    | ✅             | Symbols                                               |
-| ❌    | ✅             | Registered Symbols                                    |
-| ❌    | ✅             | Symbols With Retained Identifiers                     |
-| ❌    | ✅             | Function Expressions                                  |
-| ❌    | ✅             | Named Function Expressions                            |
-| ❌    | ✅             | Arrow Functions                                       |
-| ❌    | ✅             | Method Functions                                      |
-| ❌    | ✅             | Function Expression Arbitrary Attached Data           |
-| ❌    | ✅             | Function Expression Self-Containment                  |
-| ❌    | ✅             | Named Function Expression Attached Data Referencing   |
-| ✅    | ✅             | Objects                                               |
-| ❌    | ✅             | Symbol Keys in Objects                                |
-| ✅    | ✅             | Arrays                                                |
-| ❌ *  | ✅             | Sparse Arrays                                         |
-| ❌    | ✅             | Arrays with String and Symbol keys                    |
-| ✅    | ✅             | Arbitrarily Deep Nesting                              |
-| ❌    | ✅             | Circular References                                   |
-| ❌    | ✅             | Shared Key and Value Symbol References                |
-| ❌    | ✅             | Referencial Integrity for All Reference Types         |
-| ✅ ** | ✅             | Top-Level Encoding for All Supported Values           |
-| ❌    | ✅             | Simple Decoder Error Recovery                         |
-| ✅    | ❌             | Built-in                                              |
-
-* \* JSON will encode sparse arrays by injecting null values into the unassigned indices
-* \** JSON will do top-level encoding only for the types it supports elsewhere
-
-
 ---
 
 ## Install
@@ -79,6 +10,8 @@ The encoder is a pre-process step to make the non-JSON encodable data suitable f
 npm i
 ```
 
+---
+
 
 ## Run Tests
 
@@ -86,6 +19,112 @@ npm i
 npm run test
 ```
 
+---
+
+## Encode to JSON
+
+The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal structure of arrays, numbers, and strings exclusively.
+
+## Referential Integrity
+
+Any Reference Type that points to the same memory location will be encoded as the same pointer string in the data. When decoding, these shared pointer strings will allow shared references to be retained.
+
+## Value Type Deduplication
+
+As Strings and Numbers are encoded to reference strings (Pointers), their values are all stored in the same area, by type. Since values are checked just like references, the same String or Number will never be stored more than once.
+
+## Referencial Deduplication
+
+The same Referencial Type value is only stored once, provided the underlying reference is the same. It is then only referred to by its reference string (Pointer).
+
+---
+
+## Comparison to JSON
+
+| json | json-complete | Supported Types                                       |
+|------|---------------|-------------------------------------------------------|
+| ❌    | ✅             | undefined                                             |
+| ✅    | ✅             | null                                                  |
+| ✅    | ✅             | Booleans                                              |
+| ❌    | ✅             | Booleans: Object-Wrapped                              |
+| ✅    | ✅             | Numbers: Normal                                       |
+| ❌    | ✅             | Number: NaN                                           |
+| ❌    | ✅             | Number: -Infinity                                     |
+| ❌    | ✅             | Number: Infinity                                      |
+| ❌    | ✅             | Number: -0                                            |
+| ❌    | ✅             | Numbers: Object-Wrapped                               |
+| ❌    | ✅             | Numbers: Object-Wrapped (NaN, +/-Infinity, -0)        |
+| ✅    | ✅             | Strings                                               |
+| ❌    | ✅             | Strings: Object-Wrapped                               |
+| ❌    | ✅             | Regex                                                 |
+| ❌    | ✅             | Regex: Retained lastIndex                             |
+| ❌    | ✅             | Dates                                                 |
+| ❌    | ✅             | Dates: Invalid Dates                                  |
+| ❌    | ✅             | Symbols                                               |
+| ❌    | ✅             | Symbols: Retained Identifiers                         |
+| ❌    | ✅             | Symbols: Registered Symbols                           |
+| ❌    | ✅             | Functions: Expressions                                |
+| ❌    | ✅             | Functions: Named Expressions                          |
+| ❌    | ✅             | Functions: Arrow Functions                            |
+| ❌    | ✅             | Functions: Method Functions                           |
+| ❌    | ✅             | Functions: Named Expression Data Referencing          |
+| ✅    | ✅             | Objects                                               |
+| ❌    | ✅             | Objects: Symbol Keys                                  |
+| ✅    | ✅             | Arrays                                                |
+| ❌    | ✅             | Arrays: String and Symbol Keys                        |
+| ❌ *  | ✅             | Arrays: Sparse Arrays                                 |
+| ❌    | ✅             | Int8Array                                             |
+| ❌    | ✅             | Uint8Array                                            |
+| ❌    | ✅             | Uint8ClampedArray                                     |
+| ❌    | ✅             | Int16Array                                            |
+| ❌    | ✅             | Uint16Array                                           |
+| ❌    | ✅             | Int32Array                                            |
+| ❌    | ✅             | Uint32Array                                           |
+| ❌    | ✅             | Float32Array                                          |
+| ❌    | ✅             | Float64Array                                          |
+
+| json | json-complete | Features                                              |
+|------|---------------|-------------------------------------------------------|
+| ✅    | ✅             | Arbitrarily Deep Nesting                              |
+| ❌    | ✅             | Circular References                                   |
+| ❌    | ✅             | Shared Key and Value Symbol References                |
+| ❌    | ✅             | Arbitrary Attached Data for All Object-like Types     |
+| ❌    | ✅             | Self-Containment for All Object-like Types            |
+| ❌    | ✅             | Referencial Integrity for All Reference Types         |
+| ❌    | ✅             | Referencial Deduplication                             |
+| ✅ ** | ✅             | Top-Level Encoding for All Supported Values           |
+| ❌    | ✅             | Simple Decoder Error Recovery                         |
+| ✅    | ❌             | Built-in                                              |
+
+* \* JSON will encode sparse arrays by injecting null values into the unassigned indices
+* \** JSON will do top-level encoding only for the types it supports elsewhere
+
+### Terms
+
+* Object-like Types - Can contain key/value pairs using a String or Symbol key.
+  - Booleans: Object-Wrapped
+  - Numbers: Object-Wrapped
+  - Strings: Object-Wrapped
+  - Regex
+  - Dates
+  - Functions
+  - Objects
+* Array-like Types - Can contain integer key/value pairs, as well as containing key/value pairs using a String or Symbol key (same as Object-like Types).
+  - Arrays
+  - Int8Array
+  - Uint8Array
+  - Uint8ClampedArray
+  - Int16Array
+  - Uint16Array
+  - Int32Array
+  - Uint32Array
+  - Float32Array
+  - Float64Array
+ * Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
+  - All Object-like Types
+  - All Array-like Types
+  - Symbols
+  - Strings (sorta - this is how JS operates at the low level, but it is effectively a Value Type as as far as the programmer is concerned)
 
 ---
 
@@ -191,6 +230,22 @@ npm run test
 * Can store arbitrary data on itself with string or Symbol keys
 * TODO: Look into async, getter/setter, and other newer types
 
+### Specified TypedArrays
+* Types
+  - Int8Array
+  - Uint8Array
+  - Uint8ClampedArray
+  - Int16Array
+  - Uint16Array
+  - Int32Array
+  - Uint32Array
+  - Float32Array
+  - Float64Array
+* For the purposes of storage, acts very similarly to standard Arrays
+* Limited to storing numerical values in the indexed fields
+* Cannot be expanded beyond the defined bounds
+* Cannot be sparse -- by default, the unset values are initialized to 0
+* Can store other data via String or Symbol keys
 
 
 ### File
@@ -198,42 +253,6 @@ TODO
 
 
 ### Blob
-TODO
-
-
-### Int8Array
-TODO
-
-
-### Uint8Array
-TODO
-
-
-### Uint8ClampedArray
-TODO
-
-
-### Int16Array
-TODO
-
-
-### Uint16Array
-TODO
-
-
-### Int32Array
-TODO
-
-
-### Uint32Array
-TODO
-
-
-### Float32Array
-TODO
-
-
-### Float64Array
 TODO
 
 
