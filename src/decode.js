@@ -7,6 +7,19 @@ const push = Array.prototype.push;
 const shift = Array.prototype.shift;
 const substring = String.prototype.substring;
 
+// Doesn't provide much protection, only prevents an evaluation from affecting the ongoing decoding process
+const functionIsolatorReference = function functionIsolator(functionString) {
+    try {
+        eval(`functionIsolator.box = ${functionString};`);
+        return functionIsolator.box;
+    }
+    catch (e) {
+        // If it was an error, then it's possible that the item was a Method Function
+        eval(`functionIsolator.box = { ${functionString} };`);
+        return functionIsolator.box[match.call(functionString, /\s*([^\s(]+)\s*\(/)[1]];
+    }
+}
+
 const genDecodePointer = (pointer) => {
     return {
         k: substring.call(pointer, 0, 2),
@@ -164,20 +177,8 @@ const types = {
     'fu': {
         g: containerGenerator,
         n: (data, p) => {
-            const decodedValue = genValueOf(data, p);
-
-            let box = {};
-
-            try {
-                eval(`box.fn = ${decodedValue};`);
-                return box.fn;
-            }
-            catch (e) {
-                // If it was an error, then it's possible that the item was a Method Function
-                eval(`box = { ${decodedValue} };`);
-                const key = match.call(decodedValue, /\s*([^\s(]+)\s*\(/)[1];
-                return box[key];
-            }
+            delete functionIsolatorReference.box;
+            return functionIsolatorReference(genValueOf(data, p));
         },
     },
     'ob': {
