@@ -4,6 +4,18 @@ const getPointerKey = require('./utils/getPointerKey.js');
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 
+const booleanValueOf = Boolean.prototype.valueOf;
+const concat = Array.prototype.concat;
+const find = Array.prototype.find;
+const forEach = Array.prototype.forEach;
+const forEachMap = Map.prototype.forEach;
+const numberValueOf = Number.prototype.valueOf;
+const push = Array.prototype.push;
+const forEachSet = Set.prototype.forEach;
+const shift = Array.prototype.shift;
+const stringValueOf = String.prototype.valueOf;
+const substring = String.prototype.substring;
+
 const tryGetExistingPointer = (data, value, pointerKey) => {
     // Simple PointerKeys are their own Pointers
     if (isSimplePointerKey(pointerKey)) {
@@ -11,10 +23,10 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
     }
 
     // Ensure the ref list exists
-    data._.known[pointerKey] = data._.known[pointerKey] || [];
+    data.k[pointerKey] = data.k[pointerKey] || [];
 
     // Try to find existing item matching the value
-    const foundItem = Array.prototype.find.call(data._.known[pointerKey], (p) => {
+    const foundItem = find.call(data.k[pointerKey], (p) => {
         return p.v === value;
     });
 
@@ -25,7 +37,7 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
 const encodePrimitive = (data, value) => {
     const p = genEncodePointer(data, value);
     data[p.k][p.i] = value;
-    Array.prototype.push.call(data._.known[p.k], p);
+    push.call(data.k[p.k], p);
     return p.p;
 };
 
@@ -49,8 +61,8 @@ const genEncodedPart = (data, value) => {
     data[p.k][p.i] = [];
 
     // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-    Array.prototype.push.call(data._.known[p.k], p);
-    Array.prototype.push.call(data._.exploreQueue, p);
+    push.call(data.k[p.k], p);
+    push.call(data.q, p);
 
     return p.p;
 };
@@ -62,19 +74,20 @@ const encodeContainer = (data, box, pairs) => {
     const existingPointer = tryGetExistingPointer(data, box, p.k);
 
     if (existingPointer) {
-        p.i = existingPointer.length <= 2 ? -1 : parseInt(String.prototype.substr.call(existingPointer, 2), 10);
+        // encodeContainer is never called on a Simple Pointer Key value, so there is no need to account for a missing index here
+        p.i = parseInt(substring.call(existingPointer, 2), 10);
         p.p = existingPointer;
     }
     else {
-        Array.prototype.push.call(data._.known[p.k], p);
+        push.call(data.k[p.k], p);
     }
 
     data[p.k][p.i] = data[p.k][p.i] || [];
     const container = data[p.k][p.i];
 
     // Encode each part of the Container
-    Array.prototype.forEach.call(pairs, (pair) => {
-        Array.prototype.push.call(container, [
+    forEach.call(pairs, (pair) => {
+        push.call(container, [
             genEncodedPart(data, pair[0]),
             genEncodedPart(data, pair[1]),
         ]);
@@ -105,9 +118,9 @@ const encodeStandardContainer = (data, value) => {
     return encodeContainer(data, value, getAttachmentPairs(value));
 };
 
-const genWrappedObjectEncoder = (type) => {
+const genWrappedObjectEncoder = (valueOf) => {
     return (data, value) => {
-        return encodeContainer(data, value, [[null, type.prototype.valueOf.call(value)]].concat(getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[null, valueOf.call(value)]], getAttachmentPairs(value)));
     };
 };
 
@@ -121,7 +134,7 @@ const encoders = {
             value.lastIndex,
         ];
 
-        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
     },
     'da': (data, value) => {
         let encodedValue = value.getTime();
@@ -132,7 +145,7 @@ const encoders = {
             encodedValue = '';
         }
 
-        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
     },
     'sy': (data, value) => {
         const p = genEncodePointer(data, value);
@@ -143,21 +156,22 @@ const encoders = {
             data[p.k][p.i] = encodeValue(data, [1, symbolStringKey]);
         }
         else {
+            const symbolString = String(value);
             // For unique Symbols, specify with 0 value and also store the optional identifying string
-            data[p.k][p.i] = encodeValue(data, [0, String.prototype.replace.call(String(value), /^Symbol\((.*)\)$/, '$1')]);
+            data[p.k][p.i] = encodeValue(data, [0, substring.call(symbolString, 7, symbolString.length - 1)]);
         }
 
-        Array.prototype.push.call(data._.known[p.k], p);
+        push.call(data.k[p.k], p);
         return p.p;
     },
     'fu': (data, value) => {
-        return encodeContainer(data, value, [[null, String(value)]].concat(getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[null, String(value)]], getAttachmentPairs(value)));
     },
     'ob': encodeStandardContainer,
     'ar': encodeStandardContainer,
-    'BO': genWrappedObjectEncoder(Boolean),
-    'NM': genWrappedObjectEncoder(Number),
-    'ST': genWrappedObjectEncoder(String),
+    'BO': genWrappedObjectEncoder(booleanValueOf),
+    'NM': genWrappedObjectEncoder(numberValueOf),
+    'ST': genWrappedObjectEncoder(stringValueOf),
     'I1': encodeStandardContainer,
     'U1': encodeStandardContainer,
     'C1': encodeStandardContainer,
@@ -169,33 +183,39 @@ const encoders = {
     'F4': encodeStandardContainer,
     'Se': (data, value) => {
         const encodedValue = [];
-        Set.prototype.forEach.call(value, (part) => {
-            Array.prototype.push.call(encodedValue, part);
+        forEachSet.call(value, (part) => {
+            push.call(encodedValue, part);
         });
 
-        return encodeContainer(data, value, [[null, encodedValue]].concat(getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+    },
+    'Ma': (data, value) => {
+        const encodedValue = [];
+        forEachMap.call(value, (value, key) => {
+            push.call(encodedValue, [key, value]);
+        });
+
+        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
     },
 };
 
 module.exports = (value) => {
     const data = {
-        r: void 0,
-        _: {
-            known: {},
-            exploreQueue: [],
-        },
+        q: [], // Exploration Queue
+        k: {}, // Known References
     };
 
     // Initialize data from the top-most value
     data.r = encodeValue(data, value);
 
     // While there are still references to explore, go through them
-    while (data._.exploreQueue.length > 0) {
-        encodeValue(data, data._.exploreQueue.shift().v);
+    while (data.q.length > 0) {
+        encodeValue(data, shift.call(data.q).v);
     }
 
     // Remove encoding data no longer needed
-    delete data._;
+    delete data.q;
+    delete data.k;
 
     // Convert data object to a simple array of pairs
     return getAttachmentPairs(data);

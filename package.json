@@ -1,7 +1,7 @@
 {
   "name": "json-complete",
   "version": "1.0.0",
-  "description": "An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrety and deduplication of data in the encoded output.",
+  "description": "An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js test"

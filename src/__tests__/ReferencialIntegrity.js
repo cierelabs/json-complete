@@ -25,6 +25,7 @@ const items = [
     ['Float32Array', new Float32Array(1)],
     ['Float64Array', new Float64Array(1)],
     ['Set', new Set([1])],
+    ['Map', new Map([[0, 1]])],
 ];
 
 items.forEach((item) => {
