@@ -31,6 +31,11 @@ test('Int32Array: Empty Cells', (t) => {
     t.equal(decoded[1], 0);
 });
 
+test('Int32Array: Root Value', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Int32Array([1]))), new Int32Array([1]));
+});
+
 test('Int32Array: Arbitrary Attached Data', (t) => {
     t.plan(2);
 
@@ -53,4 +58,18 @@ test('Int32Array: Self-Containment', (t) => {
     const decoded = decode(encode([a]))[0];
 
     t.equal(decoded.me, decoded);
+});
+
+test('Int32Array: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new Int32Array(1);
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

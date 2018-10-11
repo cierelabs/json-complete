@@ -16,6 +16,17 @@ test('Date: Invalid Date', (t) => {
     t.ok(testHelpers.isNanValue(decode(encode([new Date('')]))[0].getTime()));
 });
 
+test('Date: Root Value Normal', (t) => {
+    t.plan(1);
+    const now = Date.now();
+    t.equal(decode(encode(new Date(now))).getTime(), now);
+});
+
+test('Date: Root Value Invalid Date', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNanValue(decode(encode(new Date(''))).getTime()));
+});
+
 test('Date: Arbitrary Attached Data', (t) => {
     t.plan(3);
     const now = Date.now();
@@ -36,4 +47,18 @@ test('Date: Self-Containment', (t) => {
     const decodedDate = decode(encode([date]))[0];
     t.equal(decodedDate.getTime(), now);
     t.equal(decodedDate.me, decodedDate);
+});
+
+test('Date: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new Date('2018-04-01');
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

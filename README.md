@@ -82,22 +82,35 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Uint32Array                                           |
 | ❌    | ✅             | Float32Array                                          |
 | ❌    | ✅             | Float64Array                                          |
+| ❌    | ✅             | Set                                                   |
+| ❌    | ✅             | Map                                                   |
 
 | json | json-complete | Features                                              |
 |------|---------------|-------------------------------------------------------|
 | ✅    | ✅             | Arbitrarily Deep Nesting                              |
 | ❌    | ✅             | Circular References                                   |
 | ❌    | ✅             | Shared Key and Value Symbol References                |
+| ❌    | ✅             | Shared Key and Value Map References                   |
 | ❌    | ✅             | Arbitrary Attached Data for All Object-like Types     |
+| ❌    | ✅ ***         | Arbitrary Attached Data for Unsupported Types         |
 | ❌    | ✅             | Self-Containment for All Object-like Types            |
+| ❌    | ✅ ***         | Self-Containment for Unsupported Types                |
 | ❌    | ✅             | Referencial Integrity for All Reference Types         |
+| ❌    | ✅ ***         | Referencial Integrity for Unsupported Types           |
 | ❌    | ✅             | Referencial Deduplication                             |
 | ✅ ** | ✅             | Top-Level Encoding for All Supported Values           |
-| ❌    | ✅             | Simple Decoder Error Recovery                         |
 | ✅    | ❌             | Built-in                                              |
 
 * \* JSON will encode sparse arrays by injecting null values into the unassigned indices
 * \** JSON will do top-level encoding only for the types it supports elsewhere
+* \*** Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as a plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
+  - WeakSet and WeakMap - Not iterable, by design, for security reasons.
+  - Math
+  - window/global
+  - document
+  - HTML Element Types
+  - document.location
+  - JSON
 
 ### Terms
 
@@ -248,6 +261,14 @@ The same Referencial Type value is only stored once, provided the underlying ref
 * Can store other data via String or Symbol keys
 
 
+### Set
+TODO
+
+
+### Map
+TODO
+
+
 ### File
 TODO
 
@@ -259,13 +280,6 @@ TODO
 ### ArrayBuffer
 TODO
 
-
-### Map
-TODO
-
-
-### Set
-TODO
 
 
 ### WeakMap

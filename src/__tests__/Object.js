@@ -5,85 +5,19 @@ const testHelpers = require('../../_tools/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-test('Object: void 0', (t) => {
+test('Object: Normal', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode([{ a: 1 }]))[0], { a: 1 });
+});
+
+test('Object: Root Value Normal', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode({ a: 1 })), { a: 1 });
+});
+
+test('Object: Store Undefined', (t) => {
     t.plan(1);
     t.equal(decode(encode({ 'un': void 0 }))['un'], void 0);
-});
-
-test('Object: null', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ 'nl': null }))['nl'], null);
-});
-
-test('Object: true', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ 'bt': true }))['bt'], true);
-});
-
-test('Object: false', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ 'bf': false }))['bf'], false);
-});
-
-test('Object: NaN', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isNanValue(decode(encode({ 'na': NaN }))['na']));
-});
-
-test('Object: -Infinity', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ '-i': -Infinity }))['-i'], -Infinity);
-});
-
-test('Object: Infinity', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ '+i': Infinity }))['+i'], Infinity);
-});
-
-test('Object: -0', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isNegativeZero(decode(encode({ 'n0': -0 }))['n0']));
-});
-
-test('Object: Number', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ 'nm': 1 }))['nm'], 1);
-});
-
-test('Object: String', (t) => {
-    t.plan(1);
-    t.equal(decode(encode({ 'st': 'string' }))['st'], 'string');
-});
-
-test('Object: Regex', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isRegex(decode(encode({ 're': /\s+/g }))['re']));
-});
-
-test('Object: Date', (t) => {
-    t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode({ 'da': new Date(now) }))['da'].getTime(), now);
-});
-
-test('Object: Symbol', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isSymbol(decode(encode({ 'sy': Symbol() }))['sy']));
-});
-
-test('Object: Function', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isFunction(decode(encode({ 'fu': () => { return 2; } }))['fu']));
-});
-
-test('Object: Object Inside', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isObject(decode(encode({ 'ob': {} }))['ob']));
-});
-
-test('Object: Array Inside', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isArray(decode(encode({ 'ar': [] }))['ar']));
 });
 
 test('Object: Number Key', (t) => {
@@ -170,4 +104,40 @@ test('Object: Circular Object References', (t) => {
 
     t.equal(decodedCircularObj, decodedCircularObj.x.y.z);
     t.equal(decodedCircularObj, decodedCircularObj.x.y.z.x.y.z);
+});
+
+test('Object: Arbitrary Attached Data', (t) => {
+    t.plan(2);
+
+    const decodedObj = decode(encode([{
+        x: 2,
+        [Symbol.for('obj')]: 'test',
+    }]))[0];
+
+    t.equal(decodedObj.x, 2);
+    t.equal(decodedObj[Symbol.for('obj')], 'test');
+});
+
+test('Object: Self-Containment', (t) => {
+    t.plan(1);
+
+    const obj = {};
+    obj.me = obj;
+    const decodedObj = decode(encode([obj]))[0];
+
+    t.equal(decodedObj.me, decodedObj);
+});
+
+test('Object: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = {};
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

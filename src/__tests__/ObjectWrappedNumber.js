@@ -12,27 +12,27 @@ test('Object-Wrapped Number: Normal', (t) => {
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.equal(Number.prototype.valueOf.call(decodedValue), 1);
+    t.equal(decodedValue.valueOf(), 1);
 });
 
-test('Object-Wrapped Number: Zero', (t) => {
+test('Object-Wrapped Number: 0', (t) => {
     t.plan(3);
 
     const decodedValue = decode(encode([new Number(0)]))[0];
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.equal(Number.prototype.valueOf.call(decodedValue), 0);
+    t.equal(decodedValue.valueOf(), 0);
 });
 
-test('Object-Wrapped Number: Negative Zero', (t) => {
+test('Object-Wrapped Number: -0', (t) => {
     t.plan(3);
 
     const decodedValue = decode(encode([new Number(-0)]))[0];
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.ok(testHelpers.isNegativeZero(Number.prototype.valueOf.call(decodedValue)));
+    t.ok(testHelpers.isNegativeZero(decodedValue.valueOf()));
 });
 
 test('Object-Wrapped Number: Infinity', (t) => {
@@ -42,7 +42,7 @@ test('Object-Wrapped Number: Infinity', (t) => {
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.equal(Number.prototype.valueOf.call(decodedValue), Infinity);
+    t.equal(decodedValue.valueOf(), Infinity);
 });
 
 test('Object-Wrapped Number: -Infinity', (t) => {
@@ -52,7 +52,7 @@ test('Object-Wrapped Number: -Infinity', (t) => {
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.equal(Number.prototype.valueOf.call(decodedValue), -Infinity);
+    t.equal(decodedValue.valueOf(), -Infinity);
 });
 
 test('Object-Wrapped Number: NaN', (t) => {
@@ -62,7 +62,32 @@ test('Object-Wrapped Number: NaN', (t) => {
 
     t.equal(typeof decodedValue, 'object');
     t.equal(testHelpers.systemName(decodedValue), '[object Number]');
-    t.ok(testHelpers.isNanValue(Number.prototype.valueOf.call(decodedValue)));
+    t.ok(testHelpers.isNanValue(decodedValue.valueOf()));
+});
+
+test('Object-Wrapped Number: Root Value Normal', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(new Number(1))).valueOf(), 1);
+});
+
+test('Object-Wrapped Number: Root Value Infinity', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(new Number(Infinity))).valueOf(), Infinity);
+});
+
+test('Object-Wrapped Number: Root Value -Infinity', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(new Number(-Infinity))).valueOf(), -Infinity);
+});
+
+test('Object-Wrapped Number: Root Value NaN', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNanValue(decode(encode(new Number(NaN))).valueOf()));
+});
+
+test('Object-Wrapped Number: Root Value -0', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isNegativeZero(decode(encode(new Number(-0))).valueOf()));
 });
 
 test('Object-Wrapped Number: Arbitrary Attached Data', (t) => {
@@ -74,7 +99,7 @@ test('Object-Wrapped Number: Arbitrary Attached Data', (t) => {
 
     const decodedNumberObj = decode(encode([num]))[0];
 
-    t.equal(Number.prototype.valueOf.call(decodedNumberObj), 1);
+    t.equal(decodedNumberObj.valueOf(), 1);
     t.equal(decodedNumberObj.x, 2);
     t.equal(decodedNumberObj[Symbol.for('number')], 'test');
 });
@@ -87,6 +112,20 @@ test('Object-Wrapped Number: Self-Containment', (t) => {
 
     const decodedNumberObj = decode(encode([num]))[0];
 
-    t.equal(Number.prototype.valueOf.call(decodedNumberObj), 1);
+    t.equal(decodedNumberObj.valueOf(), 1);
     t.equal(decodedNumberObj.me, decodedNumberObj);
+});
+
+test('Object-Wrapped Number: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new Number(1);
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

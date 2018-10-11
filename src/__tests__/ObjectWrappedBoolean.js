@@ -25,6 +25,26 @@ test('Object-Wrapped Boolean: false', (t) => {
     t.equal(Boolean.prototype.valueOf.call(decodedValue), false);
 });
 
+test('Object-Wrapped Boolean: Root Value true', (t) => {
+    t.plan(3);
+
+    const decodedValue = decode(encode(new Boolean(true)));
+
+    t.equal(typeof decodedValue, 'object');
+    t.equal(testHelpers.systemName(decodedValue), '[object Boolean]');
+    t.equal(Boolean.prototype.valueOf.call(decodedValue), true);
+});
+
+test('Object-Wrapped Boolean: Root Value false', (t) => {
+    t.plan(3);
+
+    const decodedValue = decode(encode(new Boolean(false)));
+
+    t.equal(typeof decodedValue, 'object');
+    t.equal(testHelpers.systemName(decodedValue), '[object Boolean]');
+    t.equal(Boolean.prototype.valueOf.call(decodedValue), false);
+});
+
 test('Object-Wrapped Boolean: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -49,4 +69,18 @@ test('Object-Wrapped Boolean: Self-Containment', (t) => {
 
     t.equal(Boolean.prototype.valueOf.call(decodedBooleanObj), false);
     t.equal(decodedBooleanObj.me, decodedBooleanObj);
+});
+
+test('Object-Wrapped Boolean: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new Boolean(true);
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

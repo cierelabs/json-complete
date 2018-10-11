@@ -25,6 +25,26 @@ test('Object-Wrapped String: Empty String', (t) => {
     t.equal(String.prototype.valueOf.call(decodedValue), '');
 });
 
+test('Object-Wrapped String: Root Value Normal', (t) => {
+    t.plan(3);
+
+    const decodedValue = decode(encode(new String('test')));
+
+    t.equal(typeof decodedValue, 'object');
+    t.equal(testHelpers.systemName(decodedValue), '[object String]');
+    t.equal(String.prototype.valueOf.call(decodedValue), 'test');
+});
+
+test('Object-Wrapped String: Root Value Empty String', (t) => {
+    t.plan(3);
+
+    const decodedValue = decode(encode(new String('')));
+
+    t.equal(typeof decodedValue, 'object');
+    t.equal(testHelpers.systemName(decodedValue), '[object String]');
+    t.equal(String.prototype.valueOf.call(decodedValue), '');
+});
+
 test('Object-Wrapped String: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -49,4 +69,18 @@ test('Object-Wrapped String: Self-Containment', (t) => {
 
     t.equal(String.prototype.valueOf.call(decodedStringObj), 'string');
     t.equal(decodedStringObj.me, decodedStringObj);
+});
+
+test('Object-Wrapped String: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new String('test');
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

@@ -45,6 +45,13 @@ test('Function: Method Function', (t) => {
     t.equal(decodedObj.func(), 1);
 });
 
+test('Function: Root Value Normal', (t) => {
+    t.plan(2);
+    const decodedFunction = decode(encode(() => { return 1; }));
+    t.ok(testHelpers.isFunction(decodedFunction));
+    t.equal(decodedFunction(), 1);
+});
+
 test('Function: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -85,4 +92,18 @@ test('Function: Named Function Expression Attached Data Referencing', (t) => {
     t.equal(decodedFunc.x, 0);
     t.equal(decodedFunc(), 1);
     t.equal(decodedFunc.x, 1);
+});
+
+test('Function: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = () => {};
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

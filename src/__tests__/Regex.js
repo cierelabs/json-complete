@@ -53,6 +53,21 @@ test('Regex: Same Regex is Different Reference', (t) => {
     t.notEqual(decodedRegexArray[0], decodedRegexArray[1]);
 });
 
+test('Regex: Root Value Source', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(/\s+/g)).source, '\\s+');
+});
+
+test('Regex: Root Value Flags', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(/\s+/g)).flags, 'g');
+});
+
+test('Regex: Root Value lastIndex', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(/\s+/g)).lastIndex, 0);
+});
+
 test('Regex: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -75,4 +90,18 @@ test('Regex: Self-Containment', (t) => {
     const decodedRegex = decode(encode([regex]))[0];
     t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
     t.equal(decodedRegex.me, decodedRegex);
+});
+
+test('Regex: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = /\s+/g;
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

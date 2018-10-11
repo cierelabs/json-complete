@@ -5,93 +5,19 @@ const testHelpers = require('../../_tools/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-test('Array: void 0', (t) => {
+test('Array: Normal', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode({ a: [1] })).a, [1]);
+});
+
+test('Array: Root Value Normal', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode([1])), [1]);
+});
+
+test('Array: Store Undefined', (t) => {
     t.plan(1);
     t.equal(decode(encode([void 0]))[0], void 0);
-});
-
-test('Array: null', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([null]))[0], null);
-});
-
-test('Array: true', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([true]))[0], true);
-});
-
-test('Array: false', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([false]))[0], false);
-});
-
-test('Array: NaN', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isNanValue(decode(encode([NaN]))[0]));
-});
-
-test('Array: -Infinity', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([-Infinity]))[0], -Infinity);
-});
-
-test('Array: Infinity', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([Infinity]))[0], Infinity);
-});
-
-test('Array: -0', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isNegativeZero(decode(encode([-0]))[0]));
-});
-
-test('Array: Number', (t) => {
-    t.plan(1);
-    t.equal(decode(encode([1]))[0], 1);
-});
-
-test('Array: String', (t) => {
-    t.plan(1);
-    t.equal(decode(encode(['string']))[0], 'string');
-});
-
-test('Array: Regex', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isRegex(decode(encode([/\s+/g]))[0]));
-});
-
-test('Array: Date', (t) => {
-    t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode([new Date(now)]))[0].getTime(), now);
-});
-
-test('Array: Symbol', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isSymbol(decode(encode([Symbol()]))[0]));
-});
-
-test('Array: Function', (t) => {
-    t.plan(1);
-    t.ok(testHelpers.isFunction(decode(encode([() => { return 2; }]))[0]));
-});
-
-test('Array: Object Inside', (t) => {
-    t.plan(2);
-
-    const value = decode(encode([{}]))[0];
-
-    t.ok(testHelpers.isObject(value));
-    t.equal(Object.keys(value).concat(Object.getOwnPropertySymbols(value)).length, 0);
-});
-
-test('Array: Array Inside', (t) => {
-    t.plan(2);
-
-    const value = decode(encode([[]]))[0];
-
-    t.ok(testHelpers.isArray(value));
-    t.equal(value.length, 0);
 });
 
 test('Array: Nested Array', (t) => {
@@ -154,7 +80,7 @@ test('Array: Sparse Array', (t) => {
 });
 
 test('Array: Non-Index Keys', (t) => {
-    t.plan(6);
+    t.plan(7);
 
     const sharedObj = {
         a: 1,
@@ -169,10 +95,51 @@ test('Array: Non-Index Keys', (t) => {
 
     const decodedArray = decode(encode(arr));
 
+    t.ok(testHelpers.isArray(decodedArray));
     t.equal(decodedArray[0], 1);
     t.equal(decodedArray['x'], 5);
     t.deepEqual(decodedArray[1], sharedObj);
     t.equal(Object.getOwnPropertySymbols(decodedArray).length, 1);
     t.equal(decodedArray[Object.getOwnPropertySymbols(decodedArray)[0]], 6);
     t.equal(decodedArray[1], decodedArray['obj']);
+});
+
+test('Array: Arbitrary Attached Data', (t) => {
+    t.plan(3);
+
+    const array = [];
+    array.x = 2;
+    array[Symbol.for('arr')] = 'test';
+
+    const decodedArray = decode(encode({
+        a: array,
+    })).a;
+
+    t.equal(decodedArray.length, 0);
+    t.equal(decodedArray.x, 2);
+    t.equal(decodedArray[Symbol.for('arr')], 'test');
+});
+
+test('Array: Self-Containment', (t) => {
+    t.plan(1);
+
+    const array = [];
+    array.me = array;
+    const decodedArray = decode(encode([array]))[0];
+
+    t.equal(decodedArray.me, decodedArray);
+});
+
+test('Array: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = [];
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

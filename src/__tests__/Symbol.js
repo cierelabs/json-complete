@@ -31,3 +31,13 @@ test('Symbol: Referenced Symbols Not Equal To Pre-Encoded Symbol', (t) => {
     const symbolItem = Symbol('symbol 2');
     t.notEqual(decode(encode([symbolItem]))[0], symbolItem);
 });
+
+test('Symbol: Root Value Normal', (t) => {
+    t.plan(1);
+    t.ok(testHelpers.isSymbol(decode(encode(Symbol()))));
+});
+
+test('Symbol: Root Value Registered Symbol', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(Symbol.for('x'))), Symbol.for('x'));
+});

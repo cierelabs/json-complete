@@ -31,6 +31,11 @@ test('Uint8ClampedArray: Empty Cells', (t) => {
     t.equal(decoded[1], 0);
 });
 
+test('Uint8ClampedArray: Root Value', (t) => {
+    t.plan(1);
+    t.deepEqual(decode(encode(new Uint8ClampedArray([1]))), new Uint8ClampedArray([1]));
+});
+
 test('Uint8ClampedArray: Arbitrary Attached Data', (t) => {
     t.plan(2);
 
@@ -53,4 +58,18 @@ test('Uint8ClampedArray: Self-Containment', (t) => {
     const decoded = decode(encode([a]))[0];
 
     t.equal(decoded.me, decoded);
+});
+
+test('Uint8ClampedArray: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = new Uint8ClampedArray(1);
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
 });

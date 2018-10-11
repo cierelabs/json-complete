@@ -10,10 +10,6 @@ const isNegativeZero = (v) => {
     return v === -0 && (1 / v) === -Infinity
 };
 
-const isRegex = (v) => {
-    return systemName(v) === '[object RegExp]';
-};
-
 const isSymbol = (v) => {
     return systemName(v) === '[object Symbol]';
 };
@@ -34,7 +30,6 @@ module.exports = {
     systemName: systemName,
     isNanValue: isNanValue,
     isNegativeZero: isNegativeZero,
-    isRegex: isRegex,
     isSymbol: isSymbol,
     isFunction: isFunction,
     isObject: isObject,

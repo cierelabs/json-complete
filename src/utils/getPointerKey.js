@@ -1,5 +1,23 @@
 const toString = Object.prototype.toString;
 
+const warn = (a) => {
+    try {
+        console.warn(a);
+    }
+    catch (e) {
+        // Do nothing
+    }
+};
+
+const log = (a) => {
+    try {
+        console.log(a);
+    }
+    catch (e) {
+        // Do nothing
+    }
+};
+
 const typeNameMap = {
     '[object Undefined]': 'un',
     '[object Null]': 'nl',
@@ -72,16 +90,16 @@ module.exports = (v) => {
     const systemName = toString.call(v);
 
     if (unsupportedTypeNames[systemName]) {
-        console.warn(unsupportedTypeNames[systemName])
-        console.log(v);
+        warn(unsupportedTypeNames[systemName])
+        log(v);
         return 'ob';
     }
 
     const pointerKey = typeNameMap[systemName];
 
     if (!pointerKey) {
-        console.warn(`Unrecognized value type "${systemName}" could not be encoded. Reference replaced with plain object. Value:`);
-        console.log(v);
+        warn(`Unrecognized value type "${systemName}" could not be encoded. Reference replaced with plain object. Value:`);
+        log(v);
         return 'ob';
     }
 
