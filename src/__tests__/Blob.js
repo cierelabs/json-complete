@@ -5,8 +5,6 @@ const testHelpers = require('../../_tools/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-let isInBrowser;
-
 try {
     // https://github.com/denysdovhan/wtfjs#documentall-is-an-object-but-it-is-undefined
     isInBrowser = document !== void 0 && document.all instanceof Object && document.all !== void 0 && typeof document.all === 'undefined';

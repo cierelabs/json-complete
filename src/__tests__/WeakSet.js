@@ -6,11 +6,10 @@ const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
 // WeakSet is not fully supported because its internal data is not iterable, and therefore cannot be serialized.
-// Attempting to encode WeakSets will create several warnings and store the value as a plain, empty Object.
+// Attempting to encode WeakSets will create several logs and store the value as a plain, empty Object.
 // However, like any Object, WeakSets can store arbitrary data via String or Symbol keys.
 
 const startup = () => {
-    const oldWarn = console.warn;
     const oldLog = console.log;
 
     let callCount = 0;
@@ -19,7 +18,6 @@ const startup = () => {
         callCount += 1;
     };
 
-    console.warn = caller;
     console.log = caller;
 
     return {
@@ -28,7 +26,6 @@ const startup = () => {
         },
         shutdown: () => {
             callCount = 0;
-            console.warn = oldWarn;
             console.log = oldLog;
         },
     };
@@ -41,8 +38,9 @@ test('WeakSet: Not Supported', (t) => {
 
     const help = startup();
     const decoded = decode(encode([new WeakSet(source)]))[0];
-    t.ok(help.getCallCount() > 0);
+    const callCount = help.getCallCount();
     help.shutdown();
+    t.ok(callCount > 0);
 
     t.ok(testHelpers.isObject(decoded));
     t.equal(decoded.has, void 0);
@@ -57,8 +55,9 @@ test('WeakSet: Arbitrary Attached Data', (t) => {
 
     const help = startup();
     const decodedWeakSet = decode(encode([weakSet]))[0];
-    t.ok(help.getCallCount() > 0);
+    const callCount = help.getCallCount();
     help.shutdown();
+    t.ok(callCount > 0);
 
     t.ok(testHelpers.isObject(decodedWeakSet));
     t.equal(decodedWeakSet.x, 2);
@@ -73,8 +72,9 @@ test('WeakSet: Self-Containment', (t) => {
 
     const help = startup();
     const decodedWeakSet = decode(encode([weakSet]))[0];
-    t.ok(help.getCallCount() > 0);
+    const callCount = help.getCallCount();
     help.shutdown();
+    t.ok(callCount > 0);
 
     t.ok(testHelpers.isObject(decodedWeakSet));
     t.equal(decodedWeakSet.me, decodedWeakSet);
@@ -90,8 +90,9 @@ test('WeakSet: Referencial Integrity', (t) => {
         x: source,
         y: source,
     }));
-    t.ok(help.getCallCount() > 0);
+    const callCount = help.getCallCount();
     help.shutdown();
+    t.ok(callCount > 0);
 
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);

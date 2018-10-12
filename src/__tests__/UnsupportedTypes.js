@@ -6,7 +6,6 @@ const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
 const startup = () => {
-    const oldWarn = console.warn;
     const oldLog = console.log;
 
     let callCount = 0;
@@ -15,7 +14,6 @@ const startup = () => {
         callCount += 1;
     };
 
-    console.warn = caller;
     console.log = caller;
 
     return {
@@ -24,7 +22,6 @@ const startup = () => {
         },
         shutdown: () => {
             callCount = 0;
-            console.warn = oldWarn;
             console.log = oldLog;
         },
     };

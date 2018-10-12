@@ -3,7 +3,6 @@ const getAttachmentPairs = require('./utils/getAttachmentPairs.js');
 const getPointerKey = require('./utils/getPointerKey.js');
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
-const warn = require('./utils/warn.js');
 
 const booleanValueOf = Boolean.prototype.valueOf;
 const concat = Array.prototype.concat;
@@ -129,6 +128,29 @@ const genWrappedObjectEncoder = (valueOf) => {
     };
 };
 
+/* istanbul ignore next */
+const genBlobLikeEncoder = (defermentListKey, properties) => {
+    return (data, value) => {
+        // Initial simple value is injected for now to later be replaced
+        const source = [void 0];
+        forEach.call(properties, (property) => {
+            push.call(source, value[property]);
+        });
+
+        const pointer = encodeContainer(data, value, concat.call([[null, source]], getAttachmentPairs(value)));
+
+        // Because Blobs and Files cannot be read synchronously (and shouldn't, due to size), we have to defer conversion until later
+        data[defermentListKey].push({
+            k: getPointerKey(value),
+            i: extractIndexFromPointer(pointer),
+            p: pointer,
+            v: value,
+        });
+
+        return pointer;
+    };
+};
+
 const encoders = {
     'nm': encodePrimitive,
     'st': encodePrimitive,
@@ -202,22 +224,8 @@ const encoders = {
 
         return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
     },
-    'Bl': /* istanbul ignore next */ (data, value) => {
-        const pointer = encodeContainer(data, value, concat.call([[null, [
-            void 0, // Simple value is injected for now to later be replaced
-            value.type,
-        ]]], getAttachmentPairs(value)));
-
-        // Because Blobs cannot be read synchronously (and shouldn't, due to size), we have to defer conversion of Blobs until later
-        data.b.push({
-            k: getPointerKey(value),
-            i: extractIndexFromPointer(pointer),
-            p: pointer,
-            v: value,
-        });
-
-        return pointer;
-    },
+    'Bl': genBlobLikeEncoder('b', ['type']),
+    'Fi': genBlobLikeEncoder('f', ['name', 'type', 'lastModified']),
 };
 
 const prepOutput = (data) => {
@@ -235,8 +243,8 @@ module.exports = (value, onFinish) => {
     const data = {
         q: [], // Exploration Queue
         k: {}, // Known References
-        b: [], // Blob Exploration Store
-        f: [], // File Exploration Store
+        b: [], // Blob Deferment List
+        f: [], // File Deferment List
     };
 
     // Initialize data from the top-most value
@@ -247,7 +255,7 @@ module.exports = (value, onFinish) => {
         encodeValue(data, shift.call(data.q).v);
     }
 
-    /* istanbul ignore if */
+    /* istanbul ignore next */
     if (data.b.length > 0 || data.f.length > 0) {
         if (typeof onFinish !== 'function') {
             throw `The value being encoded contains a reference to a ${data.b.length > 0 ? 'Blob' : 'File'} object, which must be handled asynchronously. However, no callback function was provided.`;
@@ -262,6 +270,22 @@ module.exports = (value, onFinish) => {
         };
 
         data.b.forEach((p) => {
+            const reader = new FileReader();
+            reader.addEventListener('loadend', () => {
+                const binaryData = new Uint8Array(reader.result);
+
+                const dataPointer = data[p.k][p.i][0][1];
+                const pointerKey = substring.call(dataPointer, 0, 2);
+                const pointerIndex = extractIndexFromPointer(dataPointer);
+                data[pointerKey][pointerIndex][0][1] = encodeValue(data, binaryData);
+
+                onFinishParse();
+            });
+
+            reader.readAsArrayBuffer(p.v);
+        });
+
+        data.f.forEach((p) => {
             const reader = new FileReader();
             reader.addEventListener('loadend', () => {
                 const binaryData = new Uint8Array(reader.result);

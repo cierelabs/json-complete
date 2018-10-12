@@ -72,7 +72,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Objects: Symbol Keys                                  |
 | ✅    | ✅             | Arrays                                                |
 | ❌    | ✅             | Arrays: String and Symbol Keys                        |
-| ❌ ★  | ✅             | Arrays: Sparse Arrays                                 |
+| ❌ °  | ✅             | Arrays: Sparse Arrays                                 |
 | ❌    | ✅             | Int8Array                                             |
 | ❌    | ✅             | Uint8Array                                            |
 | ❌    | ✅             | Uint8ClampedArray                                     |
@@ -84,6 +84,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Float64Array                                          |
 | ❌    | ✅             | Set                                                   |
 | ❌    | ✅             | Map                                                   |
+| ❌    | ✅ ★           | Blob                                                  |
+| ❌    | ✅ ★           | File                                                  |
 
 | json | json-complete | Features                                              |
 |------|---------------|-------------------------------------------------------|
@@ -98,11 +100,12 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Referencial Integrity for All Reference Types         |
 | ❌    | ✅ †           | Referencial Integrity for Unsupported Types           |
 | ❌    | ✅             | Referencial Deduplication                             |
-| ✅ ‡  | ✅             | Top-Level Encoding for All Supported Values           |
+| ✅ ‡  | ✅             | Root-Level Encoding for All Supported Values          |
 | ✅    | ❌             | Built-in                                              |
+| ✅    | ❌             | Encodes to String                                     |
 
-* ★ JSON will encode sparse arrays by injecting null values into the unassigned indices
-* † Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
+* ° - JSON will encode sparse arrays by injecting null values into the unassigned indices.
+* † - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
   - WeakSet and WeakMap - Not iterable, by design, for security reasons.
   - Math
   - window/global
@@ -110,8 +113,10 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - HTML Element Types
   - document.location
   - JSON
+  - Promise
   - etc.
-* ‡ JSON will do top-level encoding only for the types it supports elsewhere
+* ‡ - JSON will do root-level encoding only for the types it supports elsewhere.
+* ★ - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
 
 ### Terms
 
@@ -123,6 +128,10 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - Dates
   - Functions
   - Objects
+  - Set
+  - Map
+  - Blob
+  - File
 * Array-like Types - Can contain integer key/value pairs, as well as containing key/value pairs using a String or Symbol key (same as Object-like Types).
   - Arrays
   - Int8Array
@@ -275,8 +284,6 @@ TODO
 
 
 ### Blob
-Due to limitations in both maximum string length and the efficiency of Base64 encoding, Blobs larger than about 100MB cannot be stored in json-complete. Furthermore, the maximum size of the entire json-complete structure can only be about 130MB when encoding it to a string, so splitting a gigabyte blob into multiple chucks will not work either.
-
 TODO
 
 
@@ -300,3 +307,15 @@ TODO
 * Add top-level error handling to the functions to handle encoding / decoding problems
 * Create more meaningful error messages, especially for the decoder.
 * Because ArrayBuffer types are always filled, never sparse, simplify the encoding by removing the explicit index encoding
+* Same with Arrays, up to the sparse point
+* Since special value types don't actually check for null, remove the null key.
+* Write helper to extract buffer from encoded Blob/File objects on Node
+* Write helper to encode buffer into Blob or File objects on Node
+* Error type
+* Arguments
+* SharedArrayBuffer
+* ArrayBuffer
+* Generator
+* GeneratorFunction
+* AsyncFunction
+* Proxy???

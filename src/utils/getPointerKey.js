@@ -1,5 +1,4 @@
 const log = require('./log.js');
-const warn = require('./warn.js');
 
 const toString = Object.prototype.toString;
 
@@ -77,7 +76,7 @@ module.exports = (v) => {
     const systemName = toString.call(v);
 
     if (unsupportedTypeNames[systemName]) {
-        warn(unsupportedTypeNames[systemName])
+        log(unsupportedTypeNames[systemName])
         log(v);
         return 'ob';
     }
@@ -85,7 +84,7 @@ module.exports = (v) => {
     const pointerKey = typeNameMap[systemName];
 
     if (!pointerKey) {
-        warn(`Unrecognized value type "${systemName}" could not be encoded. Reference replaced with plain object. Value:`);
+        log(`Unrecognized value type "${systemName}" could not be encoded. Reference replaced with plain object. Value:`);
         log(v);
         return 'ob';
     }

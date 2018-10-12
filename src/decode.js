@@ -137,6 +137,39 @@ const genValueObjectGenerator = (type) => {
     };
 }
 
+/* istanbul ignore next */
+const genBlob = (data, p) => {
+    const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+    const type = getP(data, genDecodePointer(encodedArray[1][1]));
+
+    const dataArray = []
+    forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
+        push.call(dataArray, getP(data, genDecodePointer(item[1])));
+    });
+
+    return new Blob([new Uint8Array(dataArray)], {
+        type: type,
+    });
+};
+
+/* istanbul ignore next */
+const genFile = (data, p) => {
+    const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+    const name = getP(data, genDecodePointer(encodedArray[1][1]));
+    const type = getP(data, genDecodePointer(encodedArray[2][1]));
+    const lastModified = getP(data, genDecodePointer(encodedArray[3][1]));
+
+    const dataArray = []
+    forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
+        push.call(dataArray, getP(data, genDecodePointer(item[1])));
+    });
+
+    return new File([new Uint8Array(dataArray)], name, {
+        type: type,
+        lastModified: lastModified,
+    });
+};
+
 const types = {
     'un': genIdentityGenerator(void 0),
     'nl': genIdentityGenerator(null),
@@ -235,21 +268,11 @@ const types = {
     },
     'Bl': {
         g: containerGenerator,
-        n: /* istanbul ignore next */ (data, p) => {
-            const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
-            const type = getP(data, genDecodePointer(encodedArray[1][1]));
-
-            const options = type === 0 ? void 0 : {
-                type: type,
-            };
-
-            const dataArray = []
-            forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
-                push.call(dataArray, getP(data, genDecodePointer(item[1])));
-            });
-
-            return new Blob([new Uint8Array(dataArray)], options);
-        },
+        n: genBlob,
+    },
+    'Fi': {
+        g: containerGenerator,
+        n: genFile,
     },
 };
 

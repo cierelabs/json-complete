@@ -26,35 +26,35 @@ gulp.task('test', () => {
 
 gulp.task('browser-test-js', () => {
     const b = browserify({
-        entries: './src/InBrowserTester.js',
+        entries: './src/BrowserTesting/tests.js',
+        paths: ['./node_modules','./'],
         debug: true,
     });
 
     return b.bundle()
         .on('error', onError)
-        .pipe(vinylSourceStream('InBrowserTester.js'))
+        .pipe(vinylSourceStream('tests.js'))
         .on('error', onError)
         .pipe(vinylBuffer())
         .on('error', onError)
-        .pipe(gulp.dest('./_InBrowserTester/'));
+        .pipe(gulp.dest('./_BrowserTesting/'));
 });
 
 gulp.task('browser-test-html', () => {
-    return gulp.src(['./src/InBrowserTester.html'])
-        .pipe(gulp.dest('./_InBrowserTester/'))
+    return gulp.src(['./src/BrowserTesting/index.html'])
+        .pipe(gulp.dest('./_BrowserTesting/'))
 });
 
 gulp.task('serve', () => {
     browserSync.init({
-        files: ['./_InBrowserTester/**/*.*'],
+        files: ['./_BrowserTesting/**/*.*'],
         reloadDebounce: 400,
         port: 4000,
         ui: {
             port: 5001,
         },
         server: {
-            baseDir: './_InBrowserTester/',
-            index: 'InBrowserTester.html',
+            baseDir: './_BrowserTesting/',
         },
         ghostMode: false,
         snippetOptions: {
