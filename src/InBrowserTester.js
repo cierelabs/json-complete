@@ -1,4 +1,6 @@
 const Array = require('./__tests__/Array.js');
+const AsyncForm = require('./__tests__/AsyncForm.js');
+const Blob = require('./__tests__/Blob.js');
 const Boolean = require('./__tests__/Boolean.js');
 const Date = require('./__tests__/Date.js');
 const Float32Array = require('./__tests__/Float32Array.js');
@@ -27,3 +29,9 @@ const UnknownPointerKey = require('./__tests__/UnknownPointerKey.js');
 const UnsupportedTypes = require('./__tests__/UnsupportedTypes.js');
 const WeakMap = require('./__tests__/WeakMap.js');
 const WeakSet = require('./__tests__/WeakSet.js');
+
+// const test = require('tape');
+// const jsonComplete = require('./main.js');
+
+// const encode = jsonComplete.encode;
+// const decode = jsonComplete.decode;

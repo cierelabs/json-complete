@@ -41,3 +41,17 @@ test('Symbol: Root Value Registered Symbol', (t) => {
     t.plan(1);
     t.equal(decode(encode(Symbol.for('x'))), Symbol.for('x'));
 });
+
+test('Symbol: Referencial Integrity', (t) => {
+    t.plan(2);
+
+    const source = Symbol();
+
+    const decoded = decode(encode({
+        x: source,
+        y: source,
+    }));
+
+    t.equal(decoded.x, decoded.y);
+    t.notEqual(decoded.x, source);
+});

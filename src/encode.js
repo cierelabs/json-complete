@@ -3,18 +3,23 @@ const getAttachmentPairs = require('./utils/getAttachmentPairs.js');
 const getPointerKey = require('./utils/getPointerKey.js');
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
+const warn = require('./utils/warn.js');
 
 const booleanValueOf = Boolean.prototype.valueOf;
 const concat = Array.prototype.concat;
 const find = Array.prototype.find;
 const forEach = Array.prototype.forEach;
 const forEachMap = Map.prototype.forEach;
+const forEachSet = Set.prototype.forEach;
 const numberValueOf = Number.prototype.valueOf;
 const push = Array.prototype.push;
-const forEachSet = Set.prototype.forEach;
 const shift = Array.prototype.shift;
 const stringValueOf = String.prototype.valueOf;
 const substring = String.prototype.substring;
+
+const extractIndexFromPointer = (pointer) => {
+    return parseInt(substring.call(pointer, 2), 10);
+};
 
 const tryGetExistingPointer = (data, value, pointerKey) => {
     // Simple PointerKeys are their own Pointers
@@ -75,7 +80,7 @@ const encodeContainer = (data, box, pairs) => {
 
     if (existingPointer) {
         // encodeContainer is never called on a Simple Pointer Key value, so there is no need to account for a missing index here
-        p.i = parseInt(substring.call(existingPointer, 2), 10);
+        p.i = extractIndexFromPointer(existingPointer);
         p.p = existingPointer;
     }
     else {
@@ -197,12 +202,41 @@ const encoders = {
 
         return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
     },
+    'Bl': /* istanbul ignore next */ (data, value) => {
+        const pointer = encodeContainer(data, value, concat.call([[null, [
+            void 0, // Simple value is injected for now to later be replaced
+            value.type,
+        ]]], getAttachmentPairs(value)));
+
+        // Because Blobs cannot be read synchronously (and shouldn't, due to size), we have to defer conversion of Blobs until later
+        data.b.push({
+            k: getPointerKey(value),
+            i: extractIndexFromPointer(pointer),
+            p: pointer,
+            v: value,
+        });
+
+        return pointer;
+    },
 };
 
-module.exports = (value) => {
+const prepOutput = (data) => {
+    // Remove encoding data no longer needed
+    delete data.q;
+    delete data.k;
+    delete data.b;
+    delete data.f;
+
+    // Convert data object to a simple array of pairs
+    return getAttachmentPairs(data);
+};
+
+module.exports = (value, onFinish) => {
     const data = {
         q: [], // Exploration Queue
         k: {}, // Known References
+        b: [], // Blob Exploration Store
+        f: [], // File Exploration Store
     };
 
     // Initialize data from the top-most value
@@ -213,10 +247,44 @@ module.exports = (value) => {
         encodeValue(data, shift.call(data.q).v);
     }
 
-    // Remove encoding data no longer needed
-    delete data.q;
-    delete data.k;
+    /* istanbul ignore if */
+    if (data.b.length > 0 || data.f.length > 0) {
+        if (typeof onFinish !== 'function') {
+            throw `The value being encoded contains a reference to a ${data.b.length > 0 ? 'Blob' : 'File'} object, which must be handled asynchronously. However, no callback function was provided.`;
+        }
 
-    // Convert data object to a simple array of pairs
-    return getAttachmentPairs(data);
+        let toParseCount = data.b.length + data.f.length;
+        const onFinishParse = () => {
+            toParseCount -= 1;
+            if (toParseCount === 0) {
+                onFinish(prepOutput(data));
+            }
+        };
+
+        data.b.forEach((p) => {
+            const reader = new FileReader();
+            reader.addEventListener('loadend', () => {
+                const binaryData = new Uint8Array(reader.result);
+
+                const dataPointer = data[p.k][p.i][0][1];
+                const pointerKey = substring.call(dataPointer, 0, 2);
+                const pointerIndex = extractIndexFromPointer(dataPointer);
+                data[pointerKey][pointerIndex][0][1] = encodeValue(data, binaryData);
+
+                onFinishParse();
+            });
+
+            reader.readAsArrayBuffer(p.v);
+        });
+    }
+    else {
+        // If used in a callback form, call the callback
+        if (typeof onFinish === 'function') {
+            onFinish(prepOutput(data));
+            return;
+        }
+
+        // Otherwise, return directly
+        return prepOutput(data);
+    }
 };

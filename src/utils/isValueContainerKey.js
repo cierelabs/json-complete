@@ -7,6 +7,8 @@ const valueContainerKeys = {
     'ST': 1, // Object-wrapped String
     'Se': 1, // Set
     'Ma': 1, // Map
+    'Bl': 1, // Blob
+    'Fi': 1, // File
 };
 
 module.exports = (pointerKey) => {

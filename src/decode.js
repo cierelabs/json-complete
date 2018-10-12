@@ -2,6 +2,7 @@ const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 const isValueContainerKey = require('./utils/isValueContainerKey.js');
 
+const forEach = Array.prototype.forEach;
 const match = String.prototype.match;
 const push = Array.prototype.push;
 const shift = Array.prototype.shift;
@@ -10,13 +11,13 @@ const substring = String.prototype.substring;
 // Doesn't provide much protection, only prevents an evaluation from affecting the ongoing decoding process
 const functionIsolatorReference = function functionIsolator(functionString) {
     try {
-        eval(`functionIsolator.box = ${functionString};`);
-        return functionIsolator.box;
+        eval(`functionIsolator.b = ${functionString};`);
+        return functionIsolator.b;
     }
     catch (e) {
         // If it was an error, then it's possible that the item was a Method Function
-        eval(`functionIsolator.box = { ${functionString} };`);
-        return functionIsolator.box[match.call(functionString, /\s*([^\s(]+)\s*\(/)[1]];
+        eval(`functionIsolator.b = { ${functionString} };`);
+        return functionIsolator.b[match.call(functionString, /\s*([^\s(]+)\s*\(/)[1]];
     }
 }
 
@@ -177,7 +178,7 @@ const types = {
     'fu': {
         g: containerGenerator,
         n: (data, p) => {
-            delete functionIsolatorReference.box;
+            delete functionIsolatorReference.b;
             return functionIsolatorReference(genValueOf(data, p));
         },
     },
@@ -230,6 +231,24 @@ const types = {
                 ]);
             }
             return new Map(decodedArray);
+        },
+    },
+    'Bl': {
+        g: containerGenerator,
+        n: /* istanbul ignore next */ (data, p) => {
+            const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+            const type = getP(data, genDecodePointer(encodedArray[1][1]));
+
+            const options = type === 0 ? void 0 : {
+                type: type,
+            };
+
+            const dataArray = []
+            forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
+                push.call(dataArray, getP(data, genDecodePointer(item[1])));
+            });
+
+            return new Blob([new Uint8Array(dataArray)], options);
         },
     },
 };

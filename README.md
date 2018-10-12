@@ -72,7 +72,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Objects: Symbol Keys                                  |
 | ✅    | ✅             | Arrays                                                |
 | ❌    | ✅             | Arrays: String and Symbol Keys                        |
-| ❌ *  | ✅             | Arrays: Sparse Arrays                                 |
+| ❌ ★  | ✅             | Arrays: Sparse Arrays                                 |
 | ❌    | ✅             | Int8Array                                             |
 | ❌    | ✅             | Uint8Array                                            |
 | ❌    | ✅             | Uint8ClampedArray                                     |
@@ -92,18 +92,17 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌    | ✅             | Shared Key and Value Symbol References                |
 | ❌    | ✅             | Shared Key and Value Map References                   |
 | ❌    | ✅             | Arbitrary Attached Data for All Object-like Types     |
-| ❌    | ✅ ***         | Arbitrary Attached Data for Unsupported Types         |
+| ❌    | ✅ †           | Arbitrary Attached Data for Unsupported Types         |
 | ❌    | ✅             | Self-Containment for All Object-like Types            |
-| ❌    | ✅ ***         | Self-Containment for Unsupported Types                |
+| ❌    | ✅ †           | Self-Containment for Unsupported Types                |
 | ❌    | ✅             | Referencial Integrity for All Reference Types         |
-| ❌    | ✅ ***         | Referencial Integrity for Unsupported Types           |
+| ❌    | ✅ †           | Referencial Integrity for Unsupported Types           |
 | ❌    | ✅             | Referencial Deduplication                             |
-| ✅ ** | ✅             | Top-Level Encoding for All Supported Values           |
+| ✅ ‡  | ✅             | Top-Level Encoding for All Supported Values           |
 | ✅    | ❌             | Built-in                                              |
 
-* \* JSON will encode sparse arrays by injecting null values into the unassigned indices
-* \** JSON will do top-level encoding only for the types it supports elsewhere
-* \*** Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as a plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
+* ★ JSON will encode sparse arrays by injecting null values into the unassigned indices
+* † Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
   - WeakSet and WeakMap - Not iterable, by design, for security reasons.
   - Math
   - window/global
@@ -111,6 +110,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - HTML Element Types
   - document.location
   - JSON
+  - etc.
+* ‡ JSON will do top-level encoding only for the types it supports elsewhere
 
 ### Terms
 
@@ -274,6 +275,8 @@ TODO
 
 
 ### Blob
+Due to limitations in both maximum string length and the efficiency of Base64 encoding, Blobs larger than about 100MB cannot be stored in json-complete. Furthermore, the maximum size of the entire json-complete structure can only be about 130MB when encoding it to a string, so splitting a gigabyte blob into multiple chucks will not work either.
+
 TODO
 
 
@@ -296,3 +299,4 @@ TODO
 * Since functions can be encoded, the decoder for a given set of data can be included.
 * Add top-level error handling to the functions to handle encoding / decoding problems
 * Create more meaningful error messages, especially for the decoder.
+* Because ArrayBuffer types are always filled, never sparse, simplify the encoding by removing the explicit index encoding

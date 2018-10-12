@@ -1,22 +1,7 @@
+const log = require('./log.js');
+const warn = require('./warn.js');
+
 const toString = Object.prototype.toString;
-
-const warn = (a) => {
-    try {
-        console.warn(a);
-    }
-    catch (e) {
-        // Do nothing
-    }
-};
-
-const log = (a) => {
-    try {
-        console.log(a);
-    }
-    catch (e) {
-        // Do nothing
-    }
-};
 
 const typeNameMap = {
     '[object Undefined]': 'un',
@@ -41,6 +26,8 @@ const typeNameMap = {
     '[object Float64Array]': 'F4',
     '[object Set]': 'Se',
     '[object Map]': 'Ma',
+    '[object Blob]': 'Bl',
+    '[object File]': 'Fi',
 };
 
 const objectWrapperTypeNameMap = {
