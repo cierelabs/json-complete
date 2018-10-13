@@ -121,19 +121,20 @@ The same Referencial Type value is only stored once, provided the underlying ref
 ### Terms
 
 * Object-like Types - Can contain key/value pairs using a String or Symbol key.
-  - Booleans: Object-Wrapped
-  - Numbers: Object-Wrapped
-  - Strings: Object-Wrapped
+  - Boolean: Object-Wrapped
+  - Number: Object-Wrapped
+  - String: Object-Wrapped
   - Regex
-  - Dates
-  - Functions
-  - Objects
+  - Date
+  - Function
+  - Error
+  - Object
   - Set
   - Map
   - Blob
   - File
 * Array-like Types - Can contain integer key/value pairs, as well as containing key/value pairs using a String or Symbol key (same as Object-like Types).
-  - Arrays
+  - Array
   - Int8Array
   - Uint8Array
   - Uint8ClampedArray
@@ -146,8 +147,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
  * Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
   - All Object-like Types
   - All Array-like Types
-  - Symbols
-  - Strings (sorta - this is how JS operates at the low level, but it is effectively a Value Type as as far as the programmer is concerned)
+  - Symbol
+  - String (sorta - this is how JS operates at the low level, but it is effectively a Value Type as as far as the programmer is concerned)
 
 ---
 

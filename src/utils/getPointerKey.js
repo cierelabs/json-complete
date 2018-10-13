@@ -11,6 +11,7 @@ const typeNameMap = {
     '[object Date]': 'da',
     '[object RegExp]': 're',
     '[object Function]': 'fu',
+    '[object Error]': 'er',
     '[object Array]': 'ar',
     '[object Object]': 'ob',
     '[object Symbol]': 'sy',

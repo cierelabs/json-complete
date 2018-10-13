@@ -3,6 +3,7 @@ const AsyncForm = require('src/__tests__/AsyncForm.js');
 const Blob = require('src/__tests__/Blob.js');
 const Boolean = require('src/__tests__/Boolean.js');
 const Date = require('src/__tests__/Date.js');
+const Error = require('src/__tests__/Error.js');
 const File = require('src/__tests__/File.js');
 const Float32Array = require('src/__tests__/Float32Array.js');
 const Float64Array = require('src/__tests__/Float64Array.js');
@@ -36,3 +37,19 @@ const WeakSet = require('src/__tests__/WeakSet.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
+
+// try {
+//     throw new EvalError('a');
+// }
+// catch (e) {
+//     console.log(e.name)
+//     console.log(e.message)
+//     console.log(JSON.stringify(e.stack))
+
+//     let test = new EvalError(e.message);
+//     test.stack = e.stack;
+
+//     console.log(test)
+// }
+
+// console.log(decode(encode(new EvalError('a'))))

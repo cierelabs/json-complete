@@ -215,6 +215,44 @@ const types = {
             return functionIsolatorReference(genValueOf(data, p));
         },
     },
+    'er': {
+        g: containerGenerator,
+        n: (data, p) => {
+            const valueArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+
+            const type = getP(data, genDecodePointer(valueArray[0][1]));
+            const message = getP(data, genDecodePointer(valueArray[1][1]));
+            const stack = getP(data, genDecodePointer(valueArray[2][1]));
+
+            let value;
+
+            if (type === 'EvalError') {
+                value = new EvalError(message);
+            }
+            else if (type === 'RangeError') {
+                value = new RangeError(message);
+            }
+            else if (type === 'ReferenceError') {
+                value = new ReferenceError(message);
+            }
+            else if (type === 'SyntaxError') {
+                value = new SyntaxError(message);
+            }
+            else if (type === 'TypeError') {
+                value = new TypeError(message);
+            }
+            else if (type === 'URIError') {
+                value = new URIError(message);
+            }
+            else {
+                value = new Error(message);
+            }
+
+            value.stack = stack;
+
+            return value;
+        },
+    },
     'ob': {
         g: containerGenerator,
         n: () => {

@@ -194,6 +194,39 @@ const encoders = {
     'fu': (data, value) => {
         return encodeContainer(data, value, concat.call([[null, String(value)]], getAttachmentPairs(value)));
     },
+    'er': (data, value) => {
+        let type;
+
+        if (value instanceof EvalError) {
+            type = 'EvalError';
+        }
+        else if (value instanceof RangeError) {
+            type = 'RangeError';
+        }
+        else if (value instanceof ReferenceError) {
+            type = 'ReferenceError';
+        }
+        else if (value instanceof SyntaxError) {
+            type = 'SyntaxError';
+        }
+        else if (value instanceof TypeError) {
+            type = 'TypeError';
+        }
+        else if (value instanceof URIError) {
+            type = 'URIError';
+        }
+        else {
+            type = 'Error';
+        }
+
+        const encodedValue = [
+            type,
+            value.message,
+            value.stack,
+        ];
+
+        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+    },
     'ob': encodeStandardContainer,
     'ar': encodeStandardContainer,
     'BO': genWrappedObjectEncoder(booleanValueOf),
