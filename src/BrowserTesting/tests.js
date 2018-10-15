@@ -38,11 +38,10 @@ const WeakSet = require('src/__tests__/WeakSet.js');
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
 
-// const thing = [0,1,2,3];
+// const thing = /\s/g;
 // thing.x = 2;
-// thing[9] = 10;
 
 // encode(thing, (encoded) => {
 //     console.log(JSON.stringify(encoded, null, 4));
-//     console.log(decode(encoded));
+//     // console.log(decode(encoded));
 // });

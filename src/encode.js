@@ -131,7 +131,7 @@ const encodeStandardContainer = (data, value) => {
 
 const genWrappedObjectEncoder = (valueOf) => {
     return (data, value) => {
-        return encodeContainer(data, value, concat.call([[null, valueOf.call(value)]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[valueOf.call(value)]], getAttachmentPairs(value)));
     };
 };
 
@@ -144,7 +144,7 @@ const genBlobLikeEncoder = (defermentListKey, properties) => {
             push.call(source, value[property]);
         });
 
-        const pointer = encodeContainer(data, value, concat.call([[null, source]], getAttachmentPairs(value)));
+        const pointer = encodeContainer(data, value, concat.call([[source]], getAttachmentPairs(value)));
 
         // Because Blobs and Files cannot be read synchronously (and shouldn't, due to size), we have to defer conversion until later
         data[defermentListKey].push({
@@ -168,7 +168,7 @@ const encoders = {
             value.lastIndex,
         ];
 
-        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[encodedValue]], getAttachmentPairs(value)));
     },
     'da': (data, value) => {
         let encodedValue = value.getTime();
@@ -179,7 +179,7 @@ const encoders = {
             encodedValue = '';
         }
 
-        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[encodedValue]], getAttachmentPairs(value)));
     },
     'sy': (data, value) => {
         const p = genEncodePointer(data, value);
@@ -199,7 +199,7 @@ const encoders = {
         return p.p;
     },
     'fu': (data, value) => {
-        return encodeContainer(data, value, concat.call([[null, String(value)]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[String(value)]], getAttachmentPairs(value)));
     },
     'er': (data, value) => {
         let type;
@@ -232,7 +232,7 @@ const encoders = {
             value.stack,
         ];
 
-        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[encodedValue]], getAttachmentPairs(value)));
     },
     'ob': encodeStandardContainer,
     'ar': encodeStandardContainer,
@@ -254,7 +254,7 @@ const encoders = {
             push.call(encodedValue, part);
         });
 
-        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[encodedValue]], getAttachmentPairs(value)));
     },
     'Ma': (data, value) => {
         const encodedValue = [];
@@ -262,7 +262,7 @@ const encoders = {
             push.call(encodedValue, [key, value]);
         });
 
-        return encodeContainer(data, value, concat.call([[null, encodedValue]], getAttachmentPairs(value)));
+        return encodeContainer(data, value, concat.call([[encodedValue]], getAttachmentPairs(value)));
     },
     'Bl': genBlobLikeEncoder('b', ['type']),
     'Fi': genBlobLikeEncoder('f', ['name', 'type', 'lastModified']),
@@ -314,7 +314,7 @@ module.exports = (value, onFinish) => {
             reader.addEventListener('loadend', () => {
                 const binaryData = new Uint8Array(reader.result);
 
-                const dataPointer = data[p.k][p.i][0][1];
+                const dataPointer = data[p.k][p.i][0][0];
                 const pointerKey = substring.call(dataPointer, 0, 2);
                 const pointerIndex = extractIndexFromPointer(dataPointer);
                 data[pointerKey][pointerIndex][0][1] = encodeValue(data, binaryData);
@@ -330,7 +330,7 @@ module.exports = (value, onFinish) => {
             reader.addEventListener('loadend', () => {
                 const binaryData = new Uint8Array(reader.result);
 
-                const dataPointer = data[p.k][p.i][0][1];
+                const dataPointer = data[p.k][p.i][0][0];
                 const pointerKey = substring.call(dataPointer, 0, 2);
                 const pointerIndex = extractIndexFromPointer(dataPointer);
                 data[pointerKey][pointerIndex][0][1] = encodeValue(data, binaryData);
