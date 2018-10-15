@@ -307,12 +307,9 @@ TODO
 * Since functions can be encoded, the decoder for a given set of data can be included.
 * Add top-level error handling to the functions to handle encoding / decoding problems
 * Create more meaningful error messages, especially for the decoder.
-* Because ArrayBuffer types are always filled, never sparse, simplify the encoding by removing the explicit index encoding
-* Same with Arrays, up to the sparse point
 * Since special value types don't actually check for null, remove the null key.
 * Write helper to extract buffer from encoded Blob/File objects on Node
 * Write helper to encode buffer into Blob or File objects on Node
-* Error type
 * Arguments
 * SharedArrayBuffer
 * ArrayBuffer

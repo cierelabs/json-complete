@@ -32,24 +32,17 @@ const UnsupportedTypes = require('src/__tests__/UnsupportedTypes.js');
 const WeakMap = require('src/__tests__/WeakMap.js');
 const WeakSet = require('src/__tests__/WeakSet.js');
 
-// const test = require('tape');
+
 // const jsonComplete = require('src/main.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
 
-// try {
-//     throw new EvalError('a');
-// }
-// catch (e) {
-//     console.log(e.name)
-//     console.log(e.message)
-//     console.log(JSON.stringify(e.stack))
+// const thing = [0,1,2,3];
+// thing.x = 2;
+// thing[9] = 10;
 
-//     let test = new EvalError(e.message);
-//     test.stack = e.stack;
-
-//     console.log(test)
-// }
-
-// console.log(decode(encode(new EvalError('a'))))
+// encode(thing, (encoded) => {
+//     console.log(JSON.stringify(encoded, null, 4));
+//     console.log(decode(encoded));
+// });

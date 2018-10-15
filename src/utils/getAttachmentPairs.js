@@ -30,7 +30,17 @@ module.exports = (v) => {
     // Object-Wrapped Strings would incorrectly parse the string as an indexed list, so ignore those indices
     const pairs = [];
     const pairKeys = getPointerKey(v) === 'ST' ? nonIndexKeys : concat.call(foundIndices, nonIndexKeys);
+    let i = 0;
     forEach.call(pairKeys, (key) => {
+        // For Arrays and Array-like objects, if the key is a number and matches the counting index, we don't have to encode the key value
+        if (key === i) {
+            push.call(pairs, [
+                v[key],
+            ]);
+            i += 1;
+            return;
+        }
+
         push.call(pairs, [
             key,
             v[key],

@@ -58,12 +58,12 @@ test('Array: Circular Array References', (t) => {
 
     circular[0][0][1] = circular;
 
-    const circularArray = decode(encode(circular));
+    const decodedArray = decode(encode(circular));
 
-    t.equal(circularArray[0][0][0][0], 1);
-    t.equal(circularArray[0][0][1][0][0][0][0], 1);
-    t.equal(circularArray[0][0][1], circularArray);
-    t.equal(circularArray[0][0][1], circularArray[0][0][1][0][0][1]);
+    t.equal(decodedArray[0][0][0][0], 1);
+    t.equal(decodedArray[0][0][1][0][0][0][0], 1);
+    t.equal(decodedArray[0][0][1], decodedArray);
+    t.equal(decodedArray[0][0][1], decodedArray[0][0][1][0][0][1]);
 });
 
 test('Array: Sparse Array', (t) => {
@@ -71,12 +71,12 @@ test('Array: Sparse Array', (t) => {
 
     const sparse = [0];
     sparse[5] = 5;
-    const sparseArray = decode(encode(sparse));
+    const decodedArray = decode(encode(sparse));
 
-    t.equal(sparse[0], 0);
-    t.equal(sparse[5], 5);
-    t.equal(sparse[3], void 0);
-    t.equal(sparseArray.length, 6);
+    t.equal(decodedArray[0], 0);
+    t.equal(decodedArray[5], 5);
+    t.equal(decodedArray[3], void 0);
+    t.equal(decodedArray.length, 6);
 });
 
 test('Array: Non-Index Keys', (t) => {

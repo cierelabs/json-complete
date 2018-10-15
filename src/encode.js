@@ -91,6 +91,13 @@ const encodeContainer = (data, box, pairs) => {
 
     // Encode each part of the Container
     forEach.call(pairs, (pair) => {
+        if (pair.length === 1) {
+            push.call(container, [
+                genEncodedPart(data, pair[0]),
+            ]);
+            return;
+        }
+
         push.call(container, [
             genEncodedPart(data, pair[0]),
             genEncodedPart(data, pair[1]),

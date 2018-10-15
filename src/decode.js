@@ -89,11 +89,16 @@ const containerGenerator = (data, p) => {
 
     // Skip the first item if the data's value had to be encoded with other values
     // These items have null keys
-    let i = isValueContainerKey(p.k) ? 1 : 0;
+    const offset = isValueContainerKey(p.k) ? 1 : 0;
 
     const pairLength = pairs.length;
-    for (; i < pairLength; i += 1) {
-        container[genContainerPart(data, pairs[i][0])] = genContainerPart(data, pairs[i][1]);
+    for (let i = 0; i < pairLength - offset; i += 1) {
+        // const test = pairs[i + offset];
+        if (pairs[i + offset].length === 1) {
+            container[i] = genContainerPart(data, pairs[i + offset][0]);
+            continue;
+        }
+        container[genContainerPart(data, pairs[i + offset][0])] = genContainerPart(data, pairs[i + offset][1]);
     }
 
     return container;
@@ -140,11 +145,11 @@ const genValueObjectGenerator = (type) => {
 /* istanbul ignore next */
 const genBlob = (data, p) => {
     const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
-    const type = getP(data, genDecodePointer(encodedArray[1][1]));
+    const type = getP(data, genDecodePointer(encodedArray[1][0]));
 
     const dataArray = []
     forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
-        push.call(dataArray, getP(data, genDecodePointer(item[1])));
+        push.call(dataArray, getP(data, genDecodePointer(item[0])));
     });
 
     return new Blob([new Uint8Array(dataArray)], {
@@ -155,13 +160,13 @@ const genBlob = (data, p) => {
 /* istanbul ignore next */
 const genFile = (data, p) => {
     const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
-    const name = getP(data, genDecodePointer(encodedArray[1][1]));
-    const type = getP(data, genDecodePointer(encodedArray[2][1]));
-    const lastModified = getP(data, genDecodePointer(encodedArray[3][1]));
+    const name = getP(data, genDecodePointer(encodedArray[1][0]));
+    const type = getP(data, genDecodePointer(encodedArray[2][0]));
+    const lastModified = getP(data, genDecodePointer(encodedArray[3][0]));
 
     const dataArray = []
     forEach.call(getP(data, genDecodePointer(encodedArray[0][1])), (item) => {
-        push.call(dataArray, getP(data, genDecodePointer(item[1])));
+        push.call(dataArray, getP(data, genDecodePointer(item[0])));
     });
 
     return new File([new Uint8Array(dataArray)], name, {
@@ -189,8 +194,8 @@ const types = {
         g: containerGenerator,
         n: (data, p) => {
             const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
-            const value = new RegExp(getP(data, genDecodePointer(encodedArray[0][1])), getP(data, genDecodePointer(encodedArray[1][1])));
-            value.lastIndex = getP(data, genDecodePointer(encodedArray[2][1]));
+            const value = new RegExp(getP(data, genDecodePointer(encodedArray[0][0])), getP(data, genDecodePointer(encodedArray[1][0])));
+            value.lastIndex = getP(data, genDecodePointer(encodedArray[2][0]));
 
             return value;
         },
@@ -198,10 +203,10 @@ const types = {
     'sy': {
         g: (data, p) => {
             // Manually decode the array container format
-            const valueArray = getP(data, genDecodePointer(getP(data, p)));
+            const encodedArray = getP(data, genDecodePointer(getP(data, p)));
 
-            const type = getP(data, genDecodePointer(valueArray[0][1]));
-            const name = getP(data, genDecodePointer(valueArray[1][1]));
+            const type = getP(data, genDecodePointer(encodedArray[0][0]));
+            const name = getP(data, genDecodePointer(encodedArray[1][0]));
 
             data[p.k][p.i] = type === 1 ? Symbol.for(name) : Symbol(name);
 
@@ -218,11 +223,11 @@ const types = {
     'er': {
         g: containerGenerator,
         n: (data, p) => {
-            const valueArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
+            const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
 
-            const type = getP(data, genDecodePointer(valueArray[0][1]));
-            const message = getP(data, genDecodePointer(valueArray[1][1]));
-            const stack = getP(data, genDecodePointer(valueArray[2][1]));
+            const type = getP(data, genDecodePointer(encodedArray[0][0]));
+            const message = getP(data, genDecodePointer(encodedArray[1][0]));
+            const stack = getP(data, genDecodePointer(encodedArray[2][0]));
 
             let value;
 
@@ -284,7 +289,7 @@ const types = {
             const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
             const decodedArray = [];
             for (let a = 0; a < encodedArray.length; a += 1) {
-                push.call(decodedArray, genContainerPart(data, encodedArray[a][1]));
+                push.call(decodedArray, genContainerPart(data, encodedArray[a][0]));
             }
             return new Set(decodedArray);
         },
@@ -295,10 +300,10 @@ const types = {
             const encodedArray = getP(data, genDecodePointer(getP(data, p)[0][1]));
             const decodedArray = [];
             for (let a = 0; a < encodedArray.length; a += 1) {
-                const pairArray = getP(data, genDecodePointer(encodedArray[a][1]));
+                const pairArray = getP(data, genDecodePointer(encodedArray[a][0]));
                 push.call(decodedArray, [
-                    genContainerPart(data, pairArray[0][1]),
-                    genContainerPart(data, pairArray[1][1]),
+                    genContainerPart(data, pairArray[0][0]),
+                    genContainerPart(data, pairArray[1][0]),
                 ]);
             }
             return new Map(decodedArray);
