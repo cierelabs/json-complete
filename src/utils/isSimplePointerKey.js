@@ -10,5 +10,5 @@ const simpleKeys = {
 };
 
 module.exports = (pointerKey) => {
-    return Boolean(simpleKeys[pointerKey]);
+    return simpleKeys[pointerKey];
 };

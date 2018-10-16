@@ -23,5 +23,5 @@ const containerKeys = {
 };
 
 module.exports = (pointerKey) => {
-    return Boolean(containerKeys[pointerKey]);
+    return containerKeys[pointerKey];
 };

@@ -5,21 +5,8 @@ const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 const isCompositePointerKey = require('./utils/isCompositePointerKey.js');
 
-const booleanValueOf = Boolean.prototype.valueOf;
-const concat = Array.prototype.concat;
-const find = Array.prototype.find;
-const forEach = Array.prototype.forEach;
-const forEachMap = Map.prototype.forEach;
-const forEachSet = Set.prototype.forEach;
-const numberValueOf = Number.prototype.valueOf;
-const push = Array.prototype.push;
-const shift = Array.prototype.shift;
-const slice = Array.prototype.slice;
-const stringValueOf = String.prototype.valueOf;
-const substring = String.prototype.substring;
-
 const extractIndexFromPointer = (pointer) => {
-    return parseInt(substring.call(pointer, 2), 10);
+    return parseInt(pointer.substring(2), 10);
 };
 
 const tryGetExistingPointer = (data, value, pointerKey) => {
@@ -32,7 +19,7 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
     data.k[pointerKey] = data.k[pointerKey] || [];
 
     // Try to find existing item matching the value
-    const foundItem = find.call(data.k[pointerKey], (p) => {
+    const foundItem = data.k[pointerKey].find((p) => {
         return p.v === value;
     });
 
@@ -43,7 +30,7 @@ const tryGetExistingPointer = (data, value, pointerKey) => {
 const encodePrimitive = (data, value) => {
     const p = genEncodePointer(data, value);
     data[p.k][p.i] = value;
-    push.call(data.k[p.k], p);
+    data.k[p.k].push(p);
     return p.p;
 };
 
@@ -67,8 +54,8 @@ const genEncodedPart = (data, value) => {
     data[p.k][p.i] = [];
 
     // Only allow one-level-deep container exploration by using the exploreQueue, otherwise circular references can cause infinite loops
-    push.call(data.k[p.k], p);
-    push.call(data.q, p);
+    data.k[p.k].push(p);
+    data.q.push(p);
 
     return p.p;
 };
@@ -85,27 +72,27 @@ const encodeContainer = (data, box, pairs) => {
         p.p = existingPointer;
     }
     else {
-        push.call(data.k[p.k], p);
+        data.k[p.k].push(p);
     }
 
     data[p.k][p.i] = data[p.k][p.i] || [];
     const container = data[p.k][p.i];
 
     if (isCompositePointerKey(p.k)) {
-        push.call(container, pairs[0]);
-        pairs = slice.call(pairs, 1);
+        container.push(pairs[0]);
+        pairs = pairs.slice(1);
     }
 
     // Encode each part of the Container
-    forEach.call(pairs, (pair) => {
+    pairs.forEach((pair) => {
         if (pair.length === 1) {
-            push.call(container, [
+            container.push([
                 genEncodedPart(data, pair[0]),
             ]);
             return;
         }
 
-        push.call(container, [
+        container.push([
             genEncodedPart(data, pair[0]),
             genEncodedPart(data, pair[1]),
         ]);
@@ -136,11 +123,9 @@ const encodeStandardContainer = (data, value) => {
     return encodeContainer(data, value, getAttachmentPairs(value));
 };
 
-const genWrappedObjectEncoder = (valueOf) => {
-    return (data, value) => {
-        const encodedValue = encodeValue(data, valueOf.call(value));
-        return encodeContainer(data, value, concat.call([encodedValue], getAttachmentPairs(value)));
-    };
+const encodeWrappedObject = (data, value) => {
+    const encodedValue = encodeValue(data, value.valueOf());
+    return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)));
 };
 
 const encodeTypedArray = (data, value) => {
@@ -148,16 +133,16 @@ const encodeTypedArray = (data, value) => {
     const indices = [];
     const otherPairs = [];
 
-    forEach.call(attachments, (pair) => {
+    attachments.forEach((pair) => {
         if (pair.length === 1) {
-            push.call(indices, encodeValue(data, pair[0]));
+            indices.push(encodeValue(data, pair[0]));
             return;
         }
 
-        push.call(otherPairs, pair);
+        otherPairs.push(pair);
     });
 
-    return encodeContainer(data, value, concat.call([indices], otherPairs));
+    return encodeContainer(data, value, [indices].concat(otherPairs));
 };
 
 /* istanbul ignore next */
@@ -165,11 +150,11 @@ const genBlobLikeEncoder = (defermentListKey, properties) => {
     return (data, value) => {
         // Initial simple value is injected for now to later be replaced
         const source = [void 0];
-        forEach.call(properties, (property) => {
-            push.call(source, encodeValue(data, value[property]));
+        properties.forEach((property) => {
+            source.push(encodeValue(data, value[property]));
         });
 
-        const pointer = encodeContainer(data, value, concat.call([source], getAttachmentPairs(value)));
+        const pointer = encodeContainer(data, value, [source].concat(getAttachmentPairs(value)));
 
         // Because Blobs and Files cannot be read synchronously (and shouldn't, due to size), we have to defer conversion until later
         data[defermentListKey].push({
@@ -193,7 +178,7 @@ const encoders = {
             encodeValue(data, value.lastIndex),
         ];
 
-        return encodeContainer(data, value, concat.call([encodedValueData], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValueData].concat(getAttachmentPairs(value)));
     },
     'da': (data, value) => {
         let encodedValueData = value.getTime();
@@ -206,7 +191,7 @@ const encoders = {
 
         encodedValueData = encodeValue(data, encodedValueData);
 
-        return encodeContainer(data, value, concat.call([encodedValueData], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValueData].concat(getAttachmentPairs(value)));
     },
     'sy': (data, value) => {
         const p = genEncodePointer(data, value);
@@ -219,15 +204,15 @@ const encoders = {
         else {
             const symbolString = String(value);
             // For unique Symbols, specify with 0 value and also store the optional identifying string
-            data[p.k][p.i] = [encodeValue(data, 0), encodeValue(data, substring.call(symbolString, 7, symbolString.length - 1))];
+            data[p.k][p.i] = [encodeValue(data, 0), encodeValue(data, symbolString.substring(7, symbolString.length - 1))];
         }
 
-        push.call(data.k[p.k], p);
+        data.k[p.k].push(p);
         return p.p;
     },
     'fu': (data, value) => {
         const encodedValueData = encodeValue(data, String(value));
-        return encodeContainer(data, value, concat.call([encodedValueData], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValueData].concat(getAttachmentPairs(value)));
     },
     'er': (data, value) => {
         let type;
@@ -260,13 +245,13 @@ const encoders = {
             encodeValue(data, value.stack),
         ];
 
-        return encodeContainer(data, value, concat.call([encodedValue], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)));
     },
     'ob': encodeStandardContainer,
     'ar': encodeStandardContainer,
-    'BO': genWrappedObjectEncoder(booleanValueOf),
-    'NM': genWrappedObjectEncoder(numberValueOf),
-    'ST': genWrappedObjectEncoder(stringValueOf),
+    'BO': encodeWrappedObject,
+    'NM': encodeWrappedObject,
+    'ST': encodeWrappedObject,
     'I1': encodeTypedArray,
     'U1': encodeTypedArray,
     'C1': encodeTypedArray,
@@ -278,19 +263,19 @@ const encoders = {
     'F4': encodeTypedArray,
     'Se': (data, value) => {
         const encodedValue = [];
-        forEachSet.call(value, (part) => {
-            push.call(encodedValue, genEncodedPart(data, part));
+        value.forEach((part) => {
+            encodedValue.push(genEncodedPart(data, part));
         });
 
-        return encodeContainer(data, value, concat.call([encodedValue], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)));
     },
     'Ma': (data, value) => {
         const encodedValue = [];
-        forEachMap.call(value, (value, key) => {
-            push.call(encodedValue, [genEncodedPart(data, key), genEncodedPart(data, value)]);
+        value.forEach((value, key) => {
+            encodedValue.push([genEncodedPart(data, key), genEncodedPart(data, value)]);
         });
 
-        return encodeContainer(data, value, concat.call([encodedValue], getAttachmentPairs(value)));
+        return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)));
     },
     'Bl': genBlobLikeEncoder('b', ['type']),
     'Fi': genBlobLikeEncoder('f', ['name', 'type', 'lastModified']),
@@ -320,7 +305,7 @@ module.exports = (value, onFinish) => {
 
     // While there are still references to explore, go through them
     while (data.q.length > 0) {
-        encodeValue(data, shift.call(data.q).v);
+        encodeValue(data, data.q.shift().v);
     }
 
     // If we have to handle Blob or File types
@@ -348,8 +333,8 @@ module.exports = (value, onFinish) => {
             reader.readAsArrayBuffer(p.v);
         };
 
-        forEach.call(data.b, encodeBlobLikeData);
-        forEach.call(data.f, encodeBlobLikeData);
+        data.b.forEach(encodeBlobLikeData);
+        data.f.forEach(encodeBlobLikeData);
 
         return;
     }

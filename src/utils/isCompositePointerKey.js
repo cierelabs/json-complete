@@ -26,5 +26,5 @@ const compositeTypeKeys = {
 };
 
 module.exports = (pointerKey) => {
-    return Boolean(compositeTypeKeys[pointerKey]);
+    return compositeTypeKeys[pointerKey];
 };

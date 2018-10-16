@@ -1,11 +1,6 @@
 const log = require('./log.js');
 
-const toString = Object.prototype.toString;
-
 const typeNameMap = {
-    '[object Undefined]': 'un',
-    '[object Null]': 'nl',
-    '[object Boolean]': 'bo',
     '[object Number]': 'nm',
     '[object String]': 'st',
     '[object Date]': 'da',
@@ -36,11 +31,6 @@ const objectWrapperTypeNameMap = {
     '[object String]': 'ST',
 };
 
-const unsupportedTypeNames = {
-    '[object WeakSet]': 'Tried to encode a WeakSet value. WeakSets cannot be iterated for security reasons, and thus, they cannot be encoded. Reference replaced with plain object. Value:',
-    '[object WeakMap]': 'Tried to encode a WeakMap value. WeakMaps cannot be iterated for security reasons, and thus, they cannot be encoded. Reference replaced with plain object. Value:',
-};
-
 // NOTE: Because Sets and Maps can accept any value as an entry (or key for Map), if unrecognized or unsupported types did not retain referencial integrity, data loss could occur.
 // For example, if they were replaced with null, any existing entry keyed with null in a Map would be overwritten. Likewise, the Set could have its order changed.
 
@@ -54,11 +44,11 @@ module.exports = (v) => {
         return 'nl';
     }
     else if (typeof v === 'number') {
-        if (v === Number.POSITIVE_INFINITY) {
+        if (v === Infinity) {
             return '+i';
         }
 
-        if (v === Number.NEGATIVE_INFINITY) {
+        if (v === -Infinity) {
             return '-i';
         }
 
@@ -66,29 +56,18 @@ module.exports = (v) => {
             return 'na';
         }
 
-        if (v === -0 && (1 / v) === Number.NEGATIVE_INFINITY) {
+        if (v === -0 && (1 / v) === -Infinity) {
             return 'n0';
         }
     }
-    else if (typeof v === 'boolean') {
-        return v === true ? 'bt' : 'bf';
+    else if (v === true) {
+        return 'bt';
+    }
+    else if (v === false) {
+        return 'bf';
     }
 
-    const systemName = toString.call(v);
-
-    if (unsupportedTypeNames[systemName]) {
-        log(unsupportedTypeNames[systemName])
-        log(v);
-        return 'ob';
-    }
-
-    const pointerKey = typeNameMap[systemName];
-
-    if (!pointerKey) {
-        log(`Unrecognized value type "${systemName}" could not be encoded. Reference replaced with plain object. Value:`);
-        log(v);
-        return 'ob';
-    }
+    const systemName = Object.prototype.toString.call(v);
 
     if (typeof v === 'object') {
         // Primitive types can sometimes be wrapped as Objects and must be handled differently
@@ -96,6 +75,14 @@ module.exports = (v) => {
         if (wrappedPointerKey) {
             return wrappedPointerKey;
         }
+    }
+
+    const pointerKey = typeNameMap[systemName];
+
+    if (!pointerKey) {
+        log(`Unsupported type "${systemName}". Value reference replaced with empty object:`);
+        log(v);
+        return 'ob';
     }
 
     return pointerKey;

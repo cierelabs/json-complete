@@ -307,7 +307,6 @@ TODO
 * Since functions can be encoded, the decoder for a given set of data can be included.
 * Add top-level error handling to the functions to handle encoding / decoding problems
 * Create more meaningful error messages, especially for the decoder.
-* Since special value types don't actually check for null, remove the null key.
 * Write helper to extract buffer from encoded Blob/File objects on Node
 * Write helper to encode buffer into Blob or File objects on Node
 * Arguments
@@ -317,3 +316,4 @@ TODO
 * GeneratorFunction
 * AsyncFunction
 * Proxy???
+* Add a version number part of the encoding process

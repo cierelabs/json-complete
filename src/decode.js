@@ -1,30 +1,12 @@
 const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
 const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
 const isCompositePointerKey = require('./utils/isCompositePointerKey.js');
-
-const forEach = Array.prototype.forEach;
-const match = String.prototype.match;
-const push = Array.prototype.push;
-const shift = Array.prototype.shift;
-const substring = String.prototype.substring;
-
-// Doesn't provide much protection, only prevents an evaluation from affecting the ongoing decoding process
-const functionIsolatorReference = function functionIsolator(functionString) {
-    try {
-        eval(`functionIsolator.b = ${functionString};`);
-        return functionIsolator.b;
-    }
-    catch (e) {
-        // If it was an error, then it's possible that the item was a Method Function
-        eval(`functionIsolator.b = { ${functionString} };`);
-        return functionIsolator.b[match.call(functionString, /\s*([^\s(]+)\s*\(/)[1]];
-    }
-}
+const functionDecoder = require('./utils/functionDecoder.js');
 
 const genDecodePointer = (pointer) => {
     return {
-        k: substring.call(pointer, 0, 2),
-        i: pointer.length <= 2 ? -1 : parseInt(substring.call(pointer, 2), 10),
+        k: pointer.substring(0, 2),
+        i: pointer.length <= 2 ? -1 : parseInt(pointer.substring(2), 10),
         p: pointer,
     };
 };
@@ -66,7 +48,7 @@ const genValueOf = (data, p) => {
 
 const tryEnqueuePointerItem = (data, p) => {
     if ((data[p.k] || [])[p.i] === void 0) {
-        push.call(data.q, p);
+        data.q.push(p);
     }
 };
 
@@ -128,8 +110,8 @@ const genTypeArrayGenerator = (type) => {
         g: containerGenerator,
         n: (data, p) => {
             const numberArray = [];
-            forEach.call(getP(data, p)[0], (pointer) => {
-                push.call(numberArray, getP(data, genDecodePointer(pointer)));
+            getP(data, p)[0].forEach((pointer) => {
+                numberArray.push(getP(data, genDecodePointer(pointer)));
             });
             return new type(numberArray);
         },
@@ -151,8 +133,8 @@ const genBlob = (data, p) => {
     const type = getP(data, genDecodePointer(encodedArray[1]));
 
     const dataArray = []
-    forEach.call(getP(data, genDecodePointer(encodedArray[0]))[0], (item) => {
-        push.call(dataArray, getP(data, genDecodePointer(item)));
+    getP(data, genDecodePointer(encodedArray[0]))[0].forEach((item) => {
+        dataArray.push(getP(data, genDecodePointer(item)));
     });
 
     return new Blob([new Uint8Array(dataArray)], {
@@ -168,8 +150,8 @@ const genFile = (data, p) => {
     const lastModified = getP(data, genDecodePointer(encodedArray[3]));
 
     const dataArray = []
-    forEach.call(getP(data, genDecodePointer(encodedArray[0]))[0], (item) => {
-        push.call(dataArray, getP(data, genDecodePointer(item)));
+    getP(data, genDecodePointer(encodedArray[0]))[0].forEach((item) => {
+        dataArray.push(getP(data, genDecodePointer(item)));
     });
 
     return new File([new Uint8Array(dataArray)], name, {
@@ -179,7 +161,7 @@ const genFile = (data, p) => {
 };
 
 const types = {
-    'un': genIdentityGenerator(void 0),
+    'un': genIdentityGenerator(undefined),
     'nl': genIdentityGenerator(null),
     'bt': genIdentityGenerator(true),
     'bf': genIdentityGenerator(false),
@@ -219,8 +201,7 @@ const types = {
     'fu': {
         g: containerGenerator,
         n: (data, p) => {
-            delete functionIsolatorReference.b;
-            return functionIsolatorReference(genValueOf(data, p));
+            return functionDecoder(genValueOf(data, p));
         },
     },
     'er': {
@@ -292,7 +273,7 @@ const types = {
             const encodedArray = getP(data, p)[0];
             const decodedArray = [];
             for (let a = 0; a < encodedArray.length; a += 1) {
-                push.call(decodedArray, genContainerPart(data, encodedArray[a]));
+                decodedArray.push(genContainerPart(data, encodedArray[a]));
             }
             return new Set(decodedArray);
         },
@@ -304,7 +285,7 @@ const types = {
             const decodedArray = [];
             for (let a = 0; a < encodedArray.length; a += 1) {
                 const pairArray = encodedArray[a];
-                push.call(decodedArray, [
+                decodedArray.push([
                     genContainerPart(data, pairArray[0]),
                     genContainerPart(data, pairArray[1]),
                 ]);
@@ -342,10 +323,10 @@ module.exports = (encodedData) => {
     }
 
     // Prep the Exploration Queue to explore from the root
-    push.call(data.q, rp);
+    data.q.push(rp);
 
     while (data.q.length > 0) {
-        generate(data, shift.call(data.q));
+        generate(data, data.q.shift());
     }
 
     return data[rp.k][rp.i];

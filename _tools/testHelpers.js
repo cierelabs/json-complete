@@ -28,15 +28,20 @@ const isArray = (v) => {
 
 /* istanbul ignore next */
 const isInBrowser = () => {
-    try {
-        // https://github.com/denysdovhan/wtfjs#documentall-is-an-object-but-it-is-undefined
-        return document !== void 0 && document.all instanceof Object && document.all !== void 0 && typeof document.all === 'undefined';
-    }
-    catch (e) {
-        // Do nothing
+    if (document === void 0) {
+        return false;
     }
 
-    return false;
+    // Had to pull this out into variable to prevent uglify from too aggressively mangling the logic incorrectly
+    const typeOfDocumentAll = typeof document.all;
+
+    try {
+        // https://github.com/denysdovhan/wtfjs#documentall-is-an-object-but-it-is-undefined
+        return document.all instanceof Object && document.all !== void 0 && typeOfDocumentAll === 'undefined';
+    }
+    catch (e) {
+        return false;
+    }
 };
 
 module.exports = {
