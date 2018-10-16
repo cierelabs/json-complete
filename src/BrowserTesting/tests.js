@@ -37,11 +37,3 @@ const WeakSet = require('src/__tests__/WeakSet.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
-
-// const thing = /\s/g;
-// thing.x = 2;
-
-// encode(thing, (encoded) => {
-//     console.log(JSON.stringify(encoded, null, 4));
-//     // console.log(decode(encoded));
-// });

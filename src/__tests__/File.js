@@ -22,7 +22,7 @@ if (testHelpers.isInBrowser()) {
         encode([file], (encoded) => {
             const decoded = decode(encoded)[0];
 
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.addEventListener('loadend', function() {
                 t.deepEqual(JSON.parse(reader.result), obj);
             });
@@ -97,7 +97,7 @@ if (testHelpers.isInBrowser()) {
         encode(file, (encoded) => {
             const decoded = decode(encoded);
 
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.addEventListener('loadend', function() {
                 t.deepEqual(JSON.parse(reader.result), obj);
             });
