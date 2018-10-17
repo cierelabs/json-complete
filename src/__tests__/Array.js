@@ -111,6 +111,20 @@ test('Array: Non-Index Keys', (t) => {
     t.equal(decodedArray[1], decodedArray['obj']);
 });
 
+test('Array: Direct Self-Containment', (t) => {
+    t.plan(4);
+
+    const arr = [1, void 0];
+    arr[1] = arr;
+
+    const decoded = decode(encode([arr]))[0];
+
+    t.equal(testHelpers.systemName(decoded), '[object Array]');
+    t.equal(decoded[0], 1);
+    t.equal(testHelpers.systemName(decoded[1]), '[object Array]');
+    t.equal(decoded[1], decoded);
+});
+
 test('Array: Arbitrary Attached Data', (t) => {
     t.plan(3);
 

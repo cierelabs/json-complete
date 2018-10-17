@@ -65,49 +65,50 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌     | ✅             | Symbols: Registered Symbols                          |
 | ❌     | ✅             | Functions: Expressions                               |
 | ❌     | ✅             | Functions: Named Expressions                         |
+| ❌     | ✅             | Functions: Named Expression Data Referencing         |
 | ❌     | ✅             | Functions: Arrow Functions                           |
 | ❌     | ✅             | Functions: Method Functions                          |
-| ❌     | ✅             | Functions: Named Expression Data Referencing         |
 | ✅     | ✅             | Objects                                              |
 | ❌     | ✅             | Objects: Symbol Keys                                 |
 | ✅     | ✅             | Arrays                                               |
 | ❌     | ✅             | Arrays: String and Symbol Keys                       |
 | ❌ *1* | ✅             | Arrays: Sparse Arrays                                |
-| ☢ *2* | ☢ *2*         | Arguments                                            |
-| ❌    | ✅             | Int8Array                                             |
-| ❌    | ✅             | Uint8Array                                            |
-| ❌    | ✅             | Uint8ClampedArray                                     |
-| ❌    | ✅             | Int16Array                                            |
-| ❌    | ✅             | Uint16Array                                           |
-| ❌    | ✅             | Int32Array                                            |
-| ❌    | ✅             | Uint32Array                                           |
-| ❌    | ✅             | Float32Array                                          |
-| ❌    | ✅             | Float64Array                                          |
-| ❌    | ✅             | Set                                                   |
-| ❌    | ✅             | Map                                                   |
-| ❌    | ✅ ★           | Blob                                                  |
-| ❌    | ✅ ★           | File                                                  |
+| ❌ *2* | ✅             | Arguments Object                                     |
+| ❌     | ✅             | Int8Array                                            |
+| ❌     | ✅             | Uint8Array                                           |
+| ❌     | ✅             | Uint8ClampedArray                                    |
+| ❌     | ✅             | Int16Array                                           |
+| ❌     | ✅             | Uint16Array                                          |
+| ❌     | ✅             | Int32Array                                           |
+| ❌     | ✅             | Uint32Array                                          |
+| ❌     | ✅             | Float32Array                                         |
+| ❌     | ✅             | Float64Array                                         |
+| ❌     | ✅             | Set                                                  |
+| ❌     | ✅             | Map                                                  |
+| ❌     | ✅ *3*         | Blob                                                 |
+| ❌     | ✅ *3*         | File                                                 |
 
-| json | json-complete | Features                                              |
-|------|---------------|-------------------------------------------------------|
-| ✅    | ✅             | Arbitrarily Deep Nesting                              |
-| ❌    | ✅             | Circular References                                   |
-| ❌    | ✅             | Shared Key and Value Symbol References                |
-| ❌    | ✅             | Shared Key and Value Map References                   |
-| ❌    | ✅             | Arbitrary Attached Data for All Object-like Types     |
-| ❌    | ✅ †           | Arbitrary Attached Data for Unsupported Types         |
-| ❌    | ✅             | Self-Containment for All Object-like Types            |
-| ❌    | ✅ †           | Self-Containment for Unsupported Types                |
-| ❌    | ✅             | Referencial Integrity for All Reference Types         |
-| ❌    | ✅ †           | Referencial Integrity for Unsupported Types           |
-| ❌    | ✅             | Referencial Deduplication                             |
-| ✅ ‡  | ✅             | Root-Level Encoding for All Supported Values          |
-| ✅    | ❌             | Built-in                                              |
-| ✅    | ❌             | Encodes to String                                     |
+| json  | json-complete | Features                                             |
+|-------|---------------|------------------------------------------------------|
+| ✅     | ✅             | Arbitrarily Deep Nesting                             |
+| ❌     | ✅             | Circular References                                  |
+| ❌     | ✅             | Shared Key and Value Symbol References               |
+| ❌     | ✅             | Shared Key and Value Map References                  |
+| ❌     | ✅             | Arbitrary Attached Data for All Object-like Types    |
+| ❌     | ✅ *4*         | Arbitrary Attached Data for Unsupported Types        |
+| ❌     | ✅             | Self-Containment for All Object-like Types           |
+| ❌     | ✅ *4*         | Self-Containment for Unsupported Types               |
+| ❌     | ✅             | Referencial Integrity for All Reference Types        |
+| ❌     | ✅ *4*         | Referencial Integrity for Unsupported Types          |
+| ❌     | ✅             | Referencial Deduplication                            |
+| ✅ *5* | ✅             | Root-Level Encoding for All Supported Values         |
+| ✅     | ❌             | Built-in                                             |
+| ✅     | ❌             | Encodes to String                                    |
 
-* *1* - JSON will encode sparse arrays by injecting null values into the unassigned indices.
-* *2* - Both JSON and json-complete partially support
-* † - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
+* *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
+* *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
+* *3* - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
+* *4* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
   - WeakSet and WeakMap - Not iterable, by design, for security reasons.
   - Math
   - window/global
@@ -117,8 +118,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - JSON
   - Promise
   - etc.
-* ‡ - JSON will do root-level encoding only for the types it supports elsewhere.
-* ★ - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
+* *5* - JSON will do root-level encoding only for the types it supports elsewhere.
 
 ### Terms
 
@@ -137,6 +137,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - File
 * Array-like Types - Can contain integer key/value pairs, as well as containing key/value pairs using a String or Symbol key (same as Object-like Types).
   - Array
+  - Arguments
   - Int8Array
   - Uint8Array
   - Uint8ClampedArray
@@ -318,3 +319,21 @@ TODO
 * AsyncFunction
 * Proxy???
 * Add a version number part of the encoding process
+* Make arguments actually return arguments by calling a mock function and retrieving the arguments.
+* Improve the Symbol(Symbol.iterator) test to check for a function and other stuff to avoid false positive.
+
+Add test for arguments and array self containment
+```
+var args;
+
+function test() {
+		arguments[0] = arguments;
+		return arguments;
+}
+
+console.log(test(1,2,3))
+```
+
+Tape
+Respirator
+lettuse

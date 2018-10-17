@@ -210,8 +210,16 @@ const types = {
     },
     'ag': {
         g: containerGenerator,
-        n: () => {
-            return [];
+        n: (data, p) => {
+            // Generating Arguments object with the correct length
+            // If the argument count isn't set initially, setting the index values on an Arguments object will add them as String keys
+            return (function() {
+                return arguments;
+            }).apply(null, Array.from({
+                length: getEncodedAt(data, p.k, p.i).findIndex((item) => {
+                    return item.length !== 1;
+                }),
+            }, () => {}));
         },
     },
     'ar': {
