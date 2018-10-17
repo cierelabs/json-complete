@@ -1,34 +1,42 @@
-const log = require('./log.js');
+const log = (a) => {
+    try {
+        console.log(a);
+    }
+    catch (e) {
+        // Do nothing
+    }
+};
 
 const typeNameMap = {
-    '[object Number]': 'nm',
-    '[object String]': 'st',
-    '[object Date]': 'da',
-    '[object RegExp]': 're',
-    '[object Function]': 'fu',
-    '[object Error]': 'er',
-    '[object Array]': 'ar',
-    '[object Object]': 'ob',
-    '[object Symbol]': 'sy',
-    '[object Int8Array]': 'I1',
-    '[object Uint8Array]': 'U1',
-    '[object Uint8ClampedArray]': 'C1',
-    '[object Uint16Array]': 'U2',
-    '[object Int16Array]': 'I2',
-    '[object Int32Array]': 'I3',
-    '[object Uint32Array]': 'U3',
-    '[object Float32Array]': 'F3',
-    '[object Float64Array]': 'F4',
-    '[object Set]': 'Se',
-    '[object Map]': 'Ma',
-    '[object Blob]': 'Bl',
-    '[object File]': 'Fi',
+    'Number': 'nm',
+    'String': 'st',
+    'Date': 'da',
+    'RegExp': 're',
+    'Function': 'fu',
+    'Error': 'er',
+    'Arguments': 'ag',
+    'Array': 'ar',
+    'Object': 'ob',
+    'Symbol': 'sy',
+    'Int8Array': 'I1',
+    'Uint8Array': 'U1',
+    'Uint8ClampedArray': 'C1',
+    'Uint16Array': 'U2',
+    'Int16Array': 'I2',
+    'Int32Array': 'I3',
+    'Uint32Array': 'U3',
+    'Float32Array': 'F3',
+    'Float64Array': 'F4',
+    'Set': 'Se',
+    'Map': 'Ma',
+    'Blob': 'Bl',
+    'File': 'Fi',
 };
 
 const objectWrapperTypeNameMap = {
-    '[object Boolean]': 'BO',
-    '[object Number]': 'NM',
-    '[object String]': 'ST',
+    'Boolean': 'BO',
+    'Number': 'NM',
+    'String': 'ST',
 };
 
 // NOTE: Because Sets and Maps can accept any value as an entry (or key for Map), if unrecognized or unsupported types did not retain referencial integrity, data loss could occur.
@@ -67,7 +75,7 @@ module.exports = (v) => {
         return 'bf';
     }
 
-    const systemName = Object.prototype.toString.call(v);
+    const systemName = Object.prototype.toString.call(v).replace(/\[object |\]/g, '');
 
     if (typeof v === 'object') {
         // Primitive types can sometimes be wrapped as Objects and must be handled differently

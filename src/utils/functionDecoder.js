@@ -5,13 +5,20 @@ const x = function f(s) {
         return f.b;
     }
     catch (e) {
-        // If it was an error, then it's possible that the item was a Method Function
-        eval(`f.b = {${s}};`);
-        return f.b[s.match(/\s*([^\s(]+)\s*\(/)[1]];
+        try {
+            // If it was an error, then it's possible that the item was a Method Function
+            eval(`f.b = {${s}};`);
+            return f.b[s.match(/\s*([^\s(]+)\s*\(/)[1]];
+        }
+        catch (e) {
+            return function() {
+                throw `This function could not be decoded successfully: ${s}`;
+            };
+        }
     }
 };
 
 module.exports = (s) => {
     delete x.b;
-    return x(s)
+    return x(s);
 }

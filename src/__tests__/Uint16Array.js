@@ -31,6 +31,17 @@ test('Uint16Array: Empty Cells', (t) => {
     t.equal(decoded[1], 0);
 });
 
+test('Uint16Array: Empty', (t) => {
+    t.plan(2);
+
+    const a = new Uint16Array(0);
+
+    const decoded = decode(encode([a]))[0];
+
+    t.equal(testHelpers.systemName(decoded), '[object Uint16Array]');
+    t.equal(decoded.length, 0);
+});
+
 test('Uint16Array: Root Value', (t) => {
     t.plan(1);
     t.deepEqual(decode(encode(new Uint16Array([1]))), new Uint16Array([1]));

@@ -1,10 +1,11 @@
-const containerKeys = {
+// Composite types have a value, made up of other types, that must be manually encoded and decoded
+// This is above and beyond any attachment values
+module.exports = {
     'da': 1, // Date
+    'sy': 1, // Symbol
     're': 1, // Regex
     'fu': 1, // Function
     'er': 1, // Error
-    'ob': 1, // Object
-    'ar': 1, // Array
     'BO': 1, // Object-wrapped Boolean
     'NM': 1, // Object-wrapped Number
     'ST': 1, // Object-wrapped String
@@ -18,10 +19,8 @@ const containerKeys = {
     'F3': 1, // Float32Array
     'F4': 1, // Float64Array
     'AB': 1, // ArrayBuffer
-    'Ma': 1, // Map
     'Se': 1, // Set
-};
-
-module.exports = (pointerKey) => {
-    return containerKeys[pointerKey];
+    'Ma': 1, // Map
+    'Bl': 1, // Blob
+    'Fi': 1, // File
 };

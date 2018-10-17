@@ -41,38 +41,39 @@ The same Referencial Type value is only stored once, provided the underlying ref
 
 ## Comparison to JSON
 
-| json | json-complete | Supported Types                                       |
-|------|---------------|-------------------------------------------------------|
-| ❌    | ✅             | undefined                                             |
-| ✅    | ✅             | null                                                  |
-| ✅    | ✅             | Booleans                                              |
-| ❌    | ✅             | Booleans: Object-Wrapped                              |
-| ✅    | ✅             | Numbers: Normal                                       |
-| ❌    | ✅             | Number: NaN                                           |
-| ❌    | ✅             | Number: -Infinity                                     |
-| ❌    | ✅             | Number: Infinity                                      |
-| ❌    | ✅             | Number: -0                                            |
-| ❌    | ✅             | Numbers: Object-Wrapped                               |
-| ❌    | ✅             | Numbers: Object-Wrapped (NaN, +/-Infinity, -0)        |
-| ✅    | ✅             | Strings                                               |
-| ❌    | ✅             | Strings: Object-Wrapped                               |
-| ❌    | ✅             | Regex                                                 |
-| ❌    | ✅             | Regex: Retained lastIndex                             |
-| ❌    | ✅             | Dates                                                 |
-| ❌    | ✅             | Dates: Invalid Dates                                  |
-| ❌    | ✅             | Symbols                                               |
-| ❌    | ✅             | Symbols: Retained Identifiers                         |
-| ❌    | ✅             | Symbols: Registered Symbols                           |
-| ❌    | ✅             | Functions: Expressions                                |
-| ❌    | ✅             | Functions: Named Expressions                          |
-| ❌    | ✅             | Functions: Arrow Functions                            |
-| ❌    | ✅             | Functions: Method Functions                           |
-| ❌    | ✅             | Functions: Named Expression Data Referencing          |
-| ✅    | ✅             | Objects                                               |
-| ❌    | ✅             | Objects: Symbol Keys                                  |
-| ✅    | ✅             | Arrays                                                |
-| ❌    | ✅             | Arrays: String and Symbol Keys                        |
-| ❌ °  | ✅             | Arrays: Sparse Arrays                                 |
+| json  | json-complete | Supported Types                                      |
+|-------|---------------|------------------------------------------------------|
+| ❌     | ✅             | undefined                                            |
+| ✅     | ✅             | null                                                 |
+| ✅     | ✅             | Booleans                                             |
+| ❌     | ✅             | Booleans: Object-Wrapped                             |
+| ✅     | ✅             | Numbers: Normal                                      |
+| ❌     | ✅             | Number: NaN                                          |
+| ❌     | ✅             | Number: -Infinity                                    |
+| ❌     | ✅             | Number: Infinity                                     |
+| ❌     | ✅             | Number: -0                                           |
+| ❌     | ✅             | Numbers: Object-Wrapped                              |
+| ❌     | ✅             | Numbers: Object-Wrapped (NaN, +/-Infinity, -0)       |
+| ✅     | ✅             | Strings                                              |
+| ❌     | ✅             | Strings: Object-Wrapped                              |
+| ❌     | ✅             | Regex                                                |
+| ❌     | ✅             | Regex: Retained lastIndex                            |
+| ❌     | ✅             | Dates                                                |
+| ❌     | ✅             | Dates: Invalid Dates                                 |
+| ❌     | ✅             | Symbols                                              |
+| ❌     | ✅             | Symbols: Retained Identifiers                        |
+| ❌     | ✅             | Symbols: Registered Symbols                          |
+| ❌     | ✅             | Functions: Expressions                               |
+| ❌     | ✅             | Functions: Named Expressions                         |
+| ❌     | ✅             | Functions: Arrow Functions                           |
+| ❌     | ✅             | Functions: Method Functions                          |
+| ❌     | ✅             | Functions: Named Expression Data Referencing         |
+| ✅     | ✅             | Objects                                              |
+| ❌     | ✅             | Objects: Symbol Keys                                 |
+| ✅     | ✅             | Arrays                                               |
+| ❌     | ✅             | Arrays: String and Symbol Keys                       |
+| ❌ *1* | ✅             | Arrays: Sparse Arrays                                |
+| ☢ *2* | ☢ *2*         | Arguments                                            |
 | ❌    | ✅             | Int8Array                                             |
 | ❌    | ✅             | Uint8Array                                            |
 | ❌    | ✅             | Uint8ClampedArray                                     |
@@ -104,7 +105,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ✅    | ❌             | Built-in                                              |
 | ✅    | ❌             | Encodes to String                                     |
 
-* ° - JSON will encode sparse arrays by injecting null values into the unassigned indices.
+* *1* - JSON will encode sparse arrays by injecting null values into the unassigned indices.
+* *2* - Both JSON and json-complete partially support
 * † - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
   - WeakSet and WeakMap - Not iterable, by design, for security reasons.
   - Math
@@ -309,7 +311,6 @@ TODO
 * Create more meaningful error messages, especially for the decoder.
 * Write helper to extract buffer from encoded Blob/File objects on Node
 * Write helper to encode buffer into Blob or File objects on Node
-* Arguments
 * SharedArrayBuffer
 * ArrayBuffer
 * Generator

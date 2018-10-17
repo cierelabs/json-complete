@@ -31,6 +31,17 @@ test('Uint8Array: Empty Cells', (t) => {
     t.equal(decoded[1], 0);
 });
 
+test('Uint8Array: Empty', (t) => {
+    t.plan(2);
+
+    const a = new Uint8Array(0);
+
+    const decoded = decode(encode([a]))[0];
+
+    t.equal(testHelpers.systemName(decoded), '[object Uint8Array]');
+    t.equal(decoded.length, 0);
+});
+
 test('Uint8Array: Root Value', (t) => {
     t.plan(1);
     t.deepEqual(decode(encode(new Uint8Array([1]))), new Uint8Array([1]));

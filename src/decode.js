@@ -1,19 +1,18 @@
-const isContainerPointerKey = require('./utils/isContainerPointerKey.js');
-const isSimplePointerKey = require('./utils/isSimplePointerKey.js');
-const isCompositePointerKey = require('./utils/isCompositePointerKey.js');
+const keysSimple = require('./utils/keysSimple.js');
+const keysComposite = require('./utils/keysComposite.js');
 const functionDecoder = require('./utils/functionDecoder.js');
 
 const genDecodePointer = (pointer) => {
     return {
         k: pointer.substring(0, 2),
-        i: pointer.length <= 2 ? -1 : parseInt(pointer.substring(2), 10),
+        i: parseInt(pointer.substring(2), 10),
         p: pointer,
     };
 };
 
 const getExisting = (data, p) => {
     // Simple PointerKeys are their own Pointers
-    if (isSimplePointerKey(p.k)) {
+    if (keysSimple[p.k]) {
         return types[p.k].g(data, p);
     }
 
@@ -37,83 +36,59 @@ const getExistingOrCreate = (data, p) => {
     return data[p.k][p.i];
 };
 
-const getP = (data, p) => {
-    return data.e[p.k][p.i];
+const getEncodedAt = (data, key, index) => {
+    return data._[key][index];
+};
+
+const getEncodedAtPointer = (data, pointer) => {
+    return getEncodedAt(data, pointer.substring(0, 2), parseInt(pointer.substring(2), 10));
 };
 
 const genValueOf = (data, p) => {
-    const vp = genDecodePointer(getP(data, p)[0]);
+    const vp = genDecodePointer(getEncodedAt(data, p.k, p.i)[0]);
     return types[vp.k].g(data, vp);
 };
 
-const tryEnqueuePointerItem = (data, p) => {
-    if ((data[p.k] || [])[p.i] === void 0) {
-        data.q.push(p);
-    }
-};
-
-const genContainerPart = (data, pointer) => {
-    const p = genDecodePointer(pointer);
-
-    if (isContainerPointerKey(p.k)) {
-        tryEnqueuePointerItem(data, p);
-        return getExistingOrCreate(data, p);
-    }
-    else {
-        return generate(data, p);
-    }
-};
-
 const containerGenerator = (data, p) => {
-    let pairs = getP(data, p);
-
     const container = getExistingOrCreate(data, p);
 
-    // Skip the first item if the data's value had to be encoded with other values
-    const offset = isCompositePointerKey(p.k) ? 1 : 0;
+    let pairs = getEncodedAt(data, p.k, p.i);
 
-    const pairsLength = pairs.length;
-    for (let i = 0; i < pairsLength - offset; i += 1) {
-        const pair = pairs[i + offset];
-        if (pair.length === 1) {
-            container[i] = genContainerPart(data, pair[0]);
-            continue;
-        }
-        container[genContainerPart(data, pair[0])] = genContainerPart(data, pair[1]);
+    // Skip the first item if the data's value had to be encoded with other values
+    if (keysComposite[p.k]) {
+        pairs = pairs.slice(1);
     }
+
+    pairs.forEach((pair, index) => {
+        if (pair.length === 1) {
+            container[index] = generate(data, pair[0]);
+        }
+        else {
+            container[generate(data, pair[0])] = generate(data, pair[1]);
+        }
+    });
 
     return container;
 };
 
-const generate = (data, p) => {
-    // Containers values need to handle their own existing Pointer handling
-    if (!isContainerPointerKey(p.k)) {
-        const existingValue = getExisting(data, p);
-        if (existingValue !== void 0) {
-            return existingValue;
-        }
+const generate = (data, pointer) => {
+    const p = genDecodePointer(pointer);
+
+    const existingValue = getExisting(data, p);
+    if (existingValue !== void 0) {
+        return existingValue;
     }
 
     return types[p.k] === void 0 ? p.p : types[p.k].g(data, p);
-};
-
-const genIdentityGenerator = (v) => {
-    return {
-        g: () => {
-            return v;
-        },
-    }
 };
 
 const genTypeArrayGenerator = (type) => {
     return {
         g: containerGenerator,
         n: (data, p) => {
-            const numberArray = [];
-            getP(data, p)[0].forEach((pointer) => {
-                numberArray.push(getP(data, genDecodePointer(pointer)));
-            });
-            return new type(numberArray);
+            return new type(getEncodedAt(data, p.k, p.i)[0].map((pointer) => {
+                return getEncodedAtPointer(data, pointer);
+            }));
         },
     };
 };
@@ -129,58 +104,52 @@ const genValueObjectGenerator = (type) => {
 
 /* istanbul ignore next */
 const genBlob = (data, p) => {
-    const encodedArray = getP(data, p)[0];
-    const type = getP(data, genDecodePointer(encodedArray[1]));
+    const encodedArray = getEncodedAt(data, p.k, p.i)[0];
 
-    const dataArray = []
-    getP(data, genDecodePointer(encodedArray[0]))[0].forEach((item) => {
-        dataArray.push(getP(data, genDecodePointer(item)));
-    });
-
-    return new Blob([new Uint8Array(dataArray)], {
-        type: type,
+    return new Blob([new Uint8Array(getEncodedAtPointer(data, encodedArray[0])[0].map((item) => {
+        return getEncodedAtPointer(data, item);
+    }))], {
+        type: getEncodedAtPointer(data, encodedArray[1]),
     });
 };
 
 /* istanbul ignore next */
 const genFile = (data, p) => {
-    const encodedArray = getP(data, p)[0];
-    const name = getP(data, genDecodePointer(encodedArray[1]));
-    const type = getP(data, genDecodePointer(encodedArray[2]));
-    const lastModified = getP(data, genDecodePointer(encodedArray[3]));
+    const encodedArray = getEncodedAt(data, p.k, p.i)[0];
 
-    const dataArray = []
-    getP(data, genDecodePointer(encodedArray[0]))[0].forEach((item) => {
-        dataArray.push(getP(data, genDecodePointer(item)));
-    });
-
-    return new File([new Uint8Array(dataArray)], name, {
-        type: type,
-        lastModified: lastModified,
+    return new File([new Uint8Array(getEncodedAtPointer(data, encodedArray[0])[0].map((item) => {
+        return getEncodedAtPointer(data, item);
+    }))], getEncodedAtPointer(data, encodedArray[1]), {
+        type: getEncodedAtPointer(data, encodedArray[2]),
+        lastModified: getEncodedAtPointer(data, encodedArray[3]),
     });
 };
 
 const types = {
-    'un': genIdentityGenerator(undefined),
-    'nl': genIdentityGenerator(null),
-    'bt': genIdentityGenerator(true),
-    'bf': genIdentityGenerator(false),
-    'na': genIdentityGenerator(Number.NaN),
-    '-i': genIdentityGenerator(Number.NEGATIVE_INFINITY),
-    '+i': genIdentityGenerator(Number.POSITIVE_INFINITY),
-    'n0': genIdentityGenerator(-0),
+    'un': { g: () => { return void 0; } },
+    'nl': { g: () => { return null; } },
+    'bt': { g: () => { return true; } },
+    'bf': { g: () => { return false; } },
+    'na': { g: () => { return NaN; } },
+    '-i': { g: () => { return -Infinity; } },
+    '+i': { g: () => { return Infinity; } },
+    'n0': { g: () => { return -0; } },
     'nm': {
-        g: getP,
+        g: (data, p) => {
+            return getEncodedAt(data, p.k, p.i);
+        },
     },
     'st': {
-        g: getP,
+        g: (data, p) => {
+            return getEncodedAt(data, p.k, p.i);
+        },
     },
     're': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getP(data, p)[0];
-            const value = new RegExp(getP(data, genDecodePointer(encodedArray[0])), getP(data, genDecodePointer(encodedArray[1])));
-            value.lastIndex = getP(data, genDecodePointer(encodedArray[2]));
+            const encodedArray = getEncodedAt(data, p.k, p.i)[0];
+            const value = new RegExp(getEncodedAtPointer(data, encodedArray[0]), getEncodedAtPointer(data, encodedArray[1]));
+            value.lastIndex = getEncodedAtPointer(data, encodedArray[2]);
 
             return value;
         },
@@ -188,12 +157,10 @@ const types = {
     'sy': {
         g: (data, p) => {
             // Manually decode the array container format
-            const encodedArray = getP(data, p);
+            const encodedArray = getEncodedAt(data, p.k, p.i);
+            const name = getEncodedAtPointer(data, encodedArray[1]);
 
-            const type = getP(data, genDecodePointer(encodedArray[0]));
-            const name = getP(data, genDecodePointer(encodedArray[1]));
-
-            data[p.k][p.i] = type === 1 ? Symbol.for(name) : Symbol(name);
+            data[p.k][p.i] = getEncodedAtPointer(data, encodedArray[0]) === 1 ? Symbol.for(name) : Symbol(name);
 
             return data[p.k][p.i];
         },
@@ -207,11 +174,10 @@ const types = {
     'er': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getP(data, p)[0];
+            const encodedArray = getEncodedAt(data, p.k, p.i)[0];
 
-            const type = getP(data, genDecodePointer(encodedArray[0]));
-            const message = getP(data, genDecodePointer(encodedArray[1]));
-            const stack = getP(data, genDecodePointer(encodedArray[2]));
+            const type = getEncodedAtPointer(data, encodedArray[0]);
+            const message = getEncodedAtPointer(data, encodedArray[1]);
 
             let value;
 
@@ -237,21 +203,27 @@ const types = {
                 value = new Error(message);
             }
 
-            value.stack = stack;
+            value.stack = getEncodedAtPointer(data, encodedArray[2]);
 
             return value;
         },
     },
-    'ob': {
+    'ag': {
         g: containerGenerator,
         n: () => {
-            return {};
+            return [];
         },
     },
     'ar': {
         g: containerGenerator,
         n: () => {
             return [];
+        },
+    },
+    'ob': {
+        g: containerGenerator,
+        n: () => {
+            return {};
         },
     },
     'da': genValueObjectGenerator(Date),
@@ -270,27 +242,20 @@ const types = {
     'Se': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getP(data, p)[0];
-            const decodedArray = [];
-            for (let a = 0; a < encodedArray.length; a += 1) {
-                decodedArray.push(genContainerPart(data, encodedArray[a]));
-            }
-            return new Set(decodedArray);
+            return new Set(getEncodedAt(data, p.k, p.i)[0].map((item) => {
+                return generate(data, item);
+            }));
         },
     },
     'Ma': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getP(data, p)[0];
-            const decodedArray = [];
-            for (let a = 0; a < encodedArray.length; a += 1) {
-                const pairArray = encodedArray[a];
-                decodedArray.push([
-                    genContainerPart(data, pairArray[0]),
-                    genContainerPart(data, pairArray[1]),
-                ]);
-            }
-            return new Map(decodedArray);
+            return new Map(getEncodedAt(data, p.k, p.i)[0].map((item) => {
+                return [
+                    generate(data, item[0]),
+                    generate(data, item[1]),
+                ];
+            }));
         },
     },
     'Bl': {
@@ -304,30 +269,14 @@ const types = {
 };
 
 module.exports = (encodedData) => {
-    const encodedDataObj = {};
-    for (let e = 0; e < encodedData.length; e += 1) {
-        encodedDataObj[encodedData[e][0]] = encodedData[e][1];
-    }
-
     const data = {
-        q: [], // Exploration Queue
-        e: encodedDataObj, // Encoded Data
+        // Encoded Data
+        _: encodedData.reduce((accumulator, item) => {
+            accumulator[item[0]] = item[1];
+            return accumulator;
+        }, {}),
     };
 
     // Create PointerItem from root
-    const rp = genDecodePointer(data.e.r);
-
-    // If root value is a not a container, return its value directly
-    if (!isContainerPointerKey(rp.k)) {
-        return generate(data, rp);
-    }
-
-    // Prep the Exploration Queue to explore from the root
-    data.q.push(rp);
-
-    while (data.q.length > 0) {
-        generate(data, data.q.shift());
-    }
-
-    return data[rp.k][rp.i];
+    return generate(data, data._.r);
 };

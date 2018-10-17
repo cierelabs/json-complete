@@ -1,3 +1,4 @@
+const Arguments = require('src/__tests__/Arguments.js');
 const Array = require('src/__tests__/Array.js');
 const AsyncForm = require('src/__tests__/AsyncForm.js');
 const Blob = require('src/__tests__/Blob.js');
@@ -18,6 +19,7 @@ const Object = require('src/__tests__/Object.js');
 const ObjectWrappedBoolean = require('src/__tests__/ObjectWrappedBoolean.js');
 const ObjectWrappedNumber = require('src/__tests__/ObjectWrappedNumber.js');
 const ObjectWrappedString = require('src/__tests__/ObjectWrappedString.js');
+const ReferencialDepth = require('src/__tests__/ReferencialDepth.js');
 const Regex = require('src/__tests__/Regex.js');
 const Set = require('src/__tests__/Set.js');
 const String = require('src/__tests__/String.js');

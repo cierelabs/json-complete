@@ -1,4 +1,4 @@
-const simpleKeys = {
+module.exports = {
     'un': 1, // undefined
     'nl': 1, // null
     'bt': 1, // true
@@ -7,8 +7,4 @@ const simpleKeys = {
     '-i': 1, // -Infinity
     '+i': 1, // Infinity
     'n0': 1, // -0
-};
-
-module.exports = (pointerKey) => {
-    return simpleKeys[pointerKey];
 };

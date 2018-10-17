@@ -10,6 +10,13 @@ test('Array: Normal', (t) => {
     t.deepEqual(decode(encode({ a: [1] })).a, [1]);
 });
 
+test('Array: Empty', (t) => {
+    t.plan(2);
+    const decoded = decode(encode({ a: [] })).a;
+    t.deepEqual(decoded, []);
+    t.deepEqual(decoded.length, 0);
+});
+
 test('Array: Root Value Normal', (t) => {
     t.plan(1);
     t.deepEqual(decode(encode([1])), [1]);

@@ -31,6 +31,17 @@ test('Int32Array: Empty Cells', (t) => {
     t.equal(decoded[1], 0);
 });
 
+test('Int32Array: Empty', (t) => {
+    t.plan(2);
+
+    const a = new Int32Array(0);
+
+    const decoded = decode(encode([a]))[0];
+
+    t.equal(testHelpers.systemName(decoded), '[object Int32Array]');
+    t.equal(decoded.length, 0);
+});
+
 test('Int32Array: Root Value', (t) => {
     t.plan(1);
     t.deepEqual(decode(encode(new Int32Array([1]))), new Int32Array([1]));
