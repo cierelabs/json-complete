@@ -1,6 +1,7 @@
 const Arguments = require('src/__tests__/Arguments.js');
 const Array = require('src/__tests__/Array.js');
 const AsyncForm = require('src/__tests__/AsyncForm.js');
+const AvoidStoringBuiltInSymbols = require('src/__tests__/AvoidStoringBuiltInSymbols.js');
 const Blob = require('src/__tests__/Blob.js');
 const Boolean = require('src/__tests__/Boolean.js');
 const Date = require('src/__tests__/Date.js');

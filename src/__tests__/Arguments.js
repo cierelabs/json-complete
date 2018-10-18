@@ -5,25 +5,6 @@ const testHelpers = require('../../_tools/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-// test('Arguments: Normal', (t) => {
-//     t.plan(2);
-
-//     let args;
-
-//     const thing = function() {
-//         args = arguments;
-//     };
-
-//     thing(1, 2, 3);
-
-//     args.x = 4;
-
-//     const decoded = decode(encode(args));
-
-//     t.deepEqual(Array.from(decoded), [1, 2, 3]);
-//     t.equal(testHelpers.systemName(decoded), '[object Arguments]');
-// });
-
 const genArgs = function() {
     return arguments;
 };

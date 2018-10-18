@@ -72,8 +72,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌     | ✅             | Objects: Symbol Keys                                 |
 | ✅     | ✅             | Arrays                                               |
 | ❌     | ✅             | Arrays: String and Symbol Keys                       |
-| ❌ *1* | ✅             | Arrays: Sparse Arrays                                |
-| ❌ *2* | ✅             | Arguments Object                                     |
+| ⚠ *1* | ✅             | Arrays: Sparse Arrays                                |
+| ⚠ *2* | ✅             | Arguments Object                                     |
 | ❌     | ✅             | Int8Array                                            |
 | ❌     | ✅             | Uint8Array                                           |
 | ❌     | ✅             | Uint8ClampedArray                                    |
@@ -101,7 +101,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌     | ✅             | Referencial Integrity for All Reference Types        |
 | ❌     | ✅ *4*         | Referencial Integrity for Unsupported Types          |
 | ❌     | ✅             | Referencial Deduplication                            |
-| ✅ *5* | ✅             | Root-Level Encoding for All Supported Values         |
+| ⚠ *5* | ✅             | Root-Level Encoding for All Supported Values         |
+| ⚠ *6* | ✅             | Built-in Symbol Keys Not Stored                      |
 | ✅     | ❌             | Built-in                                             |
 | ✅     | ❌             | Encodes to String                                    |
 
@@ -119,6 +120,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - Promise
   - etc.
 * *5* - JSON will do root-level encoding only for the types it supports elsewhere.
+* *6* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
 
 ### Terms
 
@@ -147,7 +149,7 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - Uint32Array
   - Float32Array
   - Float64Array
- * Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
+* Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
   - All Object-like Types
   - All Array-like Types
   - Symbol
@@ -319,21 +321,3 @@ TODO
 * AsyncFunction
 * Proxy???
 * Add a version number part of the encoding process
-* Make arguments actually return arguments by calling a mock function and retrieving the arguments.
-* Improve the Symbol(Symbol.iterator) test to check for a function and other stuff to avoid false positive.
-
-Add test for arguments and array self containment
-```
-var args;
-
-function test() {
-		arguments[0] = arguments;
-		return arguments;
-}
-
-console.log(test(1,2,3))
-```
-
-Tape
-Respirator
-lettuse

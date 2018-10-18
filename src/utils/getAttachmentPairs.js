@@ -6,7 +6,7 @@ module.exports = (v) => {
     const indices = [];
     const indexObj = {};
     Array.prototype.forEach.call(v, (value, index) => {
-        indexObj['' + index] = true;
+        indexObj[String(index)] = 1;
         indices.push(index);
     });
 
@@ -20,9 +20,12 @@ module.exports = (v) => {
     }, []);
 
     const symbols = Object.getOwnPropertySymbols(v).reduce((accumulator, symbol) => {
-        if (String(symbol) !== 'Symbol(Symbol.iterator)') {
+        const symbolStringMatches = String(symbol).match(/^Symbol\(Symbol\.([^\)]*)\)$/);
+
+        if (symbolStringMatches === null || symbolStringMatches.length !== 2 || Symbol[symbolStringMatches[1]] !== symbol) {
             accumulator.push(symbol);
         }
+
         return accumulator;
     }, []);
 

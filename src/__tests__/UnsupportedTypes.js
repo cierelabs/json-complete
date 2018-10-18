@@ -28,20 +28,17 @@ const startup = () => {
 };
 
 test('Unsupported Types: Normal', (t) => {
-    t.plan(4);
+    t.plan(3);
 
     const help = startup();
     const encoded = encode([Math]);
     const decoded = decode(encoded)[0];
     const callCount = help.getCallCount();
     help.shutdown();
-    t.ok(callCount > 0);
 
+    t.ok(callCount > 0);
     t.ok(testHelpers.isObject(decoded));
-    Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)).forEach((k) => {
-        t.ok(testHelpers.isSymbol(k));
-        t.equal(decoded[k], 'Math');
-    });
+    t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
 });
 
 test('Unsupported Types: Arbitrary Attached Data', (t) => {
