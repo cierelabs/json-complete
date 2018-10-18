@@ -2,6 +2,7 @@ const getAttachmentPairs = require('./utils/getAttachmentPairs.js');
 const getPointerKey = require('./utils/getPointerKey.js');
 const keysSimple = require('./utils/keysSimple.js');
 const keysComposite = require('./utils/keysComposite.js');
+const standardErrors = require('./utils/standardErrors.js');
 
 const genEncodePointer = (data, value) => {
     const pointerKey = getPointerKey(value);
@@ -90,17 +91,15 @@ const encodeWrappedObject = (data, value) => {
 };
 
 const encodeTypedArray = (data, value) => {
-    const pairs = getAttachmentPairs(value).reduce((accumulator, pair) => {
-        if (pair.length === 1) {
-            accumulator[0].push(encodeValue(data, pair[0]));
-        }
-        else {
-            accumulator[1].push(pair);
-        }
-        return accumulator;
-    }, [[], []]);
+    const pairs = getAttachmentPairs(value);
+    let firstActualPairIndex = pairs.findIndex((pair) => {
+        return pair.length !== 1;
+    });
+    firstActualPairIndex = firstActualPairIndex !== -1 ? firstActualPairIndex : pairs.length;
 
-    return encodeContainer(data, value, [pairs[0]].concat(pairs[1]));
+    return encodeContainer(data, value, [pairs.slice(0, firstActualPairIndex).map((pair) => {
+        return encodeValue(data, pair[0]);
+    })].concat(pairs.slice(firstActualPairIndex)));
 };
 
 /* istanbul ignore next */
@@ -174,32 +173,8 @@ const encoders = {
         return encodeCompositeContainer(data, value, encodeValue(data, String(value)));
     },
     'er': (data, value) => {
-        let type;
-
-        if (value instanceof EvalError) {
-            type = 'EvalError';
-        }
-        else if (value instanceof RangeError) {
-            type = 'RangeError';
-        }
-        else if (value instanceof ReferenceError) {
-            type = 'ReferenceError';
-        }
-        else if (value instanceof SyntaxError) {
-            type = 'SyntaxError';
-        }
-        else if (value instanceof TypeError) {
-            type = 'TypeError';
-        }
-        else if (value instanceof URIError) {
-            type = 'URIError';
-        }
-        else {
-            type = 'Error';
-        }
-
         return encodeCompositeContainer(data, value, [
-            encodeValue(data, type),
+            encodeValue(data, standardErrors[value.name] ? value.name : 'Error'),
             encodeValue(data, value.message),
             encodeValue(data, value.stack),
         ]);
@@ -210,6 +185,9 @@ const encoders = {
     'BO': encodeWrappedObject,
     'NM': encodeWrappedObject,
     'ST': encodeWrappedObject,
+    'AB': (data, value) => {
+
+    },
     'I1': encodeTypedArray,
     'U1': encodeTypedArray,
     'C1': encodeTypedArray,

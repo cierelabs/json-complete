@@ -1,6 +1,7 @@
 const keysSimple = require('./utils/keysSimple.js');
 const keysComposite = require('./utils/keysComposite.js');
 const functionDecoder = require('./utils/functionDecoder.js');
+const standardErrors = require('./utils/standardErrors.js');
 
 const genDecodePointer = (pointer) => {
     return {
@@ -176,33 +177,7 @@ const types = {
         n: (data, p) => {
             const encodedArray = getEncodedAt(data, p.k, p.i)[0];
 
-            const type = getEncodedAtPointer(data, encodedArray[0]);
-            const message = getEncodedAtPointer(data, encodedArray[1]);
-
-            let value;
-
-            if (type === 'EvalError') {
-                value = new EvalError(message);
-            }
-            else if (type === 'RangeError') {
-                value = new RangeError(message);
-            }
-            else if (type === 'ReferenceError') {
-                value = new ReferenceError(message);
-            }
-            else if (type === 'SyntaxError') {
-                value = new SyntaxError(message);
-            }
-            else if (type === 'TypeError') {
-                value = new TypeError(message);
-            }
-            else if (type === 'URIError') {
-                value = new URIError(message);
-            }
-            else {
-                value = new Error(message);
-            }
-
+            const value = new (standardErrors[getEncodedAtPointer(data, encodedArray[0])] || Error)(getEncodedAtPointer(data, encodedArray[1]));
             value.stack = getEncodedAtPointer(data, encodedArray[2]);
 
             return value;
