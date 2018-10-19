@@ -9,6 +9,8 @@ module.exports = {
     'BO': 1, // Object-wrapped Boolean
     'NM': 1, // Object-wrapped Number
     'ST': 1, // Object-wrapped String
+    'AB': 1, // ArrayBuffer
+    'SA': 1, // SharedArrayBuffer
     'I1': 1, // Int8Array
     'U1': 1, // Uint8Array
     'C1': 1, // Uint8ClampedArray
@@ -18,7 +20,6 @@ module.exports = {
     'U3': 1, // Uint32Array
     'F3': 1, // Float32Array
     'F4': 1, // Float64Array
-    'AB': 1, // ArrayBuffer
     'Se': 1, // Set
     'Ma': 1, // Map
     'Bl': 1, // Blob

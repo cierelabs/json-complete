@@ -19,6 +19,7 @@ const typeNameMap = {
     'Object': 'ob',
     'Symbol': 'sy',
     'ArrayBuffer': 'AB',
+    'SharedArrayBuffer': 'SA',
     'Int8Array': 'I1',
     'Uint8Array': 'U1',
     'Uint8ClampedArray': 'C1',

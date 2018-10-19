@@ -20,13 +20,15 @@ test('Int8Array: Normal', (t) => {
 });
 
 test('Int8Array: Empty Cells', (t) => {
-    t.plan(2);
+    t.plan(4);
 
     const a = new Int8Array(2);
     a[0] = 1;
 
     const decoded = decode(encode([a]))[0];
 
+    t.equal(testHelpers.systemName(decoded), '[object Int8Array]');
+    t.equal(decoded.length, 2);
     t.equal(decoded[0], 1);
     t.equal(decoded[1], 0);
 });

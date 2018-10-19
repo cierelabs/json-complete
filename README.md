@@ -74,6 +74,8 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌     | ✅             | Arrays: String and Symbol Keys                       |
 | ⚠ *1* | ✅             | Arrays: Sparse Arrays                                |
 | ⚠ *2* | ✅             | Arguments Object                                     |
+| ❌     | ✅             | ArrayBuffer                                          |
+| ❌     | ✅             | SharedArrayBuffer                                    |
 | ❌     | ✅             | Int8Array                                            |
 | ❌     | ✅             | Uint8Array                                           |
 | ❌     | ✅             | Uint8ClampedArray                                    |
@@ -314,8 +316,6 @@ TODO
 * Create more meaningful error messages, especially for the decoder.
 * Write helper to extract buffer from encoded Blob/File objects on Node
 * Write helper to encode buffer into Blob or File objects on Node
-* SharedArrayBuffer
-* ArrayBuffer
 * Generator
 * GeneratorFunction
 * AsyncFunction

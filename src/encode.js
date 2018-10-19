@@ -17,24 +17,6 @@ const genEncodePointer = (data, value) => {
     };
 };
 
-const tryGetExistingPointer = (data, value, pointerKey) => {
-    // Simple PointerKeys are their own Pointers
-    if (keysSimple[pointerKey]) {
-        return pointerKey;
-    }
-
-    // Ensure the ref list exists
-    data._.k[pointerKey] = data._.k[pointerKey] || [];
-
-    // Try to find existing item matching the value
-    const foundItem = data._.k[pointerKey].find((p) => {
-        return p.v === value;
-    });
-
-    // If found, return its existing pointer
-    return (foundItem || {}).p;
-};
-
 const encodePrimitive = (data, value) => {
     const p = genEncodePointer(data, value);
     data[p.k][p.i] = value;
@@ -45,17 +27,7 @@ const encodePrimitive = (data, value) => {
 const encodeContainer = (data, box, pairs) => {
     const p = genEncodePointer(data, box);
 
-    // As a container type, it might already have been encountered, so we use the existing PointerIndex if available
-    const existingPointer = tryGetExistingPointer(data, box, p.k);
-
-    if (existingPointer) {
-        // encodeContainer is never called on a Simple Pointer Key value, so there is no need to account for a missing index here
-        p.i = parseInt(existingPointer.substring(2), 10);
-        p.p = existingPointer;
-    }
-    else {
-        data._.k[p.k].push(p);
-    }
+    data._.k[p.k].push(p);
 
     data[p.k][p.i] = data[p.k][p.i] || [];
     data[p.k][p.i] = data[p.k][p.i].concat(pairs.map((pair, index) => {
@@ -102,6 +74,12 @@ const encodeTypedArray = (data, value) => {
     })].concat(pairs.slice(firstActualPairIndex)));
 };
 
+const encodeArrayBuffer = (data, value) => {
+    return encodeContainer(data, value, [Array.from(new Uint8Array(value)).map((v) => {
+        return encodeValue(data, v);
+    })].concat(getAttachmentPairs(value)));
+};
+
 /* istanbul ignore next */
 const genBlobLikeEncoder = (properties) => {
     return (data, value) => {
@@ -127,7 +105,18 @@ const genBlobLikeEncoder = (properties) => {
 const encodeValue = (data, value) => {
     const pointerKey = getPointerKey(value);
 
-    const existingPointer = tryGetExistingPointer(data, value, pointerKey);
+    // Simple PointerKeys are their own Pointers
+    if (keysSimple[pointerKey]) {
+        return pointerKey;
+    }
+
+    // Ensure the ref list exists
+    data._.k[pointerKey] = data._.k[pointerKey] || [];
+
+    // Try to find existing pointer matching the value
+    const existingPointer = (data._.k[pointerKey].find((p) => {
+        return p.v === value;
+    }) || {}).p;
 
     // If found, return its existing pointer
     if (existingPointer) {
@@ -185,9 +174,8 @@ const encoders = {
     'BO': encodeWrappedObject,
     'NM': encodeWrappedObject,
     'ST': encodeWrappedObject,
-    'AB': (data, value) => {
-
-    },
+    'AB': encodeArrayBuffer,
+    'SA': encodeArrayBuffer,
     'I1': encodeTypedArray,
     'U1': encodeTypedArray,
     'C1': encodeTypedArray,
@@ -228,7 +216,6 @@ const prepOutput = (data) => {
 module.exports = (value, onFinish) => {
     const data = {
         _: {
-            q: [], // Exploration Queue
             k: {}, // Known References
             b: [], // Blob and File Deferment List
         },
@@ -236,11 +223,6 @@ module.exports = (value, onFinish) => {
 
     // Initialize data from the top-most value
     data.r = encodeValue(data, value);
-
-    // While there are still references to explore, go through them
-    while (data._.q.length > 0) {
-        encodeValue(data, data._.q.shift().v);
-    }
 
     // If we have to handle Blob or File types
     /* istanbul ignore next */

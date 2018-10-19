@@ -45,6 +45,19 @@ test('Function: Method Function', (t) => {
     t.equal(decodedObj.func(), 1);
 });
 
+test('Function: Invalid Function Decoding Handled', (t) => {
+    t.plan(2);
+    const decodedFunc = decode(encode(Math.max));
+    t.ok(testHelpers.isFunction(decodedFunc));
+    try {
+        decodedFunc();
+        t.ok(false);
+    }
+    catch (e) {
+        t.ok((/^This function could not be decoded successfully: /).test(e));
+    }
+});
+
 test('Function: Root Value Normal', (t) => {
     t.plan(2);
     const decodedFunction = decode(encode(() => { return 1; }));

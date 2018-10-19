@@ -11,32 +11,6 @@ const genDecodePointer = (pointer) => {
     };
 };
 
-const getExisting = (data, p) => {
-    // Simple PointerKeys are their own Pointers
-    if (keysSimple[p.k]) {
-        return types[p.k].g(data, p);
-    }
-
-    // Ensure that the value storage list exists
-    data[p.k] = data[p.k] || [];
-
-    // Return any value that exists at the Pointer location
-    return data[p.k][p.i];
-};
-
-const getExistingOrCreate = (data, p) => {
-    const ref = getExisting(data, p);
-
-    // If the ref found, return it
-    if (ref !== void 0) {
-        return ref;
-    }
-
-    // If it doesn't exist, create it and store it
-    data[p.k][p.i] = types[p.k].n(data, p);
-    return data[p.k][p.i];
-};
-
 const getEncodedAt = (data, key, index) => {
     return data._[key][index];
 };
@@ -51,8 +25,6 @@ const genValueOf = (data, p) => {
 };
 
 const containerGenerator = (data, p) => {
-    const container = getExistingOrCreate(data, p);
-
     let pairs = getEncodedAt(data, p.k, p.i);
 
     // Skip the first item if the data's value had to be encoded with other values
@@ -60,24 +32,35 @@ const containerGenerator = (data, p) => {
         pairs = pairs.slice(1);
     }
 
+    // Create the container object into which things will be assigned below
+    data[p.k][p.i] = types[p.k].n(data, p);
+
     pairs.forEach((pair, index) => {
         if (pair.length === 1) {
-            container[index] = generate(data, pair[0]);
+            data[p.k][p.i][index] = generate(data, pair[0]);
         }
         else {
-            container[generate(data, pair[0])] = generate(data, pair[1]);
+            data[p.k][p.i][generate(data, pair[0])] = generate(data, pair[1]);
         }
     });
 
-    return container;
+    return data[p.k][p.i];
 };
 
 const generate = (data, pointer) => {
     const p = genDecodePointer(pointer);
 
-    const existingValue = getExisting(data, p);
-    if (existingValue !== void 0) {
-        return existingValue;
+    // Simple PointerKeys are their own Pointers
+    if (keysSimple[p.k]) {
+        return types[p.k].g(data, p);
+    }
+
+    // Ensure that the value storage list exists
+    data[p.k] = data[p.k] || [];
+
+    if (data[p.k][p.i] !== void 0) {
+        // Return any value that exists at the Pointer location
+        return data[p.k][p.i];
     }
 
     return types[p.k] === void 0 ? p.p : types[p.k].g(data, p);
@@ -90,6 +73,21 @@ const genTypeArrayGenerator = (type) => {
             return new type(getEncodedAt(data, p.k, p.i)[0].map((pointer) => {
                 return getEncodedAtPointer(data, pointer);
             }));
+        },
+    };
+};
+
+const genArrayBufferGenerator = (type) => {
+    return {
+        g: containerGenerator,
+        n: (data, p) => {
+            const values = getEncodedAt(data, p.k, p.i)[0];
+            const buffer = new type(values.length);
+            const view = new Uint8Array(buffer);
+            values.forEach((pointer, index) => {
+                view[index] = getEncodedAtPointer(data, pointer);
+            });
+            return buffer;
         },
     };
 };
@@ -222,6 +220,8 @@ const types = {
     'U3': genTypeArrayGenerator(Uint32Array),
     'F3': genTypeArrayGenerator(Float32Array),
     'F4': genTypeArrayGenerator(Float64Array),
+    'AB': genArrayBufferGenerator(ArrayBuffer),
+    'SA': genArrayBufferGenerator(SharedArrayBuffer),
     'Se': {
         g: containerGenerator,
         n: (data, p) => {

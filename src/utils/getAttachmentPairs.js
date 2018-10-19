@@ -48,6 +48,4 @@ module.exports = (v) => {
             v[key],
         ];
     });
-
-    return pairs;
 };

@@ -1,5 +1,6 @@
 const Arguments = require('src/__tests__/Arguments.js');
 const Array = require('src/__tests__/Array.js');
+const ArrayBuffer = require('src/__tests__/ArrayBuffer.js');
 const AsyncForm = require('src/__tests__/AsyncForm.js');
 const AvoidStoringBuiltInSymbols = require('src/__tests__/AvoidStoringBuiltInSymbols.js');
 const Blob = require('src/__tests__/Blob.js');
@@ -23,6 +24,7 @@ const ObjectWrappedString = require('src/__tests__/ObjectWrappedString.js');
 const ReferencialDepth = require('src/__tests__/ReferencialDepth.js');
 const Regex = require('src/__tests__/Regex.js');
 const Set = require('src/__tests__/Set.js');
+const SharedArrayBuffer = require('src/__tests__/SharedArrayBuffer.js');
 const String = require('src/__tests__/String.js');
 const Symbol = require('src/__tests__/Symbol.js');
 const Uint16Array = require('src/__tests__/Uint16Array.js');
