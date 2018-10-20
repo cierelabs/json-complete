@@ -4,6 +4,7 @@ module.exports = {
     'da': 1, // Date
     'sy': 1, // Symbol
     're': 1, // Regex
+    // 'ar': 1, // Array
     'fu': 1, // Function
     'er': 1, // Error
     'BO': 1, // Object-wrapped Boolean

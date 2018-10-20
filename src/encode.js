@@ -29,7 +29,9 @@ const encodeContainer = (data, box, pairs) => {
 
     data._.k[p.k].push(p);
 
+    // The creation of empty array here has to happen before assignment to account for nesting
     data[p.k][p.i] = data[p.k][p.i] || [];
+
     data[p.k][p.i] = data[p.k][p.i].concat(pairs.map((pair, index) => {
         if (index === 0 && keysComposite[p.k]) {
             return pair;
@@ -51,44 +53,39 @@ const encodeContainer = (data, box, pairs) => {
 };
 
 const encodeStandardContainer = (data, value) => {
-    return encodeContainer(data, value, getAttachmentPairs(value));
+    const pairs = getAttachmentPairs(value);
+    return encodeContainer(data, value, pairs[0].concat(pairs[1]));
 };
 
 const encodeCompositeContainer = (data, value, encodedValue) => {
-    return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)))
+    return encodeContainer(data, value, [encodedValue].concat(getAttachmentPairs(value)[1]));
 };
 
 const encodeWrappedObject = (data, value) => {
     return encodeCompositeContainer(data, value, encodeValue(data, value.valueOf()));
 };
 
-const encodeTypedArray = (data, value) => {
-    const pairs = getAttachmentPairs(value);
-    let firstActualPairIndex = pairs.findIndex((pair) => {
-        return pair.length !== 1;
-    });
-    firstActualPairIndex = firstActualPairIndex !== -1 ? firstActualPairIndex : pairs.length;
+const encodeArrayBufferAs = (data, value, mappableValue) => {
+    return encodeContainer(data, value, [Array.from(mappableValue).map((v) => {
+        return encodeValue(data, v);
+    })].concat(getAttachmentPairs(value)[1]));
+};
 
-    return encodeContainer(data, value, [pairs.slice(0, firstActualPairIndex).map((pair) => {
-        return encodeValue(data, pair[0]);
-    })].concat(pairs.slice(firstActualPairIndex)));
+const encodeTypedArray = (data, value) => {
+    return encodeArrayBufferAs(data, value, value);
 };
 
 const encodeArrayBuffer = (data, value) => {
-    return encodeContainer(data, value, [Array.from(new Uint8Array(value)).map((v) => {
-        return encodeValue(data, v);
-    })].concat(getAttachmentPairs(value)));
+    return encodeArrayBufferAs(data, value, new Uint8Array(value));
 };
 
 /* istanbul ignore next */
 const genBlobLikeEncoder = (properties) => {
     return (data, value) => {
         // Initial simple value is injected for now to later be replaced
-        const encodedValueData = [void 0].concat(properties.map((property) => {
+        const pointer = encodeCompositeContainer(data, value, [void 0].concat(properties.map((property) => {
             return encodeValue(data, value[property]);
-        }));
-
-        const pointer = encodeContainer(data, value, [encodedValueData].concat(getAttachmentPairs(value)));
+        })));
 
         // Because Blobs and Files cannot be read synchronously (and shouldn't, due to size), we have to defer conversion until later
         data._.b.push({
@@ -170,6 +167,10 @@ const encoders = {
     },
     'ag': encodeStandardContainer,
     'ar': encodeStandardContainer,
+    // const pairs = getAttachmentPairs(value);
+    //     return encodeCompositeContainer(data, value, pairs[0].map((v) => {
+    //         return encodeValue(data, v);
+    //     }));
     'ob': encodeStandardContainer,
     'BO': encodeWrappedObject,
     'NM': encodeWrappedObject,
@@ -186,20 +187,14 @@ const encoders = {
     'F3': encodeTypedArray,
     'F4': encodeTypedArray,
     'Se': (data, value) => {
-        const encodedValueData = [];
-        value.forEach((part) => {
-            encodedValueData.push(encodeValue(data, part));
-        });
-
-        return encodeCompositeContainer(data, value, encodedValueData);
+        return encodeCompositeContainer(data, value, Array.from(value.values()).map((v) => {
+            return encodeValue(data, v);
+        }));
     },
     'Ma': (data, value) => {
-        const encodedValueData = [];
-        value.forEach((value, key) => {
-            encodedValueData.push([encodeValue(data, key), encodeValue(data, value)]);
-        });
-
-        return encodeCompositeContainer(data, value, encodedValueData);
+        return encodeCompositeContainer(data, value, Array.from(value.entries()).map((v) => {
+            return [encodeValue(data, v[0]), encodeValue(data, v[1])];
+        }));
     },
     'Bl': genBlobLikeEncoder(['type']),
     'Fi': genBlobLikeEncoder(['name', 'type', 'lastModified']),
@@ -210,7 +205,7 @@ const prepOutput = (data) => {
     delete data._;
 
     // Convert data object to a simple array of pairs
-    return getAttachmentPairs(data);
+    return getAttachmentPairs(data)[1];
 };
 
 module.exports = (value, onFinish) => {

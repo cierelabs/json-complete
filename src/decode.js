@@ -27,15 +27,16 @@ const genValueOf = (data, p) => {
 const containerGenerator = (data, p) => {
     let pairs = getEncodedAt(data, p.k, p.i);
 
+    // Create the container object into which things will be assigned below
+    data[p.k][p.i] = types[p.k].n(data, p);
+
     // Skip the first item if the data's value had to be encoded with other values
     if (keysComposite[p.k]) {
         pairs = pairs.slice(1);
     }
 
-    // Create the container object into which things will be assigned below
-    data[p.k][p.i] = types[p.k].n(data, p);
-
     pairs.forEach((pair, index) => {
+        // p.k !== 'ar' &&
         if (pair.length === 1) {
             data[p.k][p.i][index] = generate(data, pair[0]);
         }
@@ -81,10 +82,10 @@ const genArrayBufferGenerator = (type) => {
     return {
         g: containerGenerator,
         n: (data, p) => {
-            const values = getEncodedAt(data, p.k, p.i)[0];
-            const buffer = new type(values.length);
+            const encodedValues = getEncodedAt(data, p.k, p.i)[0];
+            const buffer = new type(encodedValues.length);
             const view = new Uint8Array(buffer);
-            values.forEach((pointer, index) => {
+            encodedValues.forEach((pointer, index) => {
                 view[index] = getEncodedAtPointer(data, pointer);
             });
             return buffer;
@@ -103,24 +104,24 @@ const genValueObjectGenerator = (type) => {
 
 /* istanbul ignore next */
 const genBlob = (data, p) => {
-    const encodedArray = getEncodedAt(data, p.k, p.i)[0];
+    const encodedValues = getEncodedAt(data, p.k, p.i)[0];
 
-    return new Blob([new Uint8Array(getEncodedAtPointer(data, encodedArray[0])[0].map((item) => {
+    return new Blob([new Uint8Array(getEncodedAtPointer(data, encodedValues[0])[0].map((item) => {
         return getEncodedAtPointer(data, item);
     }))], {
-        type: getEncodedAtPointer(data, encodedArray[1]),
+        type: getEncodedAtPointer(data, encodedValues[1]),
     });
 };
 
 /* istanbul ignore next */
 const genFile = (data, p) => {
-    const encodedArray = getEncodedAt(data, p.k, p.i)[0];
+    const encodedValues = getEncodedAt(data, p.k, p.i)[0];
 
-    return new File([new Uint8Array(getEncodedAtPointer(data, encodedArray[0])[0].map((item) => {
+    return new File([new Uint8Array(getEncodedAtPointer(data, encodedValues[0])[0].map((item) => {
         return getEncodedAtPointer(data, item);
-    }))], getEncodedAtPointer(data, encodedArray[1]), {
-        type: getEncodedAtPointer(data, encodedArray[2]),
-        lastModified: getEncodedAtPointer(data, encodedArray[3]),
+    }))], getEncodedAtPointer(data, encodedValues[1]), {
+        type: getEncodedAtPointer(data, encodedValues[2]),
+        lastModified: getEncodedAtPointer(data, encodedValues[3]),
     });
 };
 
@@ -146,9 +147,9 @@ const types = {
     're': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getEncodedAt(data, p.k, p.i)[0];
-            const value = new RegExp(getEncodedAtPointer(data, encodedArray[0]), getEncodedAtPointer(data, encodedArray[1]));
-            value.lastIndex = getEncodedAtPointer(data, encodedArray[2]);
+            const encodedValues = getEncodedAt(data, p.k, p.i)[0];
+            const value = new RegExp(getEncodedAtPointer(data, encodedValues[0]), getEncodedAtPointer(data, encodedValues[1]));
+            value.lastIndex = getEncodedAtPointer(data, encodedValues[2]);
 
             return value;
         },
@@ -156,10 +157,10 @@ const types = {
     'sy': {
         g: (data, p) => {
             // Manually decode the array container format
-            const encodedArray = getEncodedAt(data, p.k, p.i);
-            const name = getEncodedAtPointer(data, encodedArray[1]);
+            const encodedValues = getEncodedAt(data, p.k, p.i);
+            const name = getEncodedAtPointer(data, encodedValues[1]);
 
-            data[p.k][p.i] = getEncodedAtPointer(data, encodedArray[0]) === 1 ? Symbol.for(name) : Symbol(name);
+            data[p.k][p.i] = getEncodedAtPointer(data, encodedValues[0]) === 1 ? Symbol.for(name) : Symbol(name);
 
             return data[p.k][p.i];
         },
@@ -173,10 +174,10 @@ const types = {
     'er': {
         g: containerGenerator,
         n: (data, p) => {
-            const encodedArray = getEncodedAt(data, p.k, p.i)[0];
+            const encodedValues = getEncodedAt(data, p.k, p.i)[0];
 
-            const value = new (standardErrors[getEncodedAtPointer(data, encodedArray[0])] || Error)(getEncodedAtPointer(data, encodedArray[1]));
-            value.stack = getEncodedAtPointer(data, encodedArray[2]);
+            const value = new (standardErrors[getEncodedAtPointer(data, encodedValues[0])] || Error)(getEncodedAtPointer(data, encodedValues[1]));
+            value.stack = getEncodedAtPointer(data, encodedValues[2]);
 
             return value;
         },
@@ -197,7 +198,7 @@ const types = {
     },
     'ar': {
         g: containerGenerator,
-        n: () => {
+        n: (data, p) => {
             return [];
         },
     },
