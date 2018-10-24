@@ -5,6 +5,7 @@ module.exports = (v) => {
     const indices = [];
     const indexObj = {};
     // Object-Wrapped Strings would incorrectly parse the string as an indexed list, so ignore those indices
+    // TODO: Find way to remove this check
     if (getPointerKey(v) !== 'ST') {
         // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
         Array.prototype.forEach.call(v, (value, index) => {

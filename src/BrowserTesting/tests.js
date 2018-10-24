@@ -1,5 +1,5 @@
 // const Arguments = require('src/__tests__/Arguments.js');
-const Array = require('src/__tests__/Array.js');
+// const Array = require('src/__tests__/Array.js');
 // const ArrayBuffer = require('src/__tests__/ArrayBuffer.js');
 // const AsyncForm = require('src/__tests__/AsyncForm.js');
 // const AvoidStoringBuiltInSymbols = require('src/__tests__/AvoidStoringBuiltInSymbols.js');
@@ -39,7 +39,89 @@ const Array = require('src/__tests__/Array.js');
 
 
 
-// const jsonComplete = require('src/main.js');
+const jsonComplete = require('src/main.js');
 
-// const encode = jsonComplete.encode;
-// const decode = jsonComplete.decode;
+const encode = jsonComplete.encode;
+const decode = jsonComplete.decode;
+
+const encode2 = jsonComplete.encode2;
+const decode2 = jsonComplete.decode2;
+
+// console.log(JSON.stringify(encode(null), null, 4))
+
+// const inner = {
+//     loop: void 0,
+//     d: [1,2],
+// };
+
+// const st = new String('test');
+// st.x = 2;
+
+// const arr = [
+//     undefined,
+//     null,
+//     true,
+//     false,
+//     NaN,
+//     -Infinity,
+//     Infinity,
+//     -0,
+//     0,
+//     1,
+//     [],
+//     [
+//         1,
+//         2,
+//         3,
+//     ],
+//     {},
+//     {
+//         a: 1,
+//         b: 2,
+//         c: 3,
+//     },
+//     [
+//         inner,
+//         inner,
+//     ],
+//     'test',
+//     st,
+// ];
+// arr.push(arr);
+
+// inner.d[5] = 9;
+// inner.loop = arr;
+// inner.x = 2;
+
+const box = {
+    a: [],
+};
+let arrayRef = box.a;
+const depth = 16000;
+for (let d = 0; d < depth; d += 1) {
+    if (d === depth - 1) {
+        arrayRef[0] = 'here';
+    }
+    else {
+        arrayRef[0] = [];
+        arrayRef = arrayRef[0];
+    }
+}
+
+const encoded = encode2(box);
+const decoded = decode2(encoded);
+
+arrayRef = decoded.a;
+for (let d = 0; d < depth; d += 1) {
+    arrayRef = arrayRef[0];
+}
+
+console.log(arrayRef)
+
+// const encoded = encode2(arr);
+
+console.log(encoded)
+
+// const decoded = decode2(encoded);
+
+console.log(decoded)

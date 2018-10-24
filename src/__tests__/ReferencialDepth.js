@@ -60,7 +60,7 @@ test('Referencial Depth: Extreme Depth Stress Test', (t) => {
         a: [],
     };
     let arrayRef = box.a;
-    const depth = 256;
+    const depth = 16000;
     for (let d = 0; d < depth; d += 1) {
         if (d === depth - 1) {
             arrayRef[0] = 'here';
