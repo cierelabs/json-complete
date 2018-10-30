@@ -1,20 +1,32 @@
-import extractIndex from '/src/utils/extractIndex.mjs';
-import extractKey from '/src/utils/extractKey.mjs';
+import extractPointer from '/src/utils/extractPointer.mjs';
 import getPointerKey from '/src/utils/getPointerKey.mjs';
-import isAttachable from '/src/utils/isAttachable.mjs';
 import isSimple from '/src/utils/isSimple.mjs';
-import types from '/src/utils/types.mjs';
+import types from '/src/types.mjs';
+
+// Recursively look at the reference set for exploration values
+// This handles both pair arrays and individual values
+// This recursion is fine because it has a maximum depth of 3
+const exploreParts = (store, parts) => {
+    if (getPointerKey(parts) === 'ar') {
+        parts.forEach((part) => {
+            exploreParts(store, part);
+        });
+    }
+    else {
+        store.explore.push(parts);
+    }
+};
 
 const explorePointer = (store, pointer) => {
-    const pointerKey = extractKey(pointer);
+    const p = extractPointer(pointer);
 
-    if (!types[pointerKey] || store.decoded[pointer] !== void 0 || isSimple(pointerKey)) {
+    if (!types[p.key] || store.decoded[pointer] !== void 0 || isSimple(p.key)) {
         return;
     }
 
     const dataItem = {
-        key: pointerKey,
-        index: extractIndex(pointer),
+        key: p.key,
+        index: p.index,
         pointer: pointer,
         value: void 0,
         parts: [],
@@ -22,21 +34,11 @@ const explorePointer = (store, pointer) => {
 
     store.decoded[pointer] = dataItem;
 
-    dataItem.value = types[pointerKey].generateReference(store, dataItem.key, dataItem.index);
+    dataItem.value = types[p.key].generateReference(store, dataItem.key, dataItem.index);
     dataItem.parts = store.encoded[dataItem.key][dataItem.index];
 
-    if (isAttachable(dataItem.key)) {
-        dataItem.parts.forEach((part) => {
-            part.forEach((subPart) => {
-                if (getPointerKey(subPart) === 'ar') {
-                    store.explore.push(subPart[0]);
-                    store.explore.push(subPart[1]);
-                }
-                else {
-                    store.explore.push(subPart);
-                }
-            });
-        });
+    if (getPointerKey(dataItem.parts) === 'ar') {
+        exploreParts(store, dataItem.parts);
     }
 };
 
@@ -50,10 +52,15 @@ export default (encoded) => {
         explore: [],
     };
 
-    const rootPointerKey = extractKey(store.encoded.r);
+    const rootP = extractPointer(store.encoded.r);
 
-    if (isSimple(rootPointerKey)) {
-        return types[rootPointerKey].build();
+    // Unrecognized root type, return pointer
+    if (!types[rootP.key]) {
+        return store.encoded.r;
+    }
+
+    if (isSimple(rootP.key)) {
+        return types[rootP.key].build();
     }
 
     store.explore.push(store.encoded.r);
@@ -64,10 +71,6 @@ export default (encoded) => {
     Object.values(store.decoded).forEach((dataItem) => {
         types[dataItem.key].build(store, dataItem);
     });
-
-    if (!types[extractKey(store.encoded.r)]) {
-        return store.encoded.r;
-    }
 
     return store.decoded[store.encoded.r].value;
 };

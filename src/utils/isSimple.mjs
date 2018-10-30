@@ -1,4 +1,4 @@
-import types from '/src/utils/types.mjs';
+import types from '/src/types.mjs';
 
 export default (pointerKey) => {
     return types[pointerKey] && !types[pointerKey].encodeValue;

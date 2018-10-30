@@ -1,14 +1,62 @@
-import encounterItem from '/src/utils/encounterItem.mjs';
-import extractIndex from '/src/utils/extractIndex.mjs';
-import extractKey from '/src/utils/extractKey.mjs';
-import isSimple from '/src/utils/isSimple.mjs';
-import standardErrors from '/src/utils/standardErrors.mjs';
-
-const extractPointer = (pointer) => {
-    return {
-        key: extractKey(pointer),
-        index: extractIndex(pointer),
+var getAttachments = (v) => {
+    const attached = {
+        indices: [],
+        attachments: [],
     };
+
+    // Find all indices
+    const indices = [];
+    const indexObj = {};
+    // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
+    Array.prototype.forEach.call(v, (value, index) => {
+        indexObj[String(index)] = 1;
+        indices.push(index);
+    });
+
+    // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
+    let i = 0;
+
+    // Find all String keys that are not indices
+    // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
+    let keys = Object.keys(v).filter((key) => {
+        return !indexObj[key];
+    }).concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
+        // Ignore built-in Symbols
+        const symbolStringMatches = String(symbol).match(/^Symbol\(Symbol\.([^\)]*)\)$/);
+        return symbolStringMatches === null || symbolStringMatches.length !== 2 || Symbol[symbolStringMatches[1]] !== symbol;
+    }));
+
+    // Create the lists
+    return indices.concat(keys).reduce((accumulator, key) => {
+        if (key === i) {
+            i += 1;
+            accumulator.indices.push(v[key]);
+        }
+        else {
+            accumulator.attachments.push([key, v[key]]);
+        }
+        return accumulator;
+    }, attached);
+};
+
+var extractPointer = (pointer) => {
+    return {
+        key: pointer.substring(0, 2),
+        index: parseInt(pointer.substring(2), 10),
+    };
+};
+
+var isSimple = (pointerKey) => {
+    return types[pointerKey] && !types[pointerKey].encodeValue;
+};
+
+var standardErrors = {
+    'EvalError': EvalError,
+    'RangeError': RangeError,
+    'ReferenceError': ReferenceError,
+    'SyntaxError': SyntaxError,
+    'TypeError': TypeError,
+    'URIError': URIError,
 };
 
 const getDataItemValue = (store, dataItem) => {
@@ -38,9 +86,7 @@ const arrayLikeBuild = (store, dataItem) => {
 
 const objectWrappedEncodeValue = (store, dataItem) => {
     return [
-        [
-            encounterItem(store, dataItem.value.valueOf()),
-        ],
+        encounterItem(store, dataItem.value.valueOf()),
     ];
 };
 
@@ -67,14 +113,14 @@ const decodePointer = (store, pointer) => {
 
 // This is the function for getting pointer references in the build functions
 const getDecoded = (store, pointer) => {
-    const pointerKey = extractKey(pointer);
-
-    if (!types[pointerKey]) {
-        return pointer;
+    if (isSimple(pointer)) {
+        return types[pointer].build();
     }
 
-    if (isSimple(pointerKey)) {
-        return types[pointerKey].build();
+    const p = extractPointer(pointer);
+
+    if (!types[p.key]) {
+        return pointer;
     }
 
     return store.decoded[pointer].value;
@@ -82,7 +128,7 @@ const getDecoded = (store, pointer) => {
 
 const genSingleValueGenerateReference = (type) => {
     return (store, key, index) => {
-        return new type(decodePointer(store, store.encoded[key][index][0][0]));
+        return new type(decodePointer(store, store.encoded[key][index][0]));
     }
 };
 
@@ -140,31 +186,6 @@ const blobLikeDeferredEncode = (store, dataItem, callback) => {
     reader.readAsArrayBuffer(dataItem.value);
 };
 
-/* istanbul ignore next */
-const blobGenerateReference = (store, key, index) => {
-    const dataArray = store.encoded[key][index][0];
-    const p = extractPointer(dataArray[0]);
-
-    return new Blob([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
-        return decodePointer(store, pointer);
-    }))], {
-        type: decodePointer(store, dataArray[1]),
-    });
-};
-
-/* istanbul ignore next */
-const fileGenerateReference = (store, key, index) => {
-    const dataArray = store.encoded[key][index][0];
-    const p = extractPointer(dataArray[0]);
-
-    return new File([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
-        return decodePointer(store, pointer);
-    }))], decodePointer(store, dataArray[1]), {
-        type: decodePointer(store, dataArray[2]),
-        lastModified: decodePointer(store, dataArray[3])
-    });
-};
-
 const types = {
     un: {
         // undefined
@@ -184,13 +205,13 @@ const types = {
             return NaN;
         },
     },
-    '-i': {
+    nI: {
         // -Infinity
         build: () => {
             return -Infinity;
         },
     },
-    '+i': {
+    pI: {
         // Infinity
         build: () => {
             return Infinity;
@@ -216,6 +237,7 @@ const types = {
     },
     nm: {
         // Number
+        systemName: 'Number',
         encodeValue: getDataItemValue,
         generateReference: (store, key, index) => {
             return store.encoded[key][index];
@@ -224,6 +246,7 @@ const types = {
     },
     st: {
         // String
+        systemName: 'String',
         encodeValue: getDataItemValue,
         generateReference: (store, key, index) => {
             return store.encoded[key][index];
@@ -232,14 +255,15 @@ const types = {
     },
     sy: {
         // Symbol
+        systemName: 'Symbol',
         encodeValue: (store, dataItem) => {
             const symbolStringKey = Symbol.keyFor(dataItem.value);
             const isRegistered = symbolStringKey !== void 0;
 
             return [
                 // For Registered Symbols, specify with 1 value and store the registered string value
-                encounterItem(store, isRegistered ? 1 : 0),
                 // For unique Symbols, specify with 0 value and also store the optional identifying string
+                encounterItem(store, isRegistered ? 1 : 0),
                 encounterItem(store, isRegistered ? symbolStringKey : String(dataItem.value).replace(/^Symbol\(|\)$/g, '')),
             ];
         },
@@ -254,7 +278,7 @@ const types = {
     },
     ar: {
         // Array
-        attachable: 1,
+        systemName: 'Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: () => {
             return [];
@@ -263,7 +287,7 @@ const types = {
     },
     ag: {
         // Arguments
-        attachable: 1,
+        systemName: 'Arguments',
         encodeValue: arrayLikeEncodeValue,
         generateReference: (store, key, index) => {
             return (function() {
@@ -276,7 +300,7 @@ const types = {
     },
     ob: {
         // Object
-        attachable: 1,
+        systemName: 'Object',
         encodeValue: () => {
             return [];
         },
@@ -289,7 +313,6 @@ const types = {
     },
     BO: {
         // Object-wrapped Boolean
-        attachable: 1,
         ignoreIndices: 1,
         encodeValue: objectWrappedEncodeValue,
         generateReference: genSingleValueGenerateReference(Boolean),
@@ -297,26 +320,22 @@ const types = {
     },
     NM: {
         // Object-wrapped Number
-        attachable: 1,
         encodeValue: objectWrappedEncodeValue,
         generateReference: genSingleValueGenerateReference(Number),
         build: attachAttachmentsSkipFirst,
     },
     ST: {
         // Object-wrapped String
-        attachable: 1,
         encodeValue: objectWrappedEncodeValue,
         generateReference: genSingleValueGenerateReference(String),
         build: attachAttachmentsSkipFirst,
     },
     da: {
         // Date
-        attachable: 1,
+        systemName: 'Date',
         encodeValue: (store, dataItem) => {
             return [
-                [
-                    encounterItem(store, dataItem.value.getTime()),
-                ],
+                encounterItem(store, dataItem.value.getTime()),
             ];
         },
         generateReference: genSingleValueGenerateReference(Date),
@@ -324,7 +343,7 @@ const types = {
     },
     re: {
         // RegExp
-        attachable: 1,
+        systemName: 'RegExp',
         encodeValue: (store, dataItem) => {
             return [
                 [
@@ -344,7 +363,7 @@ const types = {
     },
     er: {
         // Error
-        attachable: 1,
+        systemName: 'Error',
         encodeValue: (store, dataItem) => {
             return [
                 [
@@ -366,84 +385,84 @@ const types = {
     },
     AB: {
         // ArrayBuffer
-        attachable: 1,
+        systemName: 'ArrayBuffer',
         encodeValue: arrayBufferEncodeValue,
         generateReference: genArrayBufferGenerateReference(ArrayBuffer),
         build: attachAttachmentsSkipFirst,
     },
     SA: {
         // SharedArrayBuffer
-        attachable: 1,
+        systemName: 'SharedArrayBuffer',
         encodeValue: arrayBufferEncodeValue,
         generateReference: genArrayBufferGenerateReference(SharedArrayBuffer),
         build: attachAttachmentsSkipFirst,
     },
     I1: {
         // Int8Array
-        attachable: 1,
+        systemName: 'Int8Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Int8Array),
         build: arrayLikeBuild,
     },
     U1: {
         // Uint8Array
-        attachable: 1,
+        systemName: 'Uint8Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Uint8Array),
         build: arrayLikeBuild,
     },
     C1: {
         // Uint8ClampedArray
-        attachable: 1,
+        systemName: 'Uint8ClampedArray',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Uint8ClampedArray),
         build: arrayLikeBuild,
     },
     U2: {
         // Uint16Array
-        attachable: 1,
+        systemName: 'Uint16Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Uint16Array),
         build: arrayLikeBuild,
     },
     I2: {
         // Int16Array
-        attachable: 1,
+        systemName: 'Int16Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Int16Array),
         build: arrayLikeBuild,
     },
     I3: {
         // Int32Array
-        attachable: 1,
+        systemName: 'Int32Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Int32Array),
         build: arrayLikeBuild,
     },
     U3: {
         // Uint32Array
-        attachable: 1,
+        systemName: 'Uint32Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Uint32Array),
         build: arrayLikeBuild,
     },
     F3: {
         // Float32Array
-        attachable: 1,
+        systemName: 'Float32Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Float32Array),
         build: arrayLikeBuild,
     },
     F4: {
         // Float64Array
-        attachable: 1,
+        systemName: 'Float64Array',
         encodeValue: arrayLikeEncodeValue,
         generateReference: genTypeArrayGenerateReference(Float64Array),
         build: arrayLikeBuild,
     },
     Se: {
         // Set
-        attachable: 1,
+        systemName: 'Set',
         encodeValue: (store, dataItem) => {
             return [
                 Array.from(dataItem.value).map((subValue) => {
@@ -464,7 +483,7 @@ const types = {
     },
     Ma: {
         // Map
-        attachable: 1,
+        systemName: 'Map',
         encodeValue: (store, dataItem) => {
             return [
                 Array.from(dataItem.value).map((subValue) => {
@@ -485,20 +504,342 @@ const types = {
     },
     Bl: {
         // Blob
-        attachable: 1,
+        systemName: 'Blob',
         encodeValue: genBlobLikeEncodeValue(['type']),
         deferredEncode: blobLikeDeferredEncode,
-        generateReference: blobGenerateReference,
+        generateReference: /* istanbul ignore next */ (store, key, index) => {
+            const dataArray = store.encoded[key][index][0];
+            const p = extractPointer(dataArray[0]);
+
+            return new Blob([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
+                return decodePointer(store, pointer);
+            }))], {
+                type: decodePointer(store, dataArray[1]),
+            });
+        },
         build: attachAttachmentsSkipFirst,
     },
     Fi: {
         // File
-        attachable: 1,
+        systemName: 'File',
         encodeValue: genBlobLikeEncodeValue(['name', 'type', 'lastModified']),
         deferredEncode: blobLikeDeferredEncode,
-        generateReference: fileGenerateReference,
+        generateReference: /* istanbul ignore next */ (store, key, index) => {
+            const dataArray = store.encoded[key][index][0];
+            const p = extractPointer(dataArray[0]);
+
+            return new File([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
+                return decodePointer(store, pointer);
+            }))], decodePointer(store, dataArray[1]), {
+                type: decodePointer(store, dataArray[2]),
+                lastModified: decodePointer(store, dataArray[3])
+            });
+        },
         build: attachAttachmentsSkipFirst,
     },
 };
 
-export default types;
+const log = (a) => {
+    try {
+        console.log(a);
+    }
+    catch (e) {
+        // Do nothing
+    }
+};
+
+const objectWrapperTypeNameMap = {
+    'Boolean': 'BO',
+    'Number': 'NM',
+    'String': 'ST',
+};
+
+// NOTE: Because Sets and Maps can accept any value as an entry (or key for Map), if unrecognized or unsupported types did not retain referencial integrity, data loss could occur.
+// For example, if they were replaced with null, any existing entry keyed with null in a Map would be overwritten. Likewise, the Set could have its order changed.
+
+var getPointerKey = (v) => {
+    if (v === void 0) {
+        // Specific support added, because these types didn't have a proper systemName prior to around 2010 Javascript
+        return 'un';
+    }
+    else if (v === null) {
+        // Specific support added, because these types didn't have a proper systemName prior to around 2010 Javascript
+        return 'nl';
+    }
+    else if (v === true) {
+        return 'bt';
+    }
+    else if (v === false) {
+        return 'bf';
+    }
+    else if (typeof v === 'number') {
+        if (v === Infinity) {
+            return 'pI';
+        }
+
+        if (v === -Infinity) {
+            return 'nI';
+        }
+
+        if (v !== v) {
+            return 'na';
+        }
+
+        if (v === -0 && (1 / v) === -Infinity) {
+            return 'n0';
+        }
+    }
+
+    const systemName = Object.prototype.toString.call(v).replace(/\[object |\]/g, '');
+
+    if (typeof v === 'object') {
+        // Primitive types can sometimes be wrapped as Objects and must be handled differently
+        const wrappedPointerKey = objectWrapperTypeNameMap[systemName];
+        if (wrappedPointerKey) {
+            return wrappedPointerKey;
+        }
+    }
+
+    const pointerKey = Object.keys(types).find((typeKey) => {
+        if (systemName === types[typeKey].systemName) {
+            return typeKey;
+        }
+    });
+
+    if (!pointerKey) {
+        log(`Unsupported type "${systemName}". Value reference replaced with empty object:`);
+        log(v);
+        return 'ob';
+    }
+
+    return pointerKey;
+};
+
+const prepExplorableItem = (store, item) => {
+    if (store._.references.get(item) === void 0 && !isSimple(getPointerKey(item))) {
+        store._.explore.push(item);
+    }
+};
+
+var encounterItem = (store, item) => {
+    const pointerKey = getPointerKey(item);
+
+    if (isSimple(pointerKey)) {
+        return pointerKey;
+    }
+
+    const existingDataItem = store._.references.get(item);
+
+    if (existingDataItem !== void 0) {
+        return existingDataItem.pointer;
+    }
+
+    // Ensure location exists
+    store[pointerKey] = store[pointerKey] || [];
+
+    // Add temp value to update the location
+    store[pointerKey].push(void 0);
+
+    const pointerIndex = store[pointerKey].length - 1;
+
+    const dataItem = {
+        key: pointerKey,
+        index: pointerIndex,
+        pointer: pointerKey + pointerIndex,
+        value: item,
+        indices: [],
+        attachments: [],
+    };
+
+    // Store the reference uniquely along with location information
+    store._.references.set(item, dataItem);
+
+    /* istanbul ignore next */
+    if (types[pointerKey].deferredEncode) {
+        store._.deferred.push(dataItem);
+    }
+
+    let { indices, attachments } = getAttachments(item);
+
+    // Object-wrapped Strings will include indices for each character in the string
+    if (types[pointerKey].ignoreIndices) {
+        indices = [];
+    }
+
+    // Save the known attachments for the next phase so we do not have to reacquire them
+    dataItem.indices = indices;
+    dataItem.attachments = attachments;
+
+    // Prep sub-items to be explored later
+    indices.forEach((s) => {
+        prepExplorableItem(store, s);
+    });
+    attachments.forEach((s) => {
+        prepExplorableItem(store, s[0]);
+        prepExplorableItem(store, s[1]);
+    });
+
+    return dataItem.pointer;
+};
+
+const prepOutput = (store, onFinish, root) => {
+    delete store._;
+
+    store.r = root;
+    store.v = '1.0.0';
+
+    const output = Object.keys(store).map((key) => {
+        return [
+            key,
+            store[key],
+        ];
+    });
+
+    if (typeof onFinish === 'function') {
+        onFinish(output);
+        return;
+    }
+
+    return output;
+};
+
+var encode = (value, onFinish) => {
+    const store = {
+        _: {
+            references: new Map(), // Known References
+            explore: [], // Exploration queue
+            deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
+        },
+    };
+
+    const rootPointerKey = getPointerKey(value);
+
+    // Root value is simple, can skip main encoding steps
+    if (isSimple(rootPointerKey)) {
+        return prepOutput(store, onFinish, rootPointerKey);
+    }
+
+    store._.explore.push(value);
+
+    while (store._.explore.length) {
+        encounterItem(store, store._.explore.shift());
+    }
+
+    store._.references.forEach((dataItem) => {
+        store[dataItem.key][dataItem.index] = types[dataItem.key].encodeValue(store, dataItem);
+
+        if (dataItem.attachments.length > 0) {
+            store[dataItem.key][dataItem.index] = store[dataItem.key][dataItem.index].concat(dataItem.attachments.map((attachment) => {
+                return [
+                    encounterItem(store, attachment[0]),
+                    encounterItem(store, attachment[1]),
+                ];
+            }));
+        }
+    });
+
+    if (store._.deferred.length === 0) {
+        return prepOutput(store, onFinish, store._.references.get(value).pointer);
+    }
+
+    // Handle Blob or File type encoding
+    /* istanbul ignore next */
+    if (typeof onFinish !== 'function') {
+        throw 'Callback function required when encoding deferred objects such as File and Blob.';
+    }
+
+    /* istanbul ignore next */
+    let deferredLength = store._.deferred.length;
+
+    /* istanbul ignore next */
+    const onCallback = () => {
+        deferredLength -= 1;
+        if (deferredLength === 0) {
+            return prepOutput(store, onFinish, store._.references.get(value).pointer);
+        }
+    };
+
+    /* istanbul ignore next */
+    store._.deferred.forEach((dataItem) => {
+        types[dataItem.key].deferredEncode(store, dataItem, onCallback);
+    });
+};
+
+// Recursively look at the reference set for exploration values
+// This handles both pair arrays and individual values
+// This recursion is fine because it has a maximum depth of 3
+const exploreParts = (store, parts) => {
+    if (getPointerKey(parts) === 'ar') {
+        parts.forEach((part) => {
+            exploreParts(store, part);
+        });
+    }
+    else {
+        store.explore.push(parts);
+    }
+};
+
+const explorePointer = (store, pointer) => {
+    const p = extractPointer(pointer);
+
+    if (!types[p.key] || store.decoded[pointer] !== void 0 || isSimple(p.key)) {
+        return;
+    }
+
+    const dataItem = {
+        key: p.key,
+        index: p.index,
+        pointer: pointer,
+        value: void 0,
+        parts: [],
+    };
+
+    store.decoded[pointer] = dataItem;
+
+    dataItem.value = types[p.key].generateReference(store, dataItem.key, dataItem.index);
+    dataItem.parts = store.encoded[dataItem.key][dataItem.index];
+
+    if (getPointerKey(dataItem.parts) === 'ar') {
+        exploreParts(store, dataItem.parts);
+    }
+};
+
+var decode = (encoded) => {
+    const store = {
+        encoded: encoded.reduce((accumulator, e) => {
+            accumulator[e[0]] = e[1];
+            return accumulator;
+        }, {}),
+        decoded: {},
+        explore: [],
+    };
+
+    const rootP = extractPointer(store.encoded.r);
+
+    // Unrecognized root type, return pointer
+    if (!types[rootP.key]) {
+        return store.encoded.r;
+    }
+
+    if (isSimple(rootP.key)) {
+        return types[rootP.key].build();
+    }
+
+    store.explore.push(store.encoded.r);
+    while (store.explore.length) {
+        explorePointer(store, store.explore.shift());
+    }
+
+    Object.values(store.decoded).forEach((dataItem) => {
+        types[dataItem.key].build(store, dataItem);
+    });
+
+    return store.decoded[store.encoded.r].value;
+};
+
+var main = {
+    encode: encode,
+    decode: decode,
+};
+
+export default main;

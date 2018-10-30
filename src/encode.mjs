@@ -1,10 +1,13 @@
 import encounterItem from '/src/utils/encounterItem.mjs';
 import getPointerKey from '/src/utils/getPointerKey.mjs';
 import isSimple from '/src/utils/isSimple.mjs';
-import types from '/src/utils/types.mjs';
+import types from '/src/types.mjs';
 
-const prepOutput = (store, onFinish) => {
+const prepOutput = (store, onFinish, root) => {
     delete store._;
+
+    store.r = root;
+    store.v = '1.0.0';
 
     const output = Object.keys(store).map((key) => {
         return [
@@ -24,8 +27,6 @@ const prepOutput = (store, onFinish) => {
 export default (value, onFinish) => {
     const store = {
         _: {
-            // TODO: have fallback in place for when Map is not natively supported
-            // TODO: pull out map implementation into separate file so details can be hidden
             references: new Map(), // Known References
             explore: [], // Exploration queue
             deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
@@ -36,8 +37,7 @@ export default (value, onFinish) => {
 
     // Root value is simple, can skip main encoding steps
     if (isSimple(rootPointerKey)) {
-        store.r = rootPointerKey;
-        return prepOutput(store, onFinish);
+        return prepOutput(store, onFinish, rootPointerKey);
     }
 
     store._.explore.push(value);
@@ -51,7 +51,6 @@ export default (value, onFinish) => {
 
         if (dataItem.attachments.length > 0) {
             store[dataItem.key][dataItem.index] = store[dataItem.key][dataItem.index].concat(dataItem.attachments.map((attachment) => {
-                // TODO: These may not need the full encounter logic, just a lookup of pointer
                 return [
                     encounterItem(store, attachment[0]),
                     encounterItem(store, attachment[1]),
@@ -60,30 +59,29 @@ export default (value, onFinish) => {
         }
     });
 
-    // Handle Blob or File type encoding
-    /* istanbul ignore next */
-    if (store._.deferred.length > 0) {
-        if (typeof onFinish !== 'function') {
-            throw 'Callback function required when encoding deferred objects such as File and Blob.';
-        }
-
-        let deferredLength = store._.deferred.length;
-
-        const onCallback = () => {
-            deferredLength -= 1;
-            if (deferredLength === 0) {
-                store.r = store._.references.get(value).pointer;
-                return prepOutput(store, onFinish);
-            }
-        }
-
-        store._.deferred.forEach((dataItem) => {
-            types[dataItem.key].deferredEncode(store, dataItem, onCallback);
-        });
-
-        return;
+    if (store._.deferred.length === 0) {
+        return prepOutput(store, onFinish, store._.references.get(value).pointer);
     }
 
-    store.r = store._.references.get(value).pointer;
-    return prepOutput(store, onFinish);
+    // Handle Blob or File type encoding
+    /* istanbul ignore next */
+    if (typeof onFinish !== 'function') {
+        throw 'Callback function required when encoding deferred objects such as File and Blob.';
+    }
+
+    /* istanbul ignore next */
+    let deferredLength = store._.deferred.length;
+
+    /* istanbul ignore next */
+    const onCallback = () => {
+        deferredLength -= 1;
+        if (deferredLength === 0) {
+            return prepOutput(store, onFinish, store._.references.get(value).pointer);
+        }
+    }
+
+    /* istanbul ignore next */
+    store._.deferred.forEach((dataItem) => {
+        types[dataItem.key].deferredEncode(store, dataItem, onCallback);
+    });
 };

@@ -30,7 +30,6 @@ function onError(e) {
 
 gulp.task('clear', () => {
     return del([
-        './dist/**/*.*',
         './tests/_BrowserTesting/**/*',
         './tests/_NodeTesting/**/*',
     ]);
@@ -44,10 +43,6 @@ const js = (options) => {
         plugins: [
             {
                 resolveId(importee) {
-                    // if (options.ignoreMain && /main.esm(?:.min)?.mjs$/.test(importee)) {
-                    //     return false;
-                    // }
-
                     if (/^[\\/]/.test(importee)) {
                         return path.resolve(fs.realpathSync('./'), importee.replace(/^\//, ''));
                     }
@@ -91,9 +86,12 @@ const js = (options) => {
                 toplevel: format === 'esm',
                 properties: {
                     keep_quoted: true,
-                    regex: /attachable|attachments|build|decoded|deferred|deferredEncode|encoded|encodeValue|explore|generateReference|ignoreIndices|index|indices|key|parts|pointer|references|value/,
+                    regex: /attachments|build|decoded|deferred|deferredEncode|encoded|encodeValue|explore|generateReference|ignoreIndices|index|indices|key|parts|pointer|references|systemName|value/,
                     // debug: true,
                 },
+            },
+            compress: {
+                inline: true,
             },
             // output: {
             //     beautify: true,
@@ -367,25 +365,88 @@ gulp.task('testBrowser', (end) => {
 
 
 
-gulp.task('node-test-prep', () => {
-    return js({
-        entry: './tests/tests.mjs',
-        format: 'umd',
-        unminify: true,
-        minify: false,
-        onBuilt: (content) => {
-            // Ignore branching on generated UMD code
-            content = content.replace('function _defineProperty(', '/* istanbul ignore next */ function _defineProperty(');
-            content = content.replace('function _typeof(', '/* istanbul ignore next */ function _typeof(');
-            content = content.replace('(typeof exports === "undefined" ?', '/* istanbul ignore next */ (typeof exports === "undefined" ?');
-            return content;
+gulp.task('node-test-TypeTests', () => {
+    const externalPaths = ['/src/main.mjs', '/tests/testHelpers.mjs'];
+    const baseDirectory = fs.realpathSync('./');
+
+    let stream = gulp.src('./tests/TypeTests/*.mjs');
+    stream = stream.pipe(gulpBetterRollup({
+        plugins: [
+            {
+                resolveId(importee) {
+                    if (externalPaths.includes(importee)) {
+                        return false;
+                    }
+
+                    if ((/^\//).test(importee)) {
+                        return path.resolve(baseDirectory, importee.replace(/^\//, ''));
+                    }
+
+                    return importee;
+                },
+            },
+        ],
+    }, {
+        output: {
+            format: 'cjs'
         },
-        destination: './tests/_NodeTesting',
-    });
+    }));
+    stream = stream.on('error', onError);
+
+
+    stream = stream.pipe(gulpModifyFile((content) => {
+        // Ignore branching on generated commonjs interop code
+        content = content.replace('function _interopDefault', '/* istanbul ignore next */ function _interopDefault')
+
+        // Stupid hack because I can't figure out how to get Rollup to do what I want
+        content = content.replace(/(require\(')[./]+tests\/(testHelpers)\.mjs/, '$1../$2.js');
+        content = content.replace(/(require\(')[./]+src\/(main)\.mjs/, '$1../$2.js');
+        return content;
+    }));
+
+    stream = stream.pipe(gulpRename({
+        extname: '.js',
+    }));
+
+    stream = stream.pipe(gulp.dest('./tests/_NodeTesting/TypeTests'));
+
+    return stream;
+});
+
+gulp.task('node-test-other', () => {
+    const baseDirectory = fs.realpathSync('./');
+
+    let stream = gulp.src(['./src/main.mjs', './tests/testHelpers.mjs']);
+    stream = stream.pipe(gulpBetterRollup({
+        plugins: [
+            {
+                resolveId(importee) {
+                    if ((/^\//).test(importee)) {
+                        return path.resolve(baseDirectory, importee.replace(/^\//, ''));
+                    }
+
+                    return importee;
+                },
+            },
+        ],
+    }, {
+        output: {
+            format: 'cjs'
+        },
+    }));
+    stream = stream.on('error', onError);
+
+    stream = stream.pipe(gulpRename({
+        extname: '.js',
+    }));
+
+    stream = stream.pipe(gulp.dest('./tests/_NodeTesting'));
+
+    return stream;
 });
 
 gulp.task('node-test-run', () => {
-    return gulp.src(['./tests/_NodeTesting/*.js'])
+    return gulp.src(['./tests/_NodeTesting/TypeTests/*.js'])
     .pipe(gulpTape({
         bail: true,
         nyc: true,
@@ -396,8 +457,9 @@ gulp.task('node-test-run', () => {
 gulp.task('test', (end) => {
     runSequence(
         ['clear'],
-        ['node-test-prep'],
+        ['node-test-TypeTests', 'node-test-other'],
         ['node-test-run'],
+        ['clear'],
         end
     );
 });
@@ -407,6 +469,7 @@ gulp.task('test', (end) => {
 gulp.task('dev', (end) => {
     runSequence(['browser-test-esm'], end);
 });
+
 
 
 gulp.task('devWatch', (end) => {
@@ -437,7 +500,6 @@ gulp.task('js-umd-prod', () => {
 
 gulp.task('prod', (end) => {
     runSequence(
-        ['clear'],
         ['js-esm-prod', 'js-umd-prod'],
         end
     );
