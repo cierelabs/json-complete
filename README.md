@@ -1,6 +1,6 @@
 # json-complete
 
-An encoder that can turn any standard JavaScript object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.
+An encoder that can turn any standard JavaScript data object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.
 
 ---
 
@@ -12,12 +12,25 @@ npm i
 
 ---
 
-
-## Run Tests
+## Run Tests in Node (Skips Blob and File tests)
 
 ```
 npm run test
 ```
+
+---
+
+## Run Tests in Browser (Runs all tests)
+
+```
+npm run testBrowser
+```
+
+---
+
+## Purpose
+
+json-complete was designed to store, transmit, and reconstruct data created through an immutable data state architecture. Because json-complete stores references, and because the immutable style performs structural sharing, the entire history of an application's business-logic state changes can be compactly encoded and decoded for application debugging purposes. Basically, you can reconstruct anything the user is seeing AND how they got there.
 
 ---
 
@@ -36,6 +49,27 @@ As Strings and Numbers are encoded to reference strings (Pointers), their values
 ## Referencial Deduplication
 
 The same Referencial Type value is only stored once, provided the underlying reference is the same. It is then only referred to by its reference string (Pointer).
+
+## Arbitrarily Deep Nesting
+
+json-complete does not use recursion to do encoding or decoding. As a result, it can support arbitrary deep nesting. The built in JSON `stringify` function appears to utilize recursion, and will throw if the depth of the encoded data grows to deep. This can easily be shown:
+
+```
+var outer = [];
+var arrayRef = outer;
+
+const depth = 16000;
+var d;
+for (d = 0; d < depth; d += 1) {
+    arrayRef[0] = [];
+    arrayRef = arrayRef[0];
+}
+
+console.log(outer);
+console.log(JSON.stringify(outer)); // Uncaught RangeError: Maximum call stack size exceeded
+```
+
+However, `JSON.stringify()` can encode the json-complete encoded output, as it tends to flatten data to a single layer of references.
 
 ---
 
@@ -63,11 +97,6 @@ The same Referencial Type value is only stored once, provided the underlying ref
 | ❌     | ✅             | Symbols                                              |
 | ❌     | ✅             | Symbols: Retained Identifiers                        |
 | ❌     | ✅             | Symbols: Registered Symbols                          |
-| ❌     | ✅             | Functions: Expressions                               |
-| ❌     | ✅             | Functions: Named Expressions                         |
-| ❌     | ✅             | Functions: Named Expression Data Referencing         |
-| ❌     | ✅             | Functions: Arrow Functions                           |
-| ❌     | ✅             | Functions: Method Functions                          |
 | ✅     | ✅             | Objects                                              |
 | ❌     | ✅             | Objects: Symbol Keys                                 |
 | ✅     | ✅             | Arrays                                               |
@@ -92,37 +121,58 @@ The same Referencial Type value is only stored once, provided the underlying ref
 
 | json  | json-complete | Features                                             |
 |-------|---------------|------------------------------------------------------|
-| ✅     | ✅             | Arbitrarily Deep Nesting                             |
+| ❌ *4* | ✅             | Arbitrarily Deep Nesting                             |
 | ❌     | ✅             | Circular References                                  |
 | ❌     | ✅             | Shared Key and Value Symbol References               |
 | ❌     | ✅             | Shared Key and Value Map References                  |
 | ❌     | ✅             | Arbitrary Attached Data for All Object-like Types    |
-| ❌     | ✅ *4*         | Arbitrary Attached Data for Unsupported Types        |
+| ❌     | ✅ *5*         | Arbitrary Attached Data for Unsupported Types        |
 | ❌     | ✅             | Self-Containment for All Object-like Types           |
-| ❌     | ✅ *4*         | Self-Containment for Unsupported Types               |
+| ❌     | ✅ *5*         | Self-Containment for Unsupported Types               |
 | ❌     | ✅             | Referencial Integrity for All Reference Types        |
-| ❌     | ✅ *4*         | Referencial Integrity for Unsupported Types          |
+| ❌     | ✅ *5*         | Referencial Integrity for Unsupported Types          |
 | ❌     | ✅             | Referencial Deduplication                            |
-| ⚠ *5* | ✅             | Root-Level Encoding for All Supported Values         |
-| ⚠ *6* | ✅             | Built-in Symbol Keys Not Stored                      |
-| ✅     | ❌             | Built-in                                             |
+| ⚠ *6* | ✅             | Root-Level Encoding for All Supported Values         |
+| ⚠ *7* | ✅             | Built-in Symbol Keys Not Stored                      |
+| ✅     | ❌             | Built into environment                               |
 | ✅     | ❌             | Encodes to String                                    |
 
 * *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
 * *3* - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
+* *4* - `JSON.stringify()` appears to operate using recursion and will throw if the depth of encoded objects causes the maximum call stack to be reached. json-complete is non-recursive.
 * *4* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
-  - WeakSet and WeakMap - Not iterable, by design, for security reasons.
-  - Math
-  - window/global
-  - document
-  - HTML Element Types
-  - document.location
-  - JSON
-  - Promise
-  - etc.
 * *5* - JSON will do root-level encoding only for the types it supports elsewhere.
 * *6* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
+
+---
+
+## NOT Encoded
+
+Several types of objects are intentionally not encodable or decodable. Even if a particular object is not supported, any attachments to that object that can be encoded and decoded will be. However, the object's value itself will be stored as an empty object.
+
+Objects may be skipped for one of several reasons:
+
+1. It is not data
+2. It cannot be fully or correctly encoded/decoded
+3. The data inherently tied to a particular execution context and can't be reasonably generalized
+4. It is a standard object that is built-in, and has no reason to be stored
+
+For some specific examples:
+
+* Functions - Functions, Named Function Expressions, Getters, Setters, Methods, Async Functions, Generators, and the like, all represent operations, not data. Furthermore, decoding them necessitates some form of an eval function or the use of iframes. Both decode methods can be indirectly blocked by server security headers through no fault of the library user. On top of all that, encoded functions wouldn't be able to handle closure information either, so they would only be useful for pure or global-scope functions anyway.
+* WeakSet and WeakMap - By design, these are not iterable for security reasons. Thus, they can't be encoded because json-complete cannot determine what is in them. To allow them to be iterable would potentially allow an attacker to check memory information about the computer it is running on.
+* Proxies - Proxies are specifically designed to hide information about how they operate, and are mostly functions wrapping primitive data.
+* Classes - These are largely syntatic sugar for Functions.
+* Various Built-ins
+    - window/global
+    - document
+    - document.location
+    - Math
+    - JSON
+    - Promise
+* HTML Element Types - These are usually tied to a specific DOM because they were inserted into the page somewhere. Fully replicating not only their creation, but also their position in the page hierarchy is well beyond the scope of this library, and would be wrong if the data was decoded on a non-identical page anyway.
+
 
 ### Terms
 
@@ -132,9 +182,10 @@ The same Referencial Type value is only stored once, provided the underlying ref
   - String: Object-Wrapped
   - Regex
   - Date
-  - Function
   - Error
   - Object
+  - ArrayBuffer
+  - SharedArrayBuffer
   - Set
   - Map
   - Blob
@@ -248,19 +299,6 @@ The same Referencial Type value is only stored once, provided the underlying ref
 * Optionally, non-integer String and Symbol keys can be attached to the Array, because it is build on Object.
 * Specifying integer keys as Strings will overwrite/create refer to the integer position in the Array, not the String key. That is, String keys of integers cannot be used with Arrays.
 
-### Function
-* Can save various Function Expressions, but **cannot store Closure or Global state information**, as the Function is converted to a String.
-* Has many forms:
-  - Function Expression: `function(...) { ... }`
-  - Named Function Expression: `function myFunction(...) { ... }`
-  - Arrow Function: `(...) => { ... }`
-  - Bare Arrow Function: `x => x`
-  - Method Function: `{ x(...) { ... } }`
-    - Can only exist in an Object context
-    - Operationally, it is identical to a Function Expression (NOT a Named Function Expression) where the Function name is the key String in the Object, however it serializes to String differently.
-* Can store arbitrary data on itself with string or Symbol keys
-* TODO: Look into async, getter/setter, and other newer types
-
 ### Specified TypedArrays
 * Types
   - Int8Array
@@ -300,24 +338,10 @@ TODO
 
 
 
-### WeakMap
-TODO
-
-
-### WeakSet
-TODO
-
-
 ## To Fix and Add
 
-* There are additional function forms like async functions, getters, and setters to consider.
-* Since functions can be encoded, the decoder for a given set of data can be included.
 * Add top-level error handling to the functions to handle encoding / decoding problems
 * Create more meaningful error messages, especially for the decoder.
 * Write helper to extract buffer from encoded Blob/File objects on Node
 * Write helper to encode buffer into Blob or File objects on Node
-* Generator
-* GeneratorFunction
-* AsyncFunction
-* Proxy???
 * Add a version number part of the encoding process

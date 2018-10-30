@@ -1,4 +1,5 @@
 node_modules/
 .nyc_output/
-_BrowserTesting/
+tests/_BrowserTesting/
+tests/_NodeTesting/
 dist/
