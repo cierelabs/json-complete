@@ -1,7 +1,6 @@
 import encounterItem from '/src/utils/encounterItem.mjs';
 import extractIndex from '/src/utils/extractIndex.mjs';
 import extractKey from '/src/utils/extractKey.mjs';
-import functionDecoder from '/src/utils/functionDecoder.mjs';
 import isSimple from '/src/utils/isSimple.mjs';
 import standardErrors from '/src/utils/standardErrors.mjs';
 
@@ -63,11 +62,6 @@ const decodePointer = (store, pointer) => {
 
     const p = extractPointer(pointer);
 
-    // Unrecognized type, return the pointer
-    if (!types[p.key]) {
-        return pointer;
-    }
-
     return types[p.key].generateReference(store, p.key, p.index);
 };
 
@@ -110,6 +104,7 @@ const genTypeArrayGenerateReference = (type) => {
     };
 };
 
+/* istanbul ignore next */
 const genBlobLikeEncodeValue = (properties) => {
     return (store, dataItem) => {
         return [
@@ -120,6 +115,7 @@ const genBlobLikeEncodeValue = (properties) => {
     };
 };
 
+/* istanbul ignore next */
 const blobLikeDeferredEncode = (store, dataItem, callback) => {
     const reader = new FileReader();
     reader.addEventListener('loadend', () => {
@@ -144,61 +140,78 @@ const blobLikeDeferredEncode = (store, dataItem, callback) => {
     reader.readAsArrayBuffer(dataItem.value);
 };
 
+/* istanbul ignore next */
+const blobGenerateReference = (store, key, index) => {
+    const dataArray = store.encoded[key][index][0];
+    const p = extractPointer(dataArray[0]);
+
+    return new Blob([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
+        return decodePointer(store, pointer);
+    }))], {
+        type: decodePointer(store, dataArray[1]),
+    });
+};
+
+/* istanbul ignore next */
+const fileGenerateReference = (store, key, index) => {
+    const dataArray = store.encoded[key][index][0];
+    const p = extractPointer(dataArray[0]);
+
+    return new File([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
+        return decodePointer(store, pointer);
+    }))], decodePointer(store, dataArray[1]), {
+        type: decodePointer(store, dataArray[2]),
+        lastModified: decodePointer(store, dataArray[3])
+    });
+};
+
 const types = {
     un: {
         // undefined
-        simple: 1,
         build: () => {
             return undefined;
         },
     },
     nl: {
         // null
-        simple: 1,
         build: () => {
             return null;
         },
     },
-    bt: {
-        // true
-        simple: 1,
-        build: () => {
-            return true;
-        },
-    },
-    bf: {
-        // false
-        simple: 1,
-        build: () => {
-            return false;
-        },
-    },
     na: {
         // NaN
-        simple: 1,
         build: () => {
             return NaN;
         },
     },
     '-i': {
         // -Infinity
-        simple: 1,
         build: () => {
             return -Infinity;
         },
     },
     '+i': {
         // Infinity
-        simple: 1,
         build: () => {
             return Infinity;
         },
     },
     n0: {
         // -0
-        simple: 1,
         build: () => {
             return -0;
+        },
+    },
+    bt: {
+        // true
+        build: () => {
+            return true;
+        },
+    },
+    bf: {
+        // false
+        build: () => {
+            return false;
         },
     },
     nm: {
@@ -326,24 +339,6 @@ const types = {
             const value = new RegExp(decodePointer(store, dataArray[0]), decodePointer(store, dataArray[1]));
             value.lastIndex = decodePointer(store, dataArray[2]);
             return value;
-        },
-        build: attachAttachmentsSkipFirst,
-    },
-    fu: {
-        // Function
-        attachable: 1,
-        encodeValue: (store, dataItem) => {
-            return [
-                [
-                    encounterItem(store, String(dataItem.value)),
-                ],
-            ];
-        },
-        generateReference: (store, key, index) => {
-            const dataArray = store.encoded[key][index][0];
-            const functionString = decodePointer(store, dataArray[0]);
-
-            return functionDecoder(functionString);
         },
         build: attachAttachmentsSkipFirst,
     },
@@ -493,16 +488,7 @@ const types = {
         attachable: 1,
         encodeValue: genBlobLikeEncodeValue(['type']),
         deferredEncode: blobLikeDeferredEncode,
-        generateReference: (store, key, index) => {
-            const dataArray = store.encoded[key][index][0];
-            const p = extractPointer(dataArray[0]);
-
-            return new Blob([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
-                return decodePointer(store, pointer);
-            }))], {
-                type: decodePointer(store, dataArray[1]),
-            });
-        },
+        generateReference: blobGenerateReference,
         build: attachAttachmentsSkipFirst,
     },
     Fi: {
@@ -510,17 +496,7 @@ const types = {
         attachable: 1,
         encodeValue: genBlobLikeEncodeValue(['name', 'type', 'lastModified']),
         deferredEncode: blobLikeDeferredEncode,
-        generateReference: (store, key, index) => {
-            const dataArray = store.encoded[key][index][0];
-            const p = extractPointer(dataArray[0]);
-
-            return new File([new Uint8Array(store.encoded[p.key][p.index][0].map((pointer) => {
-                return decodePointer(store, pointer);
-            }))], decodePointer(store, dataArray[1]), {
-                type: decodePointer(store, dataArray[2]),
-                lastModified: decodePointer(store, dataArray[3])
-            });
-        },
+        generateReference: fileGenerateReference,
         build: attachAttachmentsSkipFirst,
     },
 };

@@ -16,7 +16,6 @@ const typeNameMap = {
     'Object': 'ob',
     'Date': 'da',
     'RegExp': 're',
-    'Function': 'fu',
     'Error': 'er',
     'ArrayBuffer': 'AB',
     'SharedArrayBuffer': 'SA',

@@ -52,7 +52,7 @@ export default (encoded) => {
 
     const rootPointerKey = extractKey(store.encoded.r);
 
-    if ((types[rootPointerKey] || {}).simple) {
+    if (isSimple(rootPointerKey)) {
         return types[rootPointerKey].build();
     }
 

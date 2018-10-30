@@ -44,6 +44,7 @@ export default (store, item) => {
     // Store the reference uniquely along with location information
     store._.references.set(item, dataItem);
 
+    /* istanbul ignore next */
     if (isDeferrable(pointerKey)) {
         store._.deferred.push(dataItem);
     }
@@ -52,7 +53,7 @@ export default (store, item) => {
         let { indices, attachments } = getAttachments(item);
 
         // Object-wrapped Strings will include indices for each character in the string
-        if ((types[pointerKey] || {}).ignoreIndices) {
+        if (types[pointerKey].ignoreIndices) {
             indices = [];
         }
 

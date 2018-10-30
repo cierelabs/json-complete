@@ -1,6 +1,5 @@
 import encounterItem from '/src/utils/encounterItem.mjs';
 import getPointerKey from '/src/utils/getPointerKey.mjs';
-import isEncodable from '/src/utils/isEncodable.mjs';
 import isSimple from '/src/utils/isSimple.mjs';
 import types from '/src/utils/types.mjs';
 
@@ -20,28 +19,6 @@ const prepOutput = (store, onFinish) => {
     }
 
     return output;
-};
-
-/* istanbul ignore next */
-const encodeBlobs = (store, onFinish) => {
-    if (typeof onFinish !== 'function') {
-        throw 'Callback function required when encoding Blob or File objects.';
-    }
-
-    let blobCount = store._.blobs.length;
-    store._.blobs.forEach((dataItem) => {
-        const reader = new FileReader();
-        reader.addEventListener('loadend', () => {
-            store[dataItem.key][dataItem.index][0][0] = encounterItem(store, new Uint8Array(reader.result));
-
-            blobCount -= 1;
-            if (blobCount === 0) {
-                prepOutput(store, onFinish);
-            }
-        });
-
-        reader.readAsArrayBuffer(dataItem.value);
-    });
 };
 
 export default (value, onFinish) => {
