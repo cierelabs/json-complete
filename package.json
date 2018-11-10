@@ -3,25 +3,37 @@
   "version": "1.0.0",
   "description": "An encoder that can turn any standard JavaScript data object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.",
   "main": "./dist/main.umd.js",
-  "module": "./dist/main.esm.mjs",
+  "module": "./dist/main.esm.min.js",
+  "esnext": "./dist/main.esm.min.js",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js test",
     "testBrowser": "./node_modules/gulp/bin/gulp.js testBrowser"
+  },
+  "nyc": {
+    "exclude": [
+      "**/tests/**/*.*"
+    ]
   },
   "repository": {
     "type": "git",
     "url": "ssh://git@stash.cierecloud.com:7999/cier/json-complete.git"
   },
+  "@std/esm": "cjs",
   "author": "Dwight House",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "7.1.2",
-    "@babel/preset-env": "7.1.0",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@std/esm": "^0.26.0",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "babel-plugin-transform-esm-to-cjs": "0.0.0",
+    "babelify": "^10.0.0",
     "browser-sync": "2.24.7",
     "browserify": "16.2.3",
     "del": "3.0.0",
+    "esm": "^3.0.84",
     "gulp": "3.9.1",
-    "gulp-babel": "8.0.0",
+    "gulp-babel": "^8.0.0",
     "gulp-better-rollup": "3.3.0",
     "gulp-file": "0.4.0",
     "gulp-modify-file": "1.0.1",
@@ -29,6 +41,14 @@
     "gulp-tape": "1.0.0",
     "gulp-terser": "1.1.5",
     "gulp-watch": "5.0.1",
+    "rollup": "^0.67.0",
+    "rollup-plugin-commonjs": "^8.4.1",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-root-import": "^0.2.3",
+    "rollup-stream": "^1.24.1",
     "run-sequence": "2.2.1",
     "tape": "4.9.1",
     "vinyl-buffer": "1.0.1",

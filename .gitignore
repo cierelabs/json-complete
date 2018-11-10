@@ -1,6 +1,5 @@
 node_modules/
 .nyc_output/
-tests/_BrowserTesting/
-tests/_NodeTesting/
+testing/
 dist/*.png
 dist/*.gz
