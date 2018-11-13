@@ -7,7 +7,7 @@ export default (systemName, type) => {
     return {
         _identify: genDoesMatchSystemName(systemName),
         _encodeValue: (store, dataItem) => {
-            dataItem._indices = Array.from(new Uint8Array(dataItem._value));
+            dataItem._indices = Array.from(new Uint8Array(dataItem._reference));
             return arrayLikeEncodeValue(store, dataItem);
         },
         _generateReference: (store, key, index) => {

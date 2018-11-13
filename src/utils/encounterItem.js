@@ -1,5 +1,4 @@
 import getSystemName from '/utils/getSystemName.js';
-import isSimple from '/utils/isSimple.js';
 
 const getAttachments = (v) => {
     const attached = {
@@ -25,8 +24,8 @@ const getAttachments = (v) => {
         return !indexObj[key];
     }).concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
         // Ignore built-in Symbols
-        const symbolStringMatches = String(symbol).match(/^Symbol\(Symbol\.([^\)]*)\)$/);
-        return symbolStringMatches === null || symbolStringMatches.length !== 2 || Symbol[symbolStringMatches[1]] !== symbol;
+        // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+        return Symbol[String(symbol).slice(14, -1)] !== symbol;
     }));
 
     // Create the lists
@@ -42,55 +41,53 @@ const getAttachments = (v) => {
     }, attached);
 };
 
-const getPointerKey = (types, value, isSafeMode) => {
-    const pointerKey = Object.keys(types).find((typeKey) => {
-        return types[typeKey]._identify(value);
+const getPointerKey = (store, item) => {
+    const pointerKey = Object.keys(store._types).find((typeKey) => {
+        return store._types[typeKey]._identify(item);
     });
 
-    if (!pointerKey) {
-        if (isSafeMode) {
-            // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
-            return 'ob';
-        }
-
-        throw(new Error(`Unsupported type "${getSystemName(value)}". Encoding halted.`))
+    if (!pointerKey && !store._safe) {
+        throw(new Error(`Cannot encode unsupported type "${getSystemName(item)}".`));
     }
 
-    return pointerKey;
+    // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    return pointerKey ? pointerKey : 'ob';
 };
 
 const prepExplorableItem = (store, item) => {
-    if (store._references.get(item) === void 0 && !isSimple(store._types, getPointerKey(store._types, item, store._safe))) {
+    // Type is known type and is a reference type (not simple), it should be explored
+    if ((store._types[getPointerKey(store, item)] || {})._build) {
         store._explore.push(item);
     }
 };
 
 export default (store, item) => {
-    const pointerKey = getPointerKey(store._types, item, store._safe);
+    const pointerKey = getPointerKey(store, item);
 
-    if (isSimple(store._types, pointerKey)) {
+    // Simple type, return pointer (pointer key)
+    if (!store._types[pointerKey]._build) {
         return pointerKey;
     }
 
+    // Already encountered, return pointer
     const existingDataItem = store._references.get(item);
-
     if (existingDataItem !== void 0) {
         return existingDataItem._pointer;
     }
 
     // Ensure location exists
-    store[pointerKey] = store[pointerKey] || [];
+    store._output[pointerKey] = store._output[pointerKey] || [];
 
     // Add temp value to update the location
-    store[pointerKey].push(void 0);
+    store._output[pointerKey].push(void 0);
 
-    const pointerIndex = store[pointerKey].length - 1;
+    const pointerIndex = store._output[pointerKey].length - 1;
 
     const dataItem = {
         _key: pointerKey,
         _index: pointerIndex,
         _pointer: pointerKey + pointerIndex,
-        _value: item,
+        _reference: item,
         _indices: [],
         _attachments: [],
     };

@@ -14,9 +14,9 @@ const standardErrors = {
 export default genAttachableValueObject('Error', (store, dataItem) => {
     return [
         [
-            encounterItem(store, standardErrors[dataItem._value.name] ? dataItem._value.name : 'Error'),
-            encounterItem(store, dataItem._value.message),
-            encounterItem(store, dataItem._value.stack),
+            encounterItem(store, standardErrors[dataItem._reference.name] ? dataItem._reference.name : 'Error'),
+            encounterItem(store, dataItem._reference.message),
+            encounterItem(store, dataItem._reference.stack),
         ],
     ];
 }, (store, key, index) => {

@@ -141,9 +141,9 @@ However, `JSON.stringify()` can encode the json-complete encoded output, as it t
 * *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
 * *3* - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
 * *4* - `JSON.stringify()` appears to operate using recursion and will throw if the depth of encoded objects causes the maximum call stack to be reached. json-complete is non-recursive.
-* *4* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
-* *5* - JSON will do root-level encoding only for the types it supports elsewhere.
-* *6* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
+* *5* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
+* *6* - JSON will do root-level encoding only for the types it supports elsewhere.
+* *7* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
 
 ---
 

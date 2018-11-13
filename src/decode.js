@@ -1,6 +1,5 @@
 import extractPointer from '/utils/extractPointer.js';
 import getSystemName from '/utils/getSystemName.js';
-import isSimple from '/utils/isSimple.js';
 import types from '/types.js';
 
 // Recursively look at the reference set for exploration values
@@ -20,30 +19,31 @@ const exploreParts = (store, parts) => {
 const explorePointer = (store, pointer) => {
     const p = extractPointer(pointer);
 
-    if (!types[p._key] || store._decoded[pointer] !== void 0 || isSimple(types, p._key)) {
+    // If a simple pointer, an unknown pointer, or an already explored pointer, ignore
+    if (types[pointer] || !types[p._key] || store._decoded[pointer] !== void 0) {
         return;
     }
 
-    const dataItem = {
+    store._decoded[pointer] = {
         _key: p._key,
         _index: p._index,
         _pointer: pointer,
-        _value: void 0,
-        _parts: [],
+        _reference: void 0,
+        _parts: store._encoded[p._key][p._index],
     };
 
-    store._decoded[pointer] = dataItem;
+    store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
 
-    dataItem._value = types[p._key]._generateReference(store, dataItem._key, dataItem._index);
-    dataItem._parts = store._encoded[dataItem._key][dataItem._index];
-
-    if (getSystemName(dataItem._parts) === 'Array') {
-        exploreParts(store, dataItem._parts);
+    if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
+        exploreParts(store, store._decoded[pointer]._parts);
     }
 };
 
-export default (encoded) => {
+export default (encoded, options) => {
+    options = options || {};
+
     const store = {
+        _safe: options.safeMode,
         _types: types,
         _encoded: encoded.reduce((accumulator, e) => {
             accumulator[e[0]] = e[1];
@@ -53,25 +53,34 @@ export default (encoded) => {
         _explore: [],
     };
 
-    const rootP = extractPointer(store._encoded.r);
+    const rootPointerKey = store._encoded.r;
 
-    // Unrecognized root type, return pointer
+    // Simple pointer, return value
+    if (types[rootPointerKey]) {
+        return types[rootPointerKey]._value;
+    }
+
+    const rootP = extractPointer(rootPointerKey);
+
+    // Unrecognized root type
     if (!types[rootP._key]) {
-        return store._encoded.r;
+        if (store._safe) {
+            return rootPointerKey;
+        }
+
+        throw new Error(`Cannot decode unrecognized pointer type "${rootP._key}".`);
     }
 
-    if (isSimple(types, rootP._key)) {
-        return types[rootP._key]._build();
-    }
-
-    store._explore.push(store._encoded.r);
+    // Explore through data structure
+    store._explore.push(rootPointerKey);
     while (store._explore.length) {
         explorePointer(store, store._explore.shift());
     }
 
+    // Having explored all of the data structure, fill out data and references
     Object.values(store._decoded).forEach((dataItem) => {
         types[dataItem._key]._build(store, dataItem);
     });
 
-    return store._decoded[store._encoded.r]._value;
+    return store._decoded[rootPointerKey]._reference;
 };

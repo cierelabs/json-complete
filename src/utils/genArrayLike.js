@@ -10,7 +10,7 @@ export default (systemName, generateReference) => {
         _generateReference: generateReference,
         _build: (store, dataItem) => {
             dataItem._parts[0].forEach((pointer, index) => {
-                dataItem._value[index] = getDecoded(store, pointer);
+                dataItem._reference[index] = getDecoded(store, pointer);
             });
 
             attachAttachmentsSkipFirst(store, dataItem);

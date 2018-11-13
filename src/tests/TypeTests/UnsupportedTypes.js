@@ -5,28 +5,6 @@ const jsonComplete = require('../../main.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-const startup = () => {
-    const oldLog = console.log;
-
-    let callCount = 0;
-
-    const caller = () => {
-        callCount += 1;
-    };
-
-    console.log = caller;
-
-    return {
-        getCallCount: () => {
-            return callCount;
-        },
-        shutdown: () => {
-            callCount = 0;
-            console.log = oldLog;
-        },
-    };
-};
-
 test('Unsupported Types: Normal', (t) => {
     t.plan(2);
 

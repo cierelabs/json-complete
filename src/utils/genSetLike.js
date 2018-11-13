@@ -6,7 +6,7 @@ export default (systemName, type, encodeSubValue, buildSubPointers) => {
         _identify: genDoesMatchSystemName(systemName),
         _encodeValue: (store, dataItem) => {
             return [
-                Array.from(dataItem._value).map((subValue) => {
+                Array.from(dataItem._reference).map((subValue) => {
                     return encodeSubValue(store, subValue);
                 }),
             ];
@@ -16,7 +16,7 @@ export default (systemName, type, encodeSubValue, buildSubPointers) => {
         },
         _build: (store, dataItem) => {
             dataItem._parts[0].forEach((subPointers) => {
-                buildSubPointers(store, dataItem._value, subPointers);
+                buildSubPointers(store, dataItem._reference, subPointers);
             });
 
             attachAttachmentsSkipFirst(store, dataItem);

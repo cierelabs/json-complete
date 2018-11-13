@@ -11,7 +11,7 @@ export default (systemName, propertiesKeys, create) => {
         _encodeValue: (store, dataItem) => {
             return [
                 [new Uint8Array(0)].concat(propertiesKeys.map((property) => {
-                    return encounterItem(store, dataItem._value[property]);
+                    return encounterItem(store, dataItem._reference[property]);
                 })),
             ];
         },
@@ -23,18 +23,18 @@ export default (systemName, propertiesKeys, create) => {
 
                 const typedArrayP = extractPointer(typedArrayPointer);
 
-                store[typedArrayP._key][typedArrayP._index] = [
+                store._output[typedArrayP._key][typedArrayP._index] = [
                     Array.from(typedArray).map((subItem) => {
                         const numberPointer = encounterItem(store, subItem);
                         const numberP = extractPointer(numberPointer);
-                        store[numberP._key][numberP._index] = subItem;
+                        store._output[numberP._key][numberP._index] = subItem;
                         return numberPointer;
                     }),
                 ];
-                store[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
+                store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
                 callback();
             });
-            reader.readAsArrayBuffer(dataItem._value);
+            reader.readAsArrayBuffer(dataItem._reference);
         },
         _generateReference: (store, key, index) => {
             const dataArray = store._encoded[key][index][0];

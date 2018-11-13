@@ -5,9 +5,9 @@ import genAttachableValueObject from '/utils/genAttachableValueObject.js';
 export default genAttachableValueObject('RegExp', (store, dataItem) => {
     return [
         [
-            encounterItem(store, dataItem._value.source),
-            encounterItem(store, dataItem._value.flags),
-            encounterItem(store, dataItem._value.lastIndex),
+            encounterItem(store, dataItem._reference.source),
+            encounterItem(store, dataItem._reference.flags),
+            encounterItem(store, dataItem._reference.lastIndex),
         ],
     ];
 }, (store, key, index) => {

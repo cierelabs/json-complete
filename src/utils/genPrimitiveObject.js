@@ -10,7 +10,7 @@ export default (systemName, type) => {
         },
         _encodeValue: (store, dataItem) => {
             return [
-                encounterItem(store, dataItem._value.valueOf()),
+                encounterItem(store, dataItem._reference.valueOf()),
             ];
         },
         _generateReference: (store, key, index) => {

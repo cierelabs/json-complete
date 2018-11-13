@@ -16,7 +16,9 @@ test('Unknown Pointer Key: Inner Data', (t) => {
         ["--", ["a"]],
     ];
 
-    t.equal(decode(innerData)[0], '--0');
+    t.equal(decode(innerData, {
+        safeMode: true,
+    })[0], '--0');
 });
 
 test('Unknown Pointer Key: Value Data', (t) => {
@@ -27,7 +29,9 @@ test('Unknown Pointer Key: Value Data', (t) => {
         ["--", ["a"]],
     ];
 
-    t.equal(decode(valueData), '--0');
+    t.equal(decode(valueData, {
+        safeMode: true,
+    }), '--0');
 });
 
 test('Unknown Pointer Key: Key Data', (t) => {
@@ -44,7 +48,9 @@ test('Unknown Pointer Key: Key Data', (t) => {
         ["--", ["a"]],
     ];
 
-    const decodedObjectKeys = Object.keys(decode(objectKeyData));
+    const decodedObjectKeys = Object.keys(decode(objectKeyData, {
+        safeMode: true,
+    }));
 
     t.equal(decodedObjectKeys.length, 1);
     t.equal(decodedObjectKeys[0], '--0');

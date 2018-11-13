@@ -3,8 +3,6 @@ export default (value) => {
         _identify: (v) => {
             return v === value;
         },
-        _build: () => {
-            return value;
-        },
+        _value: value,
     };
 };

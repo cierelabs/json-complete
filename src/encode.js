@@ -1,35 +1,25 @@
 import encounterItem from '/utils/encounterItem.js';
 import getSystemName from '/utils/getSystemName.js';
-import isSimple from '/utils/isSimple.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
-    const onFinish = getSystemName(store._onFinish) === 'Function' ? store._onFinish : void 0;
+    store._output.r = root;
+    store._output.v = '1.0.0';
 
-    store = Object.keys(store).reduce((accumulator, key) => {
-        if (key[0] !== '_') {
-            accumulator[key] = store[key];
-        }
-
-        return accumulator;
-    }, {});
-
-    store.r = root;
-    store.v = '1.0.0';
-
-    const output = Object.keys(store).map((key) => {
+    // Convert the output object form to an output array form
+    const output = Object.keys(store._output).map((key) => {
         return [
             key,
-            store[key],
+            store._output[key],
         ];
     });
 
-    if (onFinish) {
-        onFinish(output);
-        return;
+    if (getSystemName(store._onFinish) === 'Function') {
+        store._onFinish(output);
     }
-
-    return output;
+    else {
+        return output;
+    }
 };
 
 export default (value, options) => {
@@ -42,26 +32,30 @@ export default (value, options) => {
         _references: new Map(), // Known References
         _explore: [], // Exploration queue
         _deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
+        _output: {},
     };
 
     const rootPointerKey = encounterItem(store, value);
 
     // Root value is simple, can skip main encoding steps
-    if (isSimple(types, rootPointerKey)) {
+    if (types[rootPointerKey]) {
         return prepOutput(store, rootPointerKey);
     }
 
+    // Explore through the data structure
     store._explore.push(value);
-
     while (store._explore.length) {
         encounterItem(store, store._explore.shift());
     }
 
+    // Having found all data structure contents, encode each value into the encoded output
     store._references.forEach((dataItem) => {
-        store[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
+        // Encode the actual value
+        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
 
+        // Encode any values attached to the value
         if (dataItem._attachments.length > 0) {
-            store[dataItem._key][dataItem._index] = store[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
+            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
                 return [
                     encounterItem(store, attachment[0]),
                     encounterItem(store, attachment[1]),
@@ -73,13 +67,13 @@ export default (value, options) => {
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
-        if (getSystemName(store._onFinish) !== 'Function') {
+        if (getSystemName(options.onFinish) !== 'Function') {
             if (store._safe) {
-                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty
-                return prepOutput(store, store._references.get(value)._pointer)
+                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
+                return prepOutput(store, rootPointerKey);
             }
 
-            throw new Error('Encoded value contained a deferred type (File and Blob), but no `options.onFinish` function provided.');
+            throw new Error('Found deferred type, but no onFinish option provided.');
         }
 
         let deferredLength = store._deferred.length;
@@ -87,7 +81,7 @@ export default (value, options) => {
         const onCallback = () => {
             deferredLength -= 1;
             if (deferredLength === 0) {
-                return prepOutput(store, store._references.get(value)._pointer);
+                return prepOutput(store, rootPointerKey);
             }
         };
 
@@ -99,5 +93,5 @@ export default (value, options) => {
     }
 
     // Normal output without deferment
-    return prepOutput(store, store._references.get(value)._pointer);
+    return prepOutput(store, rootPointerKey);
 };

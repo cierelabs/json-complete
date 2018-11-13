@@ -6,13 +6,11 @@ export default (systemName, type) => {
             return getSystemName(v) === systemName && !(v instanceof type);
         },
         _encodeValue: (_, dataItem) => {
-            return dataItem._value;
+            return dataItem._reference;
         },
         _generateReference: (store, key, index) => {
             return store._encoded[key][index];
         },
-        _build: (_, dataItem) => {
-            return dataItem._value;
-        },
+        _build: () => {},
     };
 };
