@@ -1,3 +1,6 @@
 import genTypedArray from '/utils/genTypedArray.js';
+import tryCreateType from '/utils/tryCreateType.js';
 
-export default genTypedArray('Float32Array', Float32Array);
+export default tryCreateType(typeof Float32Array, () => {
+    return genTypedArray('Float32Array', Float32Array);
+});

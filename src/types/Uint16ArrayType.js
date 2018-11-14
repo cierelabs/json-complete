@@ -1,3 +1,6 @@
 import genTypedArray from '/utils/genTypedArray.js';
+import tryCreateType from '/utils/tryCreateType.js';
 
-export default genTypedArray('Uint16Array', Uint16Array);
+export default tryCreateType(typeof Uint16Array, () => {
+    return genTypedArray('Uint16Array', Uint16Array);
+});

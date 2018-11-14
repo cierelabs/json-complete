@@ -1,5 +1,5 @@
 const test = require('tape');
-const jsonComplete = require('../../main.js');
+const jsonComplete = require('/main.js');
 
 const decode = jsonComplete.decode;
 
@@ -7,13 +7,13 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     t.plan(1);
 
     const innerData = [
-        ["r", "ar0"],
-        ["ar", [
+        ['r', 'ar0'],
+        ['ar', [
             [
-                ["--0"],
+                ['--0'],
             ],
         ]],
-        ["--", ["a"]],
+        ['--', ['a']],
     ];
 
     t.equal(decode(innerData, {
@@ -25,8 +25,8 @@ test('Unknown Pointer Key: Value Data', (t) => {
     t.plan(1);
 
     const valueData = [
-        ["r", "--0"],
-        ["--", ["a"]],
+        ['r', '--0'],
+        ['--', ['a']],
     ];
 
     t.equal(decode(valueData, {
@@ -38,14 +38,14 @@ test('Unknown Pointer Key: Key Data', (t) => {
     t.plan(2);
 
     const objectKeyData = [
-        ["r", "ob0"],
-        ["ob", [
+        ['r', 'ob0'],
+        ['ob', [
             [
-                ["--0","nm0"],
+                ['--0', 'nm0'],
             ],
         ]],
-        ["nm", [1]],
-        ["--", ["a"]],
+        ['nm', [1]],
+        ['--', ['a']],
     ];
 
     const decodedObjectKeys = Object.keys(decode(objectKeyData, {

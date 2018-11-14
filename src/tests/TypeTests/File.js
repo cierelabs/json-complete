@@ -1,12 +1,11 @@
 const test = require('tape');
-const testHelpers = require('../../tests/testHelpers.js');
-const jsonComplete = require('../../main.js');
+const testHelpers = require('/tests/testHelpers.js');
+const jsonComplete = require('/main.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-// Node does not natively support Files, so only run these tests in the Browser
-if (testHelpers.isInBrowser()) {
+if (typeof File === 'function') {
     test('File: Normal', (t) => {
         t.plan(5);
 

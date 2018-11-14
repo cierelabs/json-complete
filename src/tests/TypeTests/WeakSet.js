@@ -1,6 +1,6 @@
 const test = require('tape');
-const testHelpers = require('../../tests/testHelpers.js');
-const jsonComplete = require('../../main.js');
+const testHelpers = require('/tests/testHelpers.js');
+const jsonComplete = require('/main.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -9,83 +9,63 @@ const decode = jsonComplete.decode;
 // Attempting to encode WeakSets will create several logs and store the value as a plain, empty Object.
 // However, like any Object, WeakSets can store arbitrary data via String or Symbol keys.
 
-const startup = () => {
-    const oldLog = console.log;
+if (typeof WeakSet === 'function') {
+    test('WeakSet: Not Supported', (t) => {
+        t.plan(2);
 
-    let callCount = 0;
+        const source = [{ a: { b: 2 } }];
 
-    const caller = () => {
-        callCount += 1;
-    };
+        const decoded = decode(encode([new WeakSet(source)], {
+            safeMode: true,
+        }))[0];
 
-    console.log = caller;
+        t.ok(testHelpers.isObject(decoded));
+        t.equal(decoded.has, void 0);
+    });
 
-    return {
-        getCallCount: () => {
-            return callCount;
-        },
-        shutdown: () => {
-            callCount = 0;
-            console.log = oldLog;
-        },
-    };
-};
+    test('WeakSet: Arbitrary Attached Data', (t) => {
+        t.plan(3);
 
-test('WeakSet: Not Supported', (t) => {
-    t.plan(2);
+        const weakSet = new WeakSet([{ a: { b: 2 } }]);
+        weakSet.x = 2;
+        weakSet[Symbol.for('weakSet')] = 'test';
 
-    const source = [{ a: { b: 2 } }];
+        const decodedWeakSet = decode(encode([weakSet], {
+            safeMode: true,
+        }))[0];
 
-    const decoded = decode(encode([new WeakSet(source)], {
-        safeMode: true,
-    }))[0];
+        t.ok(testHelpers.isObject(decodedWeakSet));
+        t.equal(decodedWeakSet.x, 2);
+        t.equal(decodedWeakSet[Symbol.for('weakSet')], 'test');
+    });
 
-    t.ok(testHelpers.isObject(decoded));
-    t.equal(decoded.has, void 0);
-});
+    test('WeakSet: Self-Containment', (t) => {
+        t.plan(2);
 
-test('WeakSet: Arbitrary Attached Data', (t) => {
-    t.plan(3);
+        const weakSet = new WeakSet([{ a: { b: 2 } }]);
+        weakSet.me = weakSet;
 
-    const weakSet = new WeakSet([{ a: { b: 2 } }]);
-    weakSet.x = 2;
-    weakSet[Symbol.for('weakSet')] = 'test';
+        const decodedWeakSet = decode(encode([weakSet], {
+            safeMode: true,
+        }))[0];
 
-    const decodedWeakSet = decode(encode([weakSet], {
-        safeMode: true,
-    }))[0];
+        t.ok(testHelpers.isObject(decodedWeakSet));
+        t.equal(decodedWeakSet.me, decodedWeakSet);
+    });
 
-    t.ok(testHelpers.isObject(decodedWeakSet));
-    t.equal(decodedWeakSet.x, 2);
-    t.equal(decodedWeakSet[Symbol.for('weakSet')], 'test');
-});
+    test('WeakSet: Referencial Integrity', (t) => {
+        t.plan(2);
 
-test('WeakSet: Self-Containment', (t) => {
-    t.plan(2);
+        const source = new WeakSet([{ a: 1 }]);
 
-    const weakSet = new WeakSet([{ a: { b: 2 } }]);
-    weakSet.me = weakSet;
+        const decoded = decode(encode({
+            x: source,
+            y: source,
+        }, {
+            safeMode: true,
+        }));
 
-    const decodedWeakSet = decode(encode([weakSet], {
-        safeMode: true,
-    }))[0];
-
-    t.ok(testHelpers.isObject(decodedWeakSet));
-    t.equal(decodedWeakSet.me, decodedWeakSet);
-});
-
-test('WeakSet: Referencial Integrity', (t) => {
-    t.plan(2);
-
-    const source = new WeakSet([{ a: 1 }]);
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }, {
-        safeMode: true,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
-});
+        t.equal(decoded.x, decoded.y);
+        t.notEqual(decoded.x, source);
+    });
+}

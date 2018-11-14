@@ -1,6 +1,6 @@
 const test = require('tape');
-const testHelpers = require('../../tests/testHelpers.js');
-const jsonComplete = require('../../main.js');
+const testHelpers = require('/tests/testHelpers.js');
+const jsonComplete = require('/main.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -9,83 +9,63 @@ const decode = jsonComplete.decode;
 // Attempting to encode WeakMaps will create several logs and store the value as a plain, empty Object.
 // However, like any Object, WeakMaps can store arbitrary data via String or Symbol keys.
 
-const startup = () => {
-    const oldLog = console.log;
+if (typeof WeakMap === 'function') {
+    test('WeakMap: Not Supported', (t) => {
+        t.plan(2);
 
-    let callCount = 0;
+        const source = [[{ a: { b: 2 } }, { a: { b: 2 } }]];
 
-    const caller = () => {
-        callCount += 1;
-    };
+        const decoded = decode(encode([new WeakMap(source)], {
+            safeMode: true,
+        }))[0];
 
-    console.log = caller;
+        t.ok(testHelpers.isObject(decoded));
+        t.equal(decoded.has, void 0);
+    });
 
-    return {
-        getCallCount: () => {
-            return callCount;
-        },
-        shutdown: () => {
-            callCount = 0;
-            console.log = oldLog;
-        },
-    };
-};
+    test('WeakMap: Arbitrary Attached Data', (t) => {
+        t.plan(3);
 
-test('WeakMap: Not Supported', (t) => {
-    t.plan(2);
+        const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
+        weakMap.x = 2;
+        weakMap[Symbol.for('weakMap')] = 'test';
 
-    const source = [[{ a: { b: 2 } }, { a: { b: 2 } }]];
+        const decodedWeakMap = decode(encode([weakMap], {
+            safeMode: true,
+        }))[0];
 
-    const decoded = decode(encode([new WeakMap(source)], {
-        safeMode: true,
-    }))[0];
+        t.ok(testHelpers.isObject(decodedWeakMap));
+        t.equal(decodedWeakMap.x, 2);
+        t.equal(decodedWeakMap[Symbol.for('weakMap')], 'test');
+    });
 
-    t.ok(testHelpers.isObject(decoded));
-    t.equal(decoded.has, void 0);
-});
+    test('WeakMap: Self-Containment', (t) => {
+        t.plan(2);
 
-test('WeakMap: Arbitrary Attached Data', (t) => {
-    t.plan(3);
+        const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
+        weakMap.me = weakMap;
 
-    const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
-    weakMap.x = 2;
-    weakMap[Symbol.for('weakMap')] = 'test';
+        const decodedWeakMap = decode(encode([weakMap], {
+            safeMode: true,
+        }))[0];
 
-    const decodedWeakMap = decode(encode([weakMap], {
-        safeMode: true,
-    }))[0];
+        t.ok(testHelpers.isObject(decodedWeakMap));
+        t.equal(decodedWeakMap.me, decodedWeakMap);
+    });
 
-    t.ok(testHelpers.isObject(decodedWeakMap));
-    t.equal(decodedWeakMap.x, 2);
-    t.equal(decodedWeakMap[Symbol.for('weakMap')], 'test');
-});
+    test('WeakMap: Referencial Integrity', (t) => {
+        t.plan(2);
 
-test('WeakMap: Self-Containment', (t) => {
-    t.plan(2);
+        const source = new WeakMap([[{ a: 1 }, { b: 2 }]]);
 
-    const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
-    weakMap.me = weakMap;
+        const decoded = decode(encode({
+            x: source,
+            y: source,
+        }, {
+            safeMode: true,
+        }));
 
-    const decodedWeakMap = decode(encode([weakMap], {
-        safeMode: true,
-    }))[0];
-
-    t.ok(testHelpers.isObject(decodedWeakMap));
-    t.equal(decodedWeakMap.me, decodedWeakMap);
-});
-
-test('WeakMap: Referencial Integrity', (t) => {
-    t.plan(2);
-
-    const source = new WeakMap([[{ a: 1 }, { b: 2 }]]);
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }, {
-        safeMode: true,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
-});
+        t.equal(decoded.x, decoded.y);
+        t.notEqual(decoded.x, source);
+    });
+}

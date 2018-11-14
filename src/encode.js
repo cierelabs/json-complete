@@ -1,5 +1,4 @@
 import encounterItem from '/utils/encounterItem.js';
-import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
@@ -14,7 +13,7 @@ const prepOutput = (store, root) => {
         ];
     });
 
-    if (getSystemName(store._onFinish) === 'Function') {
+    if (typeof store._onFinish === 'function') {
         store._onFinish(output);
     }
     else {
@@ -67,7 +66,7 @@ export default (value, options) => {
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
-        if (getSystemName(options.onFinish) !== 'Function') {
+        if (typeof options.onFinish !== 'function') {
             if (store._safe) {
                 // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
                 return prepOutput(store, rootPointerKey);

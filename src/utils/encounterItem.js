@@ -83,13 +83,18 @@ export default (store, item) => {
 
     const pointerIndex = store._output[pointerKey].length - 1;
 
+    const attached = getAttachments(item);
+
     const dataItem = {
         _key: pointerKey,
         _index: pointerIndex,
         _pointer: pointerKey + pointerIndex,
         _reference: item,
-        _indices: [],
-        _attachments: [],
+
+        // Save the known attachments for the next phase so we do not have to reacquire them
+        // Strings and Object-wrapped Strings will include indices for each character in the string, so ignore them
+        _indices: store._types[pointerKey]._ignoreIndices ? [] : attached._indices,
+        _attachments: attached._attachments,
     };
 
     // Store the reference uniquely along with location information
@@ -100,24 +105,11 @@ export default (store, item) => {
         store._deferred.push(dataItem);
     }
 
-    const attached = getAttachments(item);
-    let indices = attached._indices;
-    const attachments = attached._attachments;
-
-    // Object-wrapped Strings will include indices for each character in the string
-    if (store._types[pointerKey]._ignoreIndices) {
-        indices = [];
-    }
-
-    // Save the known attachments for the next phase so we do not have to reacquire them
-    dataItem._indices = indices;
-    dataItem._attachments = attachments;
-
     // Prep sub-items to be explored later
-    indices.forEach((s) => {
+    dataItem._indices.forEach((s) => {
         prepExplorableItem(store, s);
     });
-    attachments.forEach((s) => {
+    dataItem._attachments.forEach((s) => {
         prepExplorableItem(store, s[0]);
         prepExplorableItem(store, s[1]);
     });

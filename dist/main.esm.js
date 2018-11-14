@@ -85,13 +85,18 @@ var encounterItem = (store, item) => {
 
     const pointerIndex = store._output[pointerKey].length - 1;
 
+    const attached = getAttachments(item);
+
     const dataItem = {
         _key: pointerKey,
         _index: pointerIndex,
         _pointer: pointerKey + pointerIndex,
         _reference: item,
-        _indices: [],
-        _attachments: [],
+
+        // Save the known attachments for the next phase so we do not have to reacquire them
+        // Strings and Object-wrapped Strings will include indices for each character in the string, so ignore them
+        _indices: store._types[pointerKey]._ignoreIndices ? [] : attached._indices,
+        _attachments: attached._attachments,
     };
 
     // Store the reference uniquely along with location information
@@ -102,24 +107,11 @@ var encounterItem = (store, item) => {
         store._deferred.push(dataItem);
     }
 
-    const attached = getAttachments(item);
-    let indices = attached._indices;
-    const attachments = attached._attachments;
-
-    // Object-wrapped Strings will include indices for each character in the string
-    if (store._types[pointerKey]._ignoreIndices) {
-        indices = [];
-    }
-
-    // Save the known attachments for the next phase so we do not have to reacquire them
-    dataItem._indices = indices;
-    dataItem._attachments = attachments;
-
     // Prep sub-items to be explored later
-    indices.forEach((s) => {
+    dataItem._indices.forEach((s) => {
         prepExplorableItem(store, s);
     });
-    attachments.forEach((s) => {
+    dataItem._attachments.forEach((s) => {
         prepExplorableItem(store, s[0]);
         prepExplorableItem(store, s[1]);
     });
@@ -186,8 +178,8 @@ var StringType = Object.assign({
 
 var extractPointer = (pointer) => {
     return {
-        _key: pointer.substring(0, 2),
-        _index: parseInt(pointer.substring(2), 10),
+        _key: pointer.slice(0, 2),
+        _index: parseInt(pointer.slice(2), 10),
     };
 };
 
@@ -208,27 +200,35 @@ var genDoesMatchSystemName = (systemName) => {
     };
 };
 
-var SymbolType = {
-    _identify: genDoesMatchSystemName('Symbol'),
-    _encodeValue: (store, dataItem) => {
-        const symbolStringKey = Symbol.keyFor(dataItem._reference);
-        const isRegistered = symbolStringKey !== void 0;
-
-        return [
-            // For Registered Symbols, specify with 1 value and store the registered string value
-            // For unique Symbols, specify with 0 value and also store the optional identifying string
-            encounterItem(store, isRegistered ? 1 : 0),
-            encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1)),
-        ];
-    },
-    _generateReference: (store, key, index) => {
-        const encodedValue = store._encoded[key][index];
-        const identifierString = decodePointer(store, encodedValue[1]);
-
-        return decodePointer(store, encodedValue[0]) === 1 ? Symbol.for(identifierString) : Symbol(identifierString);
-    },
-    _build: () => {}, // Symbols doesn't allow attachments, no-op
+var tryCreateType = (typeOf, typeCreator) => {
+    return typeOf === 'function' ? typeCreator() : {
+        _identify: () => {},
+    };
 };
+
+var SymbolType = tryCreateType(typeof Symbol, () => {
+    return {
+        _identify: genDoesMatchSystemName('Symbol'),
+        _encodeValue: (store, dataItem) => {
+            const symbolStringKey = Symbol.keyFor(dataItem._reference);
+            const isRegistered = symbolStringKey !== void 0;
+
+            return [
+                // For Registered Symbols, specify with 1 value and store the registered string value
+                // For unique Symbols, specify with 0 value and also store the optional identifying string
+                encounterItem(store, isRegistered ? 1 : 0),
+                encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1)),
+            ];
+        },
+        _generateReference: (store, key, index) => {
+            const encodedValue = store._encoded[key][index];
+            const identifierString = decodePointer(store, encodedValue[1]);
+
+            return decodePointer(store, encodedValue[0]) === 1 ? Symbol.for(identifierString) : Symbol(identifierString);
+        },
+        _build: () => {}, // Symbols doesn't allow attachments, no-op
+    };
+});
 
 var arrayLikeEncodeValue = (store, dataItem) => {
     return [
@@ -402,9 +402,13 @@ var genArrayBuffer = (systemName, type) => {
     };
 };
 
-var ArrayBufferType = genArrayBuffer('ArrayBuffer', ArrayBuffer);
+var ArrayBufferType = tryCreateType(typeof ArrayBuffer, () => {
+    return genArrayBuffer('ArrayBuffer', ArrayBuffer);
+});
 
-var SharedArrayBufferType = genArrayBuffer('SharedArrayBuffer', SharedArrayBuffer);
+var SharedArrayBufferType = tryCreateType(typeof SharedArrayBuffer, () => {
+    return genArrayBuffer('SharedArrayBuffer', SharedArrayBuffer);
+});
 
 var genTypedArray = (systemName, type) => {
     return genArrayLike(systemName, (store, key, index) => {
@@ -412,23 +416,41 @@ var genTypedArray = (systemName, type) => {
     });
 };
 
-var Int8ArrayType = genTypedArray('Int8Array', Int8Array);
+var Int8ArrayType = tryCreateType(typeof Int8Array, () => {
+    return genTypedArray('Int8Array', Int8Array);
+});
 
-var Uint8ArrayType = genTypedArray('Uint8Array', Uint8Array);
+var Uint8ArrayType = tryCreateType(typeof Uint8Array, () => {
+    return genTypedArray('Uint8Array', Uint8Array);
+});
 
-var Uint8ClampedArrayType = genTypedArray('Uint8ClampedArray', Uint8ClampedArray);
+var Uint8ClampedArrayType = tryCreateType(typeof Uint8ClampedArray, () => {
+    return genTypedArray('Uint8ClampedArray', Uint8ClampedArray);
+});
 
-var Int16ArrayType = genTypedArray('Int16Array', Int16Array);
+var Int16ArrayType = tryCreateType(typeof Int16Array, () => {
+    return genTypedArray('Int16Array', Int16Array);
+});
 
-var Uint16ArrayType = genTypedArray('Uint16Array', Uint16Array);
+var Uint16ArrayType = tryCreateType(typeof Uint16Array, () => {
+    return genTypedArray('Uint16Array', Uint16Array);
+});
 
-var Int32ArrayType = genTypedArray('Int32Array', Int32Array);
+var Int32ArrayType = tryCreateType(typeof Int32Array, () => {
+    return genTypedArray('Int32Array', Int32Array);
+});
 
-var Uint32ArrayType = genTypedArray('Uint32Array', Uint32Array);
+var Uint32ArrayType = tryCreateType(typeof Uint32Array, () => {
+    return genTypedArray('Uint32Array', Uint32Array);
+});
 
-var Float32ArrayType = genTypedArray('Float32Array', Float32Array);
+var Float32ArrayType = tryCreateType(typeof Float32Array, () => {
+    return genTypedArray('Float32Array', Float32Array);
+});
 
-var Float64ArrayType = genTypedArray('Float64Array', Float64Array);
+var Float64ArrayType = tryCreateType(typeof Float64Array, () => {
+    return genTypedArray('Float64Array', Float64Array);
+});
 
 var genSetLike = (systemName, type, encodeSubValue, buildSubPointers) => {
     return {
@@ -453,16 +475,20 @@ var genSetLike = (systemName, type, encodeSubValue, buildSubPointers) => {
     };
 };
 
-var SetType = genSetLike('Set', Set, (store, subValue) => {
-    return encounterItem(store, subValue);
-}, (store, addTo, subPointer) => {
-    addTo.add(getDecoded(store, subPointer));
+var SetType = tryCreateType(typeof Set, () => {
+    return genSetLike('Set', Set, (store, subValue) => {
+        return encounterItem(store, subValue);
+    }, (store, addTo, subPointer) => {
+        addTo.add(getDecoded(store, subPointer));
+    });
 });
 
-var MapType = genSetLike('Map', Map, (store, subValue) => {
-    return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
-}, (store, addTo, subPointers) => {
-    addTo.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
+var MapType = tryCreateType(typeof Map, () => {
+    return genSetLike('Map', Map, (store, subValue) => {
+        return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
+    }, (store, addTo, subPointers) => {
+        addTo.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
+    });
 });
 
 /* istanbul ignore next */
@@ -510,17 +536,21 @@ var genBlobLike = (systemName, propertiesKeys, create) => {
 };
 
 /* istanbul ignore next */
-var BlobType = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
-    return new Blob(buffer, {
-        type: decodePointer(store, dataArray[1]),
+var BlobType = tryCreateType(typeof Blob, () => {
+    return genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
+        return new Blob(buffer, {
+            type: decodePointer(store, dataArray[1]),
+        });
     });
 });
 
 /* istanbul ignore next */
-var FileType = genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
-    return new File(buffer, decodePointer(store, dataArray[1]), {
-        type: decodePointer(store, dataArray[2]),
-        lastModified: decodePointer(store, dataArray[3])
+var FileType = tryCreateType(typeof File, () => {
+    return genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
+        return new File(buffer, decodePointer(store, dataArray[1]), {
+            type: decodePointer(store, dataArray[2]),
+            lastModified: decodePointer(store, dataArray[3])
+        });
     });
 });
 
@@ -574,7 +604,7 @@ const prepOutput = (store, root) => {
         ];
     });
 
-    if (getSystemName(store._onFinish) === 'Function') {
+    if (typeof store._onFinish === 'function') {
         store._onFinish(output);
     }
     else {
@@ -627,9 +657,9 @@ var encode = (value, options) => {
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
-        if (getSystemName(options.onFinish) !== 'Function') {
+        if (typeof options.onFinish !== 'function') {
             if (store._safe) {
-                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty
+                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
                 return prepOutput(store, rootPointerKey);
             }
 

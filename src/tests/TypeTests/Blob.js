@@ -1,12 +1,11 @@
 const test = require('tape');
-const testHelpers = require('../../tests/testHelpers.js');
-const jsonComplete = require('../../main.js');
+const testHelpers = require('/tests/testHelpers.js');
+const jsonComplete = require('/main.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-// Node does not natively support Blobs, so only run these tests in the Browser
-if (testHelpers.isInBrowser()) {
+if (typeof Blob === 'function') {
     test('Blob: Normal', (t) => {
         t.plan(3);
 

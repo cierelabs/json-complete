@@ -4,26 +4,34 @@ An encoder that can turn any standard JavaScript data object or value into a for
 
 ---
 
-## Install
+#### Install for Development
 
 ```
 npm i
 ```
 
----
-
-## Run Tests in Node (Skips Blob and File tests)
+#### Run Tests in Node
 
 ```
 npm run test
 ```
 
----
-
-## Run Tests in Browser (Runs all tests)
+#### Run Tests in Browser
 
 ```
-npm run testBrowser
+npm run test-browser
+```
+
+#### Lint Code
+
+```
+npm run lint
+```
+
+#### Build Library to `dist` Folder
+
+```
+npm run build
 ```
 
 ---
@@ -172,6 +180,16 @@ For some specific examples:
     - JSON
     - Promise
 * HTML Element Types - These are usually tied to a specific DOM because they were inserted into the page somewhere. Fully replicating not only their creation, but also their position in the page hierarchy is well beyond the scope of this library, and would be wrong if the data was decoded on a non-identical page anyway.
+
+
+### Library Size
+
+| Compression | ES Modules | CommonJS |
+|-------------|------------|----------|
+| None        | 6271 bytes ![](http://progressed.io/bar/6271?scale=6271&suffix=B) | 8313 bytes ![](http://progressed.io/bar/8313?scale=8313&suffix=B) |
+| gzip        | 2624 bytes ![](http://progressed.io/bar/2624?scale=6271&suffix=B) | 2825 bytes ![](http://progressed.io/bar/2825?scale=8313&suffix=B) |
+| zopfli      | 2578 bytes ![](http://progressed.io/bar/2578?scale=6271&suffix=B) | 2772 bytes ![](http://progressed.io/bar/2772?scale=8313&suffix=B) |
+| brotli      | 2376 bytes ![](http://progressed.io/bar/2376?scale=6271&suffix=B) | 2557 bytes ![](http://progressed.io/bar/2557?scale=8313&suffix=B) |
 
 
 ### Terms
