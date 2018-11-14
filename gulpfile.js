@@ -274,6 +274,10 @@ gulp.task('compress-brotli', () => {
 });
 
 gulp.task('compress-calculate', (end) => {
+    const percentOf = (base, compressed) => {
+        return Math.round(compressed / base * 100);
+    };
+
     const onEnd = (manifest) => {
         const extensionToCompression = {
             js: 'base',
@@ -294,13 +298,16 @@ gulp.task('compress-calculate', (end) => {
         // Convert data to displayable form
         const esmBaseSize = types.esm.base;
         const cjsBaseSize = types.cjs.base;
+
+
+
         const table = `
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| None        | ${esmBaseSize} bytes ![](http://progressed.io/bar/${esmBaseSize}?scale=${esmBaseSize}&suffix=B) | ${cjsBaseSize} bytes ![](http://progressed.io/bar/${cjsBaseSize}?scale=${cjsBaseSize}&suffix=B) |
-| gzip        | ${types.esm.gzip} bytes ![](http://progressed.io/bar/${types.esm.gzip}?scale=${esmBaseSize}&suffix=B) | ${types.cjs.gzip} bytes ![](http://progressed.io/bar/${types.cjs.gzip}?scale=${cjsBaseSize}&suffix=B) |
-| zopfli      | ${types.esm.zopfli} bytes ![](http://progressed.io/bar/${types.esm.zopfli}?scale=${esmBaseSize}&suffix=B) | ${types.cjs.zopfli} bytes ![](http://progressed.io/bar/${types.cjs.zopfli}?scale=${cjsBaseSize}&suffix=B) |
-| brotli      | ${types.esm.brotli} bytes ![](http://progressed.io/bar/${types.esm.brotli}?scale=${esmBaseSize}&suffix=B) | ${types.cjs.brotli} bytes ![](http://progressed.io/bar/${types.cjs.brotli}?scale=${cjsBaseSize}&suffix=B) |
+| None        | ${esmBaseSize} bytes ![](http://progressed.io/bar/100) | ${cjsBaseSize} bytes ![](http://progressed.io/bar/100) |
+| gzip        | ${types.esm.gzip} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.gzip)}) | ${types.cjs.gzip} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.gzip)}) |
+| zopfli      | ${types.esm.zopfli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.zopfli)}) | ${types.cjs.zopfli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.zopfli)}) |
+| brotli      | ${types.esm.brotli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.brotli)}) | ${types.cjs.brotli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.brotli)}) |
 `;
 
         console.log(table); // eslint-disable-line no-console

@@ -186,10 +186,10 @@ For some specific examples:
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| None        | 6271 bytes ![](http://progressed.io/bar/6271?scale=6271&suffix=B) | 8313 bytes ![](http://progressed.io/bar/8313?scale=8313&suffix=B) |
-| gzip        | 2624 bytes ![](http://progressed.io/bar/2624?scale=6271&suffix=B) | 2825 bytes ![](http://progressed.io/bar/2825?scale=8313&suffix=B) |
-| zopfli      | 2578 bytes ![](http://progressed.io/bar/2578?scale=6271&suffix=B) | 2772 bytes ![](http://progressed.io/bar/2772?scale=8313&suffix=B) |
-| brotli      | 2376 bytes ![](http://progressed.io/bar/2376?scale=6271&suffix=B) | 2557 bytes ![](http://progressed.io/bar/2557?scale=8313&suffix=B) |
+| None        | 6271 bytes ![](http://progressed.io/bar/100) | 8313 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2624 bytes ![](http://progressed.io/bar/42) | 2825 bytes ![](http://progressed.io/bar/34) |
+| zopfli      | 2578 bytes ![](http://progressed.io/bar/41) | 2772 bytes ![](http://progressed.io/bar/33) |
+| brotli      | 2376 bytes ![](http://progressed.io/bar/38) | 2557 bytes ![](http://progressed.io/bar/31) |
 
 
 ### Terms
