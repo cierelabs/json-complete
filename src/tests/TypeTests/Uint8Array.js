@@ -86,3 +86,6 @@ if (typeof Uint8Array === 'function') {
         t.notEqual(decoded.x, source);
     });
 }
+else {
+    console.warn('Tests for Uint8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+}

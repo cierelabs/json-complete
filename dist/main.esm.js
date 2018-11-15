@@ -214,9 +214,9 @@ var SymbolType = tryCreateType(typeof Symbol, () => {
             const isRegistered = symbolStringKey !== void 0;
 
             return [
-                // For Registered Symbols, specify with 1 value and store the registered string value
-                // For unique Symbols, specify with 0 value and also store the optional identifying string
-                encounterItem(store, isRegistered ? 1 : 0),
+                // For Registered Symbols, specify with true value and store the registered string value
+                // For unique Symbols, specify with false value and also store the optional identifying string
+                encounterItem(store, isRegistered ? true : false),
                 encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1)),
             ];
         },
@@ -224,7 +224,7 @@ var SymbolType = tryCreateType(typeof Symbol, () => {
             const encodedValue = store._encoded[key][index];
             const identifierString = decodePointer(store, encodedValue[1]);
 
-            return decodePointer(store, encodedValue[0]) === 1 ? Symbol.for(identifierString) : Symbol(identifierString);
+            return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
         },
         _build: () => {}, // Symbols doesn't allow attachments, no-op
     };

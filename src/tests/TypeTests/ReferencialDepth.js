@@ -51,34 +51,36 @@ if (typeof Set === 'function' && typeof Map === 'function') {
         t.equal(decoded.a[0].values().next()['value'].get(1)[0].b.get(2).c[0][0][0].d, 3);
         t.equal(decoded.a[0].values().next()['value'].get(1)[0].b.get(2).c[0][0][1], decoded);
     });
+}
+else {
+    console.warn('"Referencial Depth: Deep Reference Mixing Stress Test" was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+}
 
+test('Referencial Depth: Extreme Depth Stress Test', (t) => {
+    t.plan(1);
 
-    test('Referencial Depth: Extreme Depth Stress Test', (t) => {
-        t.plan(1);
-
-        const box = {
-            a: [],
-        };
-        let arrayRef = box.a;
-        const depth = 20000;
-        for (let d = 0; d < depth; d += 1) {
-            if (d === depth - 1) {
-                arrayRef[0] = 'here';
-            }
-            else {
-                arrayRef[0] = [];
-                arrayRef = arrayRef[0];
-            }
+    const box = {
+        a: [],
+    };
+    let arrayRef = box.a;
+    const depth = 20000;
+    for (let d = 0; d < depth; d += 1) {
+        if (d === depth - 1) {
+            arrayRef[0] = 'here';
         }
-
-        const encoded = encode(box);
-        const decoded = decode(encoded);
-
-        arrayRef = decoded.a;
-        for (let d = 0; d < depth; d += 1) {
+        else {
+            arrayRef[0] = [];
             arrayRef = arrayRef[0];
         }
+    }
 
-        t.equal(arrayRef, 'here');
-    });
-}
+    const encoded = encode(box);
+    const decoded = decode(encoded);
+
+    arrayRef = decoded.a;
+    for (let d = 0; d < depth; d += 1) {
+        arrayRef = arrayRef[0];
+    }
+
+    t.equal(arrayRef, 'here');
+});

@@ -109,3 +109,6 @@ if (typeof Symbol === 'function') {
         t.equal(decoded[symbols[customIndex]], 'overriding');
     });
 }
+else {
+    console.warn('Tests for Built-In Symbols skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
+}

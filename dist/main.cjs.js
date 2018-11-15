@@ -201,14 +201,14 @@ var SymbolType = tryCreateType(typeof Symbol === "undefined" ? "undefined" : _ty
     _encodeValue: function _encodeValue(store, dataItem) {
       var symbolStringKey = Symbol.keyFor(dataItem._reference);
       var isRegistered = symbolStringKey !== void 0;
-      return [// For Registered Symbols, specify with 1 value and store the registered string value
-      // For unique Symbols, specify with 0 value and also store the optional identifying string
-      encounterItem(store, isRegistered ? 1 : 0), encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1))];
+      return [// For Registered Symbols, specify with true value and store the registered string value
+      // For unique Symbols, specify with false value and also store the optional identifying string
+      encounterItem(store, isRegistered ? true : false), encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1))];
     },
     _generateReference: function _generateReference(store, key, index) {
       var encodedValue = store._encoded[key][index];
       var identifierString = decodePointer(store, encodedValue[1]);
-      return decodePointer(store, encodedValue[0]) === 1 ? Symbol.for(identifierString) : Symbol(identifierString);
+      return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
     },
     _build: function _build() {} // Symbols doesn't allow attachments, no-op
 

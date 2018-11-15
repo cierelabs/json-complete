@@ -121,3 +121,6 @@ if (typeof SharedArrayBuffer === 'function') {
         t.notEqual(decoded.x, source);
     });
 }
+else {
+    console.warn('Tests for SharedArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+}

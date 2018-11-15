@@ -304,7 +304,7 @@ gulp.task('compress-calculate', (end) => {
         const table = `
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| None        | ${esmBaseSize} bytes ![](http://progressed.io/bar/100) | ${cjsBaseSize} bytes ![](http://progressed.io/bar/100) |
+| Minified    | ${esmBaseSize} bytes ![](http://progressed.io/bar/100) | ${cjsBaseSize} bytes ![](http://progressed.io/bar/100) |
 | gzip        | ${types.esm.gzip} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.gzip)}) | ${types.cjs.gzip} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.gzip)}) |
 | zopfli      | ${types.esm.zopfli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.zopfli)}) | ${types.cjs.zopfli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.zopfli)}) |
 | brotli      | ${types.esm.brotli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.brotli)}) | ${types.cjs.brotli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.brotli)}) |

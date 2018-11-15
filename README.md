@@ -186,7 +186,7 @@ For some specific examples:
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| None        | 6271 bytes ![](http://progressed.io/bar/100) | 8313 bytes ![](http://progressed.io/bar/100) |
+| Minified    | 6271 bytes ![](http://progressed.io/bar/100) | 8313 bytes ![](http://progressed.io/bar/100) |
 | gzip        | 2624 bytes ![](http://progressed.io/bar/42) | 2825 bytes ![](http://progressed.io/bar/34) |
 | zopfli      | 2578 bytes ![](http://progressed.io/bar/41) | 2772 bytes ![](http://progressed.io/bar/33) |
 | brotli      | 2376 bytes ![](http://progressed.io/bar/38) | 2557 bytes ![](http://progressed.io/bar/31) |
@@ -358,8 +358,14 @@ TODO
 
 ## To Fix and Add
 
-* Add top-level error handling to the functions to handle encoding / decoding problems
-* Create more meaningful error messages, especially for the decoder.
-* Write helper to extract buffer from encoded Blob/File objects on Node
-* Write helper to encode buffer into Blob or File objects on Node
-* Add a version number part of the encoding process
+- [ ] Write tests for non-safeMode usage
+- [ ] Write tests for ensuring the correct format of encoded data
+- [ ] Add [BigInt](https://github.com/tc39/proposal-bigint) support
+- [ ] Add option for ignoring Symbol keys during encoding
+- [ ] Explore encoding numbers as strings
+- [ ] Allow pointers to be auto-expanding to arbitrary number of indices, allowing arbitrary numbers of items of every type (Do this by making the last index a new array, and a special sentinal value to indicate the extended array. This array can do the same thing, thus expanding as needed.)
+- [ ] Test Edge, IE 11, and earlier versions
+- [ ] Create polyfill for older IE (espcially the use of Map, without creating a false-positive on the existance of Map)
+- [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await
+- [ ] Update decoding error messages for types not supported in a given environment
+- [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data

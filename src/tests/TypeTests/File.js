@@ -176,3 +176,6 @@ if (typeof File === 'function') {
         });
     });
 }
+else {
+    console.warn('Tests for File type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+}
