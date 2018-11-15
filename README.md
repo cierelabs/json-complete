@@ -142,16 +142,19 @@ However, `JSON.stringify()` can encode the json-complete encoded output, as it t
 | ❌     | ✅             | Referencial Deduplication                            |
 | ⚠ *6* | ✅             | Root-Level Encoding for All Supported Values         |
 | ⚠ *7* | ✅             | Built-in Symbol Keys Not Stored                      |
+| ❌     | ✅ *8*         | Supports non-throwing mode                           |
 | ✅     | ❌             | Built into environment                               |
 | ✅     | ❌             | Encodes to String                                    |
 
+
 * *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
-* *3* - Blob and File types are only supported natively in Browsers. The asynchronous form of `encode` is required if the value contains a Blob or File type.
+* *3* - The asynchronous form of `encode` is required if the value contains a Blob or File type.
 * *4* - `JSON.stringify()` appears to operate using recursion and will throw if the depth of encoded objects causes the maximum call stack to be reached. json-complete is non-recursive.
 * *5* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
 * *6* - JSON will do root-level encoding only for the types it supports elsewhere.
 * *7* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
+* *8* - By default, if attempting to encode or decode a type that is not supported in the environment, or if trying to encode Blob or File types without the asynchronous `encode`, the library will throw. In `safeMode`, no throws will occur. Instead the library will attempt to return as much data as possible, though some data will not make it into the encoded/decoded forms.
 
 ---
 
@@ -360,9 +363,11 @@ TODO
 
 - [ ] Write tests for non-safeMode usage
 - [ ] Write tests for ensuring the correct format of encoded data
-- [ ] Add [BigInt](https://github.com/tc39/proposal-bigint) support
+- [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
+- [ ] Once [BigInt](https://github.com/tc39/proposal-bigint) supports some form of radix parsing (BigInt.parseInt, BigInt.fromString, etc), use that to store BigInts in base36
 - [ ] Add option for ignoring Symbol keys during encoding
 - [ ] Explore encoding numbers as strings
+- [ ] In non-debug mode, encode the indices of pointers as base36 ints
 - [ ] Allow pointers to be auto-expanding to arbitrary number of indices, allowing arbitrary numbers of items of every type (Do this by making the last index a new array, and a special sentinal value to indicate the extended array. This array can do the same thing, thus expanding as needed.)
 - [ ] Test Edge, IE 11, and earlier versions
 - [ ] Create polyfill for older IE (espcially the use of Map, without creating a false-positive on the existance of Map)

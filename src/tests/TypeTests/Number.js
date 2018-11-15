@@ -50,6 +50,16 @@ test('Number: Root Value Number', (t) => {
     t.equal(decode(encode(1)), 1);
 });
 
+test('Number: Root Value -1', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(-1)), -1);
+});
+
+test('Number: Root Value 3.14', (t) => {
+    t.plan(1);
+    t.equal(decode(encode(3.14)), 3.14);
+});
+
 test('Number: Root Value Infinity', (t) => {
     t.plan(1);
     t.equal(decode(encode(Infinity)), Infinity);

@@ -33,6 +33,7 @@ import SetType from '/types/SetType.js';
 import MapType from '/types/MapType.js';
 import BlobType from '/types/BlobType.js';
 import FileType from '/types/FileType.js';
+import BigIntType from '/types/BigIntType.js';
 
 const types = {
     un: undefinedType,
@@ -70,6 +71,7 @@ const types = {
     Ma: MapType,
     Bl: BlobType,
     Fi: FileType,
+    BI: BigIntType,
 };
 
 export default types;
