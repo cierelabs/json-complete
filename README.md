@@ -189,11 +189,10 @@ For some specific examples:
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6271 bytes ![](http://progressed.io/bar/100) | 8313 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2624 bytes ![](http://progressed.io/bar/42) | 2825 bytes ![](http://progressed.io/bar/34) |
-| zopfli      | 2578 bytes ![](http://progressed.io/bar/41) | 2772 bytes ![](http://progressed.io/bar/33) |
-| brotli      | 2376 bytes ![](http://progressed.io/bar/38) | 2557 bytes ![](http://progressed.io/bar/31) |
-
+| Minified    | 6487 bytes ![](http://progressed.io/bar/100) | 8643 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2703 bytes ![](http://progressed.io/bar/42) | 2916 bytes ![](http://progressed.io/bar/34) |
+| zopfli      | 2647 bytes ![](http://progressed.io/bar/41) | 2857 bytes ![](http://progressed.io/bar/33) |
+| brotli      | 2455 bytes ![](http://progressed.io/bar/38) | 2644 bytes ![](http://progressed.io/bar/31) |
 
 ### Terms
 
@@ -364,9 +363,8 @@ TODO
 - [ ] Write tests for non-safeMode usage
 - [ ] Write tests for ensuring the correct format of encoded data
 - [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
-- [ ] Once [BigInt](https://github.com/tc39/proposal-bigint) supports some form of radix parsing (BigInt.parseInt, BigInt.fromString, etc), use that to store BigInts in base36
 - [ ] Add option for ignoring Symbol keys during encoding
-- [ ] Explore encoding numbers as strings
+- [x] Explore encoding numbers as strings
 - [ ] In non-debug mode, encode the indices of pointers as base36 ints
 - [ ] Allow pointers to be auto-expanding to arbitrary number of indices, allowing arbitrary numbers of items of every type (Do this by making the last index a new array, and a special sentinal value to indicate the extended array. This array can do the same thing, thus expanding as needed.)
 - [ ] Test Edge, IE 11, and earlier versions

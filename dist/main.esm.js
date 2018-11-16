@@ -154,28 +154,6 @@ var trueType = genSimpleEqualityType(true);
 
 var falseType = genSimpleEqualityType(false);
 
-var genPrimitive = (systemName, type) => {
-    return {
-        _identify: (v) => {
-            return getSystemName(v) === systemName && !(v instanceof type);
-        },
-        _encodeValue: (_, dataItem) => {
-            return dataItem._reference;
-        },
-        _generateReference: (store, key, index) => {
-            return store._encoded[key][index];
-        },
-        _build: () => {},
-    };
-};
-
-var NumberType = genPrimitive('Number', Number);
-
-var StringType = Object.assign({
-    // Strings allow index access into the string value, which is already stored, so ignore indices
-    _ignoreIndices: 1,
-}, genPrimitive('String', String));
-
 var extractPointer = (pointer) => {
     return {
         _key: pointer.slice(0, 2),
@@ -193,6 +171,32 @@ var decodePointer = (store, pointer) => {
 
     return store._types[p._key]._generateReference(store, p._key, p._index);
 };
+
+var genPrimitive = (systemName, type, encodeValue, generateReference) => {
+    return {
+        _identify: (v) => {
+            return getSystemName(v) === systemName && !(v instanceof type);
+        },
+        _encodeValue: encodeValue,
+        _generateReference: generateReference,
+        _build: () => {},
+    };
+};
+
+var NumberType = genPrimitive('Number', Number, (store, dataItem) => {
+    return encounterItem(store, String(dataItem._reference));
+}, (store, key, index) => {
+    return parseFloat(decodePointer(store, store._encoded[key][index]));
+});
+
+var StringType = Object.assign({
+    // Strings allow index access into the string value, which is already stored, so ignore indices
+    _ignoreIndices: 1,
+}, genPrimitive('String', String, (store, dataItem) => {
+    return dataItem._reference;
+}, (store, key, index) => {
+    return store._encoded[key][index];
+}));
 
 var genDoesMatchSystemName = (systemName) => {
     return (v) => {
@@ -506,19 +510,27 @@ var genBlobLike = (systemName, propertiesKeys, create) => {
             const reader = new FileReader();
             reader.addEventListener('loadend', () => {
                 const typedArray = new Uint8Array(reader.result);
+
+                // Set the typed array pointer into the output
                 const typedArrayPointer = encounterItem(store, typedArray);
+                store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
 
+                // Create new number array here inside an array as if we are exploring it normally
                 const typedArrayP = extractPointer(typedArrayPointer);
-
                 store._output[typedArrayP._key][typedArrayP._index] = [
                     Array.from(typedArray).map((subItem) => {
                         const numberPointer = encounterItem(store, subItem);
                         const numberP = extractPointer(numberPointer);
-                        store._output[numberP._key][numberP._index] = subItem;
+
+                        // Last step: Since numbers are converted to strings, we have to add them as strings as well and store the pointer to the string in the number index
+                        const stringLength = store._output.st.length;
+                        store._output.st[stringLength] = String(subItem);
+                        store._output[numberP._key][numberP._index] = `st${stringLength}`;
+
                         return numberPointer;
                     }),
                 ];
-                store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
+
                 callback();
             });
             reader.readAsArrayBuffer(dataItem._reference);
@@ -551,6 +563,15 @@ var FileType = tryCreateType(typeof File, () => {
             type: decodePointer(store, dataArray[2]),
             lastModified: decodePointer(store, dataArray[3])
         });
+    });
+});
+
+/* istanbul ignore next */
+var BigIntType = tryCreateType(typeof BigInt, () => {
+    return genPrimitive('BigInt', BigInt, (store, dataItem) => {
+        return encounterItem(store, String(dataItem._reference));
+    }, (store, key, index) => {
+        return BigInt(decodePointer(store, store._encoded[key][index]));
     });
 });
 
@@ -590,6 +611,7 @@ const types = {
     Ma: MapType,
     Bl: BlobType,
     Fi: FileType,
+    BI: BigIntType,
 };
 
 const prepOutput = (store, root) => {

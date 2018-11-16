@@ -145,27 +145,6 @@ var Negative0Type = {
 var trueType = genSimpleEqualityType(true);
 var falseType = genSimpleEqualityType(false);
 
-var genPrimitive = function genPrimitive(systemName, type) {
-  return {
-    _identify: function _identify(v) {
-      return getSystemName(v) === systemName && !(v instanceof type);
-    },
-    _encodeValue: function _encodeValue(_, dataItem) {
-      return dataItem._reference;
-    },
-    _generateReference: function _generateReference(store, key, index) {
-      return store._encoded[key][index];
-    },
-    _build: function _build() {}
-  };
-};
-
-var NumberType = genPrimitive('Number', Number);
-var StringType = Object.assign({
-  // Strings allow index access into the string value, which is already stored, so ignore indices
-  _ignoreIndices: 1
-}, genPrimitive('String', String));
-
 var extractPointer = function extractPointer(pointer) {
   return {
     _key: pointer.slice(0, 2),
@@ -182,6 +161,31 @@ var decodePointer = function decodePointer(store, pointer) {
   var p = extractPointer(pointer);
   return store._types[p._key]._generateReference(store, p._key, p._index);
 };
+
+var genPrimitive = function genPrimitive(systemName, type, encodeValue, generateReference) {
+  return {
+    _identify: function _identify(v) {
+      return getSystemName(v) === systemName && !(v instanceof type);
+    },
+    _encodeValue: encodeValue,
+    _generateReference: generateReference,
+    _build: function _build() {}
+  };
+};
+
+var NumberType = genPrimitive('Number', Number, function (store, dataItem) {
+  return encounterItem(store, String(dataItem._reference));
+}, function (store, key, index) {
+  return parseFloat(decodePointer(store, store._encoded[key][index]));
+});
+var StringType = Object.assign({
+  // Strings allow index access into the string value, which is already stored, so ignore indices
+  _ignoreIndices: 1
+}, genPrimitive('String', String, function (store, dataItem) {
+  return dataItem._reference;
+}, function (store, key, index) {
+  return store._encoded[key][index];
+}));
 
 var genDoesMatchSystemName = function genDoesMatchSystemName(systemName) {
   return function (v) {
@@ -452,16 +456,21 @@ var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
     _deferredEncode: function _deferredEncode(store, dataItem, callback) {
       var reader = new FileReader();
       reader.addEventListener('loadend', function () {
-        var typedArray = new Uint8Array(reader.result);
+        var typedArray = new Uint8Array(reader.result); // Set the typed array pointer into the output
+
         var typedArrayPointer = encounterItem(store, typedArray);
+        store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer; // Create new number array here inside an array as if we are exploring it normally
+
         var typedArrayP = extractPointer(typedArrayPointer);
         store._output[typedArrayP._key][typedArrayP._index] = [Array.from(typedArray).map(function (subItem) {
           var numberPointer = encounterItem(store, subItem);
-          var numberP = extractPointer(numberPointer);
-          store._output[numberP._key][numberP._index] = subItem;
+          var numberP = extractPointer(numberPointer); // Last step: Since numbers are converted to strings, we have to add them as strings as well and store the pointer to the string in the number index
+
+          var stringLength = store._output.st.length;
+          store._output.st[stringLength] = String(subItem);
+          store._output[numberP._key][numberP._index] = "st".concat(stringLength);
           return numberPointer;
         })];
-        store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
         callback();
       });
       reader.readAsArrayBuffer(dataItem._reference);
@@ -494,6 +503,15 @@ var FileType = tryCreateType(typeof File === "undefined" ? "undefined" : _typeof
       type: decodePointer(store, dataArray[2]),
       lastModified: decodePointer(store, dataArray[3])
     });
+  });
+});
+/* istanbul ignore next */
+
+var BigIntType = tryCreateType(typeof BigInt === "undefined" ? "undefined" : _typeof(BigInt), function () {
+  return genPrimitive('BigInt', BigInt, function (store, dataItem) {
+    return encounterItem(store, String(dataItem._reference));
+  }, function (store, key, index) {
+    return BigInt(decodePointer(store, store._encoded[key][index]));
   });
 });
 var types = {
@@ -532,7 +550,8 @@ var types = {
   Se: SetType,
   Ma: MapType,
   Bl: BlobType,
-  Fi: FileType
+  Fi: FileType,
+  BI: BigIntType
 };
 
 var prepOutput = function prepOutput(store, root) {

@@ -19,19 +19,27 @@ export default (systemName, propertiesKeys, create) => {
             const reader = new FileReader();
             reader.addEventListener('loadend', () => {
                 const typedArray = new Uint8Array(reader.result);
+
+                // Set the typed array pointer into the output
                 const typedArrayPointer = encounterItem(store, typedArray);
+                store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
 
+                // Create new number array here inside an array as if we are exploring it normally
                 const typedArrayP = extractPointer(typedArrayPointer);
-
                 store._output[typedArrayP._key][typedArrayP._index] = [
                     Array.from(typedArray).map((subItem) => {
                         const numberPointer = encounterItem(store, subItem);
                         const numberP = extractPointer(numberPointer);
-                        store._output[numberP._key][numberP._index] = subItem;
+
+                        // Last step: Since numbers are converted to strings, we have to add them as strings as well and store the pointer to the string in the number index
+                        const stringLength = store._output.st.length;
+                        store._output.st[stringLength] = String(subItem);
+                        store._output[numberP._key][numberP._index] = `st${stringLength}`;
+
                         return numberPointer;
                     }),
                 ];
-                store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer;
+
                 callback();
             });
             reader.readAsArrayBuffer(dataItem._reference);
