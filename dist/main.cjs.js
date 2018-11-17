@@ -448,32 +448,18 @@ var MapType = tryCreateType(typeof Map === "undefined" ? "undefined" : _typeof(M
 var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
   return {
     _identify: genDoesMatchSystemName(systemName),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [[new Uint8Array(0)].concat(propertiesKeys.map(function (property) {
-        return encounterItem(store, dataItem._reference[property]);
-      }))];
-    },
     _deferredEncode: function _deferredEncode(store, dataItem, callback) {
       var reader = new FileReader();
       reader.addEventListener('loadend', function () {
-        var typedArray = new Uint8Array(reader.result); // Set the typed array pointer into the output
-
-        var typedArrayPointer = encounterItem(store, typedArray);
-        store._output[dataItem._key][dataItem._index][0][0] = typedArrayPointer; // Create new number array here inside an array as if we are exploring it normally
-
-        var typedArrayP = extractPointer(typedArrayPointer);
-        store._output[typedArrayP._key][typedArrayP._index] = [Array.from(typedArray).map(function (subItem) {
-          var numberPointer = encounterItem(store, subItem);
-          var numberP = extractPointer(numberPointer); // Last step: Since numbers are converted to strings, we have to add them as strings as well and store the pointer to the string in the number index
-
-          var stringLength = store._output.st.length;
-          store._output.st[stringLength] = String(subItem);
-          store._output[numberP._key][numberP._index] = "st".concat(stringLength);
-          return numberPointer;
-        })];
+        dataItem._deferredValuePointer = encounterItem(store, new Uint8Array(reader.result));
         callback();
       });
       reader.readAsArrayBuffer(dataItem._reference);
+    },
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return [[dataItem._deferredValuePointer].concat(propertiesKeys.map(function (property) {
+        return encounterItem(store, dataItem._reference[property]);
+      }))];
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];
@@ -555,6 +541,18 @@ var types = {
 };
 
 var prepOutput = function prepOutput(store, root) {
+  // Having found all data structure contents, encode each value into the encoded output
+  store._references.forEach(function (dataItem) {
+    // Encode the actual value
+    store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
+
+    if (dataItem._attachments.length > 0) {
+      store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
+        return [encounterItem(store, attachment[0]), encounterItem(store, attachment[1])];
+      }));
+    }
+  });
+
   store._output.r = root;
   store._output.v = '1.0.0'; // Convert the output object form to an output array form
 
@@ -594,19 +592,7 @@ var encode = function encode(value, options) {
 
   while (store._explore.length) {
     encounterItem(store, store._explore.shift());
-  } // Having found all data structure contents, encode each value into the encoded output
-
-
-  store._references.forEach(function (dataItem) {
-    // Encode the actual value
-    store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
-
-    if (dataItem._attachments.length > 0) {
-      store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
-        return [encounterItem(store, attachment[0]), encounterItem(store, attachment[1])];
-      }));
-    }
-  });
+  }
   /* istanbul ignore next */
 
 

@@ -189,10 +189,10 @@ For some specific examples:
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6487 bytes ![](http://progressed.io/bar/100) | 8643 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2703 bytes ![](http://progressed.io/bar/42) | 2916 bytes ![](http://progressed.io/bar/34) |
-| zopfli      | 2647 bytes ![](http://progressed.io/bar/41) | 2857 bytes ![](http://progressed.io/bar/33) |
-| brotli      | 2455 bytes ![](http://progressed.io/bar/38) | 2644 bytes ![](http://progressed.io/bar/31) |
+| Minified    | 6300 bytes ![](http://progressed.io/bar/100) | 8448 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2624 bytes ![](http://progressed.io/bar/42) | 2832 bytes ![](http://progressed.io/bar/34) |
+| zopfli      | 2571 bytes ![](http://progressed.io/bar/41) | 2771 bytes ![](http://progressed.io/bar/33) |
+| brotli      | 2390 bytes ![](http://progressed.io/bar/38) | 2563 bytes ![](http://progressed.io/bar/30) |
 
 ### Terms
 
@@ -365,6 +365,7 @@ TODO
 - [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
 - [ ] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
+- [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
 - [ ] In non-debug mode, encode the indices of pointers as base36 ints
 - [ ] Allow pointers to be auto-expanding to arbitrary number of indices, allowing arbitrary numbers of items of every type (Do this by making the last index a new array, and a special sentinal value to indicate the extended array. This array can do the same thing, thus expanding as needed.)
 - [ ] Test Edge, IE 11, and earlier versions

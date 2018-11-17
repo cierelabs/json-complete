@@ -2,6 +2,22 @@ import encounterItem from '/utils/encounterItem.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
+    // Having found all data structure contents, encode each value into the encoded output
+    store._references.forEach((dataItem) => {
+        // Encode the actual value
+        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
+
+        // Encode any values attached to the value
+        if (dataItem._attachments.length > 0) {
+            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
+                return [
+                    encounterItem(store, attachment[0]),
+                    encounterItem(store, attachment[1]),
+                ];
+            }));
+        }
+    });
+
     store._output.r = root;
     store._output.v = '1.0.0';
 
@@ -46,22 +62,6 @@ export default (value, options) => {
     while (store._explore.length) {
         encounterItem(store, store._explore.shift());
     }
-
-    // Having found all data structure contents, encode each value into the encoded output
-    store._references.forEach((dataItem) => {
-        // Encode the actual value
-        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
-
-        // Encode any values attached to the value
-        if (dataItem._attachments.length > 0) {
-            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
-                return [
-                    encounterItem(store, attachment[0]),
-                    encounterItem(store, attachment[1]),
-                ];
-            }));
-        }
-    });
 
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
