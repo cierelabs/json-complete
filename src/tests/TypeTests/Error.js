@@ -155,3 +155,35 @@ test('Error: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Error: Arbitrary Attached Data', (t) => {
+    t.plan(1);
+
+    const value = new Error('a');
+    value.a = false;
+
+    const encoded = testHelpers.simplifyEncoded(encode(value));
+    encoded.st[2] = 'stack!!!';
+
+    t.deepEqual(encoded, {
+        er: [
+            [
+                [
+                    'st1',
+                    'st0',
+                    'st2',
+                ],
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+            'Error',
+            'stack!!!',
+        ],
+        r: 'er0',
+    });
+});

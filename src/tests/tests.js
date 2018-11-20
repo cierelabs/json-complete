@@ -44,4 +44,3 @@ require('/tests/TypeTests/WeakSet.js');
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
 
-// console.log(decode(encode([Symbol('test')])))

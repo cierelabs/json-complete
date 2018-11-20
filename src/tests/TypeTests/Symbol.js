@@ -56,6 +56,23 @@ if (typeof Symbol === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Symbol: Encoding Expected', (t) => {
+        t.plan(1);
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
+            sy: [
+                [
+                    'bt',
+                    'st0',
+                ],
+            ],
+            st: [
+                'a',
+            ],
+            r: 'sy0',
+        });
+    });
 }
 else {
     console.warn('Tests for Symbol type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

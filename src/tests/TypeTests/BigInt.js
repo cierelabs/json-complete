@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('/main.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -47,6 +48,20 @@ if (typeof BigInt === 'function') {
     test('BigInt: Root Value Extreme Size', (t) => {
         t.plan(1);
         t.equal(String(decode(encode(BigInt(extremeSizeNumber)))), extremeSizeNumber);
+    });
+
+    test('BigInt: Encoding Expected Normal', (t) => {
+        t.plan(1);
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(BigInt(extremeSizeNumber))), {
+            BI: [
+                'st0',
+            ],
+            st: [
+                extremeSizeNumber,
+            ],
+            r: 'BI0',
+        });
     });
 }
 else {

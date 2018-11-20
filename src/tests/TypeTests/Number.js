@@ -75,7 +75,48 @@ test('Number: Root Value NaN', (t) => {
     t.ok(testHelpers.isNanValue(decode(encode(NaN))));
 });
 
-test('Number: Root Value -0', (t) => {
+test('Number: Encoding Expected Normal', (t) => {
     t.plan(1);
-    t.ok(testHelpers.isNegativeZero(decode(encode(-0))));
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(1)), {
+        nm: [
+            'st0',
+        ],
+        st: [
+            '1',
+        ],
+        r: 'nm0',
+    });
+});
+
+test('Number: Encoding Expected Infinity', (t) => {
+    t.plan(1);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(Infinity)), {
+        r: 'pI',
+    });
+});
+
+test('Number: Encoding Expected -Infinity', (t) => {
+    t.plan(1);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(-Infinity)), {
+        r: 'nI',
+    });
+});
+
+test('Number: Encoding Expected NaN', (t) => {
+    t.plan(1);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(NaN)), {
+        r: 'na',
+    });
+});
+
+test('Number: Encoding Expected -0', (t) => {
+    t.plan(1);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(-0)), {
+        r: 'n0',
+    });
 });

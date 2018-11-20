@@ -165,3 +165,27 @@ test('Array: Referencial Integrity', (t) => {
     t.notEqual(decoded.x, source);
 });
 
+test('Array: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const arr = [true];
+    arr.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(arr)), {
+        ar: [
+            [
+                [
+                    'bt',
+                ],
+                [
+                    'st0',
+                    'bf',
+                ]
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'ar0',
+    });
+});

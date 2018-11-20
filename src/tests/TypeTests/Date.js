@@ -62,3 +62,31 @@ test('Date: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Date: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const now = Date.now();
+    const date = new Date(now);
+    date.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
+        da: [
+            [
+                'nm0',
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+            String(now),
+        ],
+        nm: [
+            'st1',
+        ],
+        r: 'da0',
+    });
+});

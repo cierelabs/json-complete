@@ -100,6 +100,7 @@ export default (store, item) => {
     // Store the reference uniquely along with location information
     store._references.set(item, dataItem);
 
+    // Some values can only be obtained asynchronously, so add them to a list of items to check
     /* istanbul ignore next */
     if (store._types[pointerKey]._deferredEncode) {
         store._deferred.push(dataItem);

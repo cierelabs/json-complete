@@ -85,6 +85,36 @@ if (typeof Float32Array === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Float32Array: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Float32Array(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            F3: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'F30',
+        });
+    });
 }
 else {
     console.warn('Tests for Float32Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

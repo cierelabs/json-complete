@@ -141,3 +141,22 @@ test('Object: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Object: Encoding Expected', (t) => {
+    t.plan(1);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode({ a: true })), {
+        ob: [
+            [
+                [
+                    'st0',
+                    'bt',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'ob0',
+    });
+});

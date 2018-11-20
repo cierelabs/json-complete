@@ -85,6 +85,36 @@ if (typeof Uint16Array === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Uint16Array: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Uint16Array(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            U2: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'U20',
+        });
+    });
 }
 else {
     console.warn('Tests for Uint16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

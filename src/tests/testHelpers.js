@@ -26,6 +26,15 @@ const isArray = (v) => {
     return systemName(v) === '[object Array]';
 };
 
+const simplifyEncoded = (encoded) => {
+    return encoded.filter((i) => {
+        return i[0] !== 'v';
+    }).reduce((accumulator, e) => {
+        accumulator[e[0]] = e[1];
+        return accumulator;
+    }, {});
+};
+
 module.exports = {
     systemName: systemName,
     isNanValue: isNanValue,
@@ -34,4 +43,5 @@ module.exports = {
     isFunction: isFunction,
     isObject: isObject,
     isArray: isArray,
+    simplifyEncoded: simplifyEncoded,
 };

@@ -1,6 +1,6 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -136,6 +136,31 @@ if (typeof Set === 'function') {
 
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
+    });
+
+    test('Set: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Set([true]);
+        source.b = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            Se: [
+                [
+                    [
+                        'bt',
+                    ],
+                    [
+                        'st0',
+                        'bf',
+                    ],
+                ],
+            ],
+            st: [
+                'b',
+            ],
+            r: 'Se0',
+        });
     });
 }
 else {

@@ -85,6 +85,36 @@ if (typeof Uint8Array === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Uint8Array: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Uint8Array(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            U1: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'U10',
+        });
+    });
 }
 else {
     console.warn('Tests for Uint8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

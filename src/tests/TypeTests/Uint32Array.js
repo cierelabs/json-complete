@@ -85,6 +85,36 @@ if (typeof Uint32Array === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Uint32Array: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Uint32Array(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            U3: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'U30',
+        });
+    });
 }
 else {
     console.warn('Tests for Uint32Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

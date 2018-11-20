@@ -85,6 +85,36 @@ if (typeof Int16Array === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Int16Array: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Int16Array(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            I2: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'I20',
+        });
+    });
 }
 else {
     console.warn('Tests for Int16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

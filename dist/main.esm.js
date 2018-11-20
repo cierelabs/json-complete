@@ -102,6 +102,7 @@ var encounterItem = (store, item) => {
     // Store the reference uniquely along with location information
     store._references.set(item, dataItem);
 
+    // Some values can only be obtained asynchronously, so add them to a list of items to check
     /* istanbul ignore next */
     if (store._types[pointerKey]._deferredEncode) {
         store._deferred.push(dataItem);
@@ -602,6 +603,9 @@ const prepOutput = (store, root) => {
         // Encode any values attached to the value
         if (dataItem._attachments.length > 0) {
             store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
+                // Technically, here we might expect to only request items from the already explored set
+                // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
+                // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
                 return [
                     encounterItem(store, attachment[0]),
                     encounterItem(store, attachment[1]),

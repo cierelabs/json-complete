@@ -129,3 +129,90 @@ test('Object-Wrapped Number: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
+    t.plan(1);
+
+    const source = new Number(1);
+    source.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        NM: [
+            [
+                'nm0',
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        nm: [
+            'st1',
+        ],
+        st: [
+            'a',
+            '1',
+        ],
+        r: 'NM0',
+    });
+});
+
+test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
+    t.plan(1);
+
+    const source = new Number(Infinity);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        NM: [
+            [
+                'pI',
+            ],
+        ],
+        r: 'NM0',
+    });
+});
+
+test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
+    t.plan(1);
+
+    const source = new Number(-Infinity);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        NM: [
+            [
+                'nI',
+            ],
+        ],
+        r: 'NM0',
+    });
+});
+
+test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
+    t.plan(1);
+
+    const source = new Number(NaN);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        NM: [
+            [
+                'na',
+            ],
+        ],
+        r: 'NM0',
+    });
+});
+
+test('Object-Wrapped Number: Encoding Expected -0', (t) => {
+    t.plan(1);
+
+    const source = new Number(-0);
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        NM: [
+            [
+                'n0',
+            ],
+        ],
+        r: 'NM0',
+    });
+});

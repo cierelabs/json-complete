@@ -17,6 +17,18 @@ test('Unsupported Types: Normal', (t) => {
     t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
 });
 
+test('Unsupported Types: Root Value', (t) => {
+    t.plan(2);
+
+    const encoded = encode(Math, {
+        safeMode: true,
+    });
+    const decoded = decode(encoded);
+
+    t.ok(testHelpers.isObject(decoded));
+    t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
+});
+
 test('Unsupported Types: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -66,4 +78,28 @@ test('Unsupported Types: Referencial Integrity', (t) => {
 
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
+});
+
+test('Unsupported Types: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const source = Math;
+    source.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source, {
+        safeMode: true,
+    })), {
+        ob: [
+            [
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'ob0',
+    });
 });

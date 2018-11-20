@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('/main.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -104,4 +105,37 @@ test('Regex: Referencial Integrity', (t) => {
 
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
+});
+
+test('Regex: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const source = /\s+/g;
+    source.b = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        re: [
+            [
+                [
+                    'st1',
+                    'st2',
+                    'nm0',
+                ],
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        nm: [
+            'st3',
+        ],
+        st: [
+            'b',
+            '\\s+',
+            'g',
+            '0',
+        ],
+        r: 're0',
+    });
 });

@@ -84,3 +84,26 @@ test('Object-Wrapped String: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Object-Wrapped String: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const source = new String('a');
+    source.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        ST: [
+            [
+                'st0',
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'ST0',
+    });
+});

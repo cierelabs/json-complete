@@ -56,14 +56,14 @@ else {
     console.warn('"Referencial Depth: Deep Reference Mixing Stress Test" was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
-test('Referencial Depth: Extreme Depth Stress Test', (t) => {
+test('Referencial Depth: Extreme Array Depth Stress Test', (t) => {
     t.plan(1);
 
     const box = {
         a: [],
     };
     let arrayRef = box.a;
-    const depth = 20000;
+    const depth = 50000;
     for (let d = 0; d < depth; d += 1) {
         if (d === depth - 1) {
             arrayRef[0] = 'here';
@@ -84,3 +84,57 @@ test('Referencial Depth: Extreme Depth Stress Test', (t) => {
 
     t.equal(arrayRef, 'here');
 });
+
+if (typeof Set === 'function') {
+    test('Referencial Depth: Extreme Set Depth Stress Test', (t) => {
+        t.plan(1);
+
+        let setRef = new Set();
+        const parentRef = setRef;
+        const depth = 50000;
+        for (let d = 0; d < depth - 1; d += 1) {
+            const newSet = new Set();
+            setRef.add(newSet);
+            setRef = newSet;
+        }
+
+        setRef.add(false);
+
+        const encoded = encode(parentRef);
+        const decoded = decode(encoded);
+
+        setRef = decoded;
+        for (let d = 0; d < depth; d += 1) {
+            setRef = setRef.values().next().value;
+        }
+
+        t.equal(setRef, false);
+    });
+}
+
+if (typeof Map === 'function') {
+    test('Referencial Depth: Extreme Map Depth Stress Test', (t) => {
+        t.plan(1);
+
+        let mapRef = new Map();
+        const parentRef = mapRef;
+        const depth = 50000;
+        for (let d = 0; d < depth - 1; d += 1) {
+            const newSet = new Map();
+            mapRef.set(1, newSet);
+            mapRef = newSet;
+        }
+
+        mapRef.set(1, false);
+
+        const encoded = encode(parentRef);
+        const decoded = decode(encoded);
+
+        mapRef = decoded;
+        for (let d = 0; d < depth; d += 1) {
+            mapRef = mapRef.get(1);
+        }
+
+        t.equal(mapRef, false);
+    });
+}

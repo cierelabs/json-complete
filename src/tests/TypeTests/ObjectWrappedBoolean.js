@@ -84,3 +84,26 @@ test('Object-Wrapped Boolean: Referencial Integrity', (t) => {
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, source);
 });
+
+test('Object-Wrapped Boolean: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const source = new Boolean(true);
+    source.a = false;
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+        BO: [
+            [
+                'bt',
+                [
+                    'st0',
+                    'bf',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'BO0',
+    });
+});

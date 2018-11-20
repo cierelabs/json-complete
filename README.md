@@ -361,7 +361,8 @@ TODO
 ## To Fix and Add
 
 - [ ] Write tests for non-safeMode usage
-- [ ] Write tests for ensuring the correct format of encoded data
+- [x] Write tests for ensuring the correct format of encoded data
+- [x] Write tests for extreme depth of Set and Map items
 - [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
 - [ ] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings

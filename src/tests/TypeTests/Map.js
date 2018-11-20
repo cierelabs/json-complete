@@ -211,6 +211,34 @@ if (typeof Map === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Map: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Map([[false, true]]);
+        source.b = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            Ma: [
+                [
+                    [
+                        [
+                            'bf',
+                            'bt',
+                        ],
+                    ],
+                    [
+                        'st0',
+                        'bf',
+                    ],
+                ],
+            ],
+            st: [
+                'b',
+            ],
+            r: 'Ma0',
+        });
+    });
 }
 else {
     console.warn('Tests for Map type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

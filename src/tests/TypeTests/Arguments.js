@@ -54,6 +54,19 @@ test('Arguments: Root Value', (t) => {
     t.deepEqual(decoded[3], arr);
 });
 
+test('Arguments: Sparse Index', (t) => {
+    t.plan(3);
+
+    const args = genArgs(1, 2);
+    args[9] = 9;
+
+    const decoded = decode(encode([args]))[0];
+
+    t.equal(decoded[0], 1);
+    t.equal(decoded[1], 2);
+    t.deepEqual(decoded[9], 9);
+});
+
 test('Arguments: Non-Index Keys', (t) => {
     t.plan(6);
 
@@ -131,4 +144,24 @@ test('Arguments: Referencial Integrity', (t) => {
 
     t.equal(decoded.x, decoded.y);
     t.notEqual(decoded.x, args);
+});
+
+test('Arguments: Encoding Expected', (t) => {
+    t.plan(1);
+
+    const args = genArgs('a');
+
+    t.deepEqual(testHelpers.simplifyEncoded(encode(args)), {
+        ag: [
+            [
+                [
+                    'st0',
+                ],
+            ],
+        ],
+        st: [
+            'a',
+        ],
+        r: 'ag0',
+    });
 });

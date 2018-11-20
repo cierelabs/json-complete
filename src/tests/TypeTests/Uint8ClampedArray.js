@@ -85,6 +85,36 @@ if (typeof Uint8ClampedArray === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('Uint8ClampedArray: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const source = new Uint8ClampedArray(1);
+        source[0] = 1;
+        source.a = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
+            C1: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf'
+                    ],
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'a',
+                '1',
+            ],
+            r: 'C10',
+        });
+    });
 }
 else {
     console.warn('Tests for Uint8ClampedArray type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

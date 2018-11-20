@@ -175,6 +175,59 @@ if (typeof File === 'function') {
             },
         });
     });
+
+    test('File: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const now = Date.now();
+
+        const blob = new Blob([JSON.stringify(1)], { type: 'application/json' });
+        const file = new File([blob], 'test.json', {
+            type: 'application/json',
+            lastModified: now,
+        });
+        file.a = false;
+
+        encode(file, {
+            onFinish: (encoded) => {
+                t.deepEqual(testHelpers.simplifyEncoded(encoded), {
+                    Fi: [
+                        [
+                            [
+                                'U10',
+                                'st1',
+                                'st2',
+                                'nm0',
+                            ],
+                            [
+                                'st0',
+                                'bf',
+                            ],
+                        ],
+                    ],
+                    st: [
+                        'a',
+                        'test.json',
+                        'application/json',
+                        String(now),
+                        '49',
+                    ],
+                    U1: [
+                        [
+                            [
+                                'nm1',
+                            ],
+                        ],
+                    ],
+                    nm: [
+                        'st3',
+                        'st4',
+                    ],
+                    r: 'Fi0',
+                });
+            },
+        });
+    });
 }
 else {
     console.warn('Tests for File type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

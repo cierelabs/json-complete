@@ -106,6 +106,35 @@ if (typeof ArrayBuffer === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('ArrayBuffer: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const a = new Uint8Array([1]).buffer;
+        a.b = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(a)), {
+            AB: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf',
+                    ]
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'b',
+                '1',
+            ],
+            r: 'AB0',
+        });
+    });
 }
 else {
     console.warn('Tests for ArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

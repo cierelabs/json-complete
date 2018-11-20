@@ -119,6 +119,48 @@ if (typeof Blob === 'function') {
             },
         });
     });
+
+    test('Blob: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const blob = new Blob([JSON.stringify(1)], { type: 'application/json' });
+        blob.a = false;
+
+        encode(blob, {
+            onFinish: (encoded) => {
+                t.deepEqual(testHelpers.simplifyEncoded(encoded), {
+                    Bl: [
+                        [
+                            [
+                                'U10',
+                                'st1',
+                            ],
+                            [
+                                'st0',
+                                'bf',
+                            ],
+                        ],
+                    ],
+                    st: [
+                        'a',
+                        'application/json',
+                        '49',
+                    ],
+                    U1: [
+                        [
+                            [
+                                'nm0',
+                            ],
+                        ],
+                    ],
+                    nm: [
+                        'st2',
+                    ],
+                    r: 'Bl0',
+                });
+            },
+        });
+    });
 }
 else {
     console.warn('Tests for Blob type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console

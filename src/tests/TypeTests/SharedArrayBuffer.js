@@ -120,6 +120,38 @@ if (typeof SharedArrayBuffer === 'function') {
         t.equal(decoded.x, decoded.y);
         t.notEqual(decoded.x, source);
     });
+
+    test('SharedArrayBuffer: Encoding Expected', (t) => {
+        t.plan(1);
+
+        const sab = new SharedArrayBuffer(1);
+        const a = new Uint8Array(sab);
+
+        a[0] = 1;
+        sab.b = false;
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(sab)), {
+            SA: [
+                [
+                    [
+                        'nm0',
+                    ],
+                    [
+                        'st0',
+                        'bf',
+                    ]
+                ],
+            ],
+            nm: [
+                'st1',
+            ],
+            st: [
+                'b',
+                '1',
+            ],
+            r: 'SA0',
+        });
+    });
 }
 else {
     console.warn('Tests for SharedArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
