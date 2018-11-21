@@ -1,6 +1,6 @@
 # json-complete
 
-An encoder that can turn any standard JavaScript data object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.
+A library that can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referencial integrity, handles circular references, cannot cause data collisions, and handles arbitrarily deep nesting. json-complete has no dependencies and clocks in at less than 3KB when min-zipped.
 
 ---
 
@@ -38,52 +38,17 @@ npm run build
 
 ## Purpose
 
-json-complete was designed to store, transmit, and reconstruct data created through an immutable data state architecture. Because json-complete stores references, and because the immutable style performs structural sharing, the entire history of an application's business-logic state changes can be compactly encoded and decoded for application debugging purposes. Basically, you can reconstruct anything the user is seeing AND how they got there.
+json-complete was designed to store, transmit, and reconstruct data created through an immutable data state architecture. Because json-complete maintains references, and because the immutable style uses structural sharing, the entire history of an application's business-logic state changes can be compactly encoded and decoded for application debugging purposes. Basically, you can reconstruct anything the user is seeing AND how they got there, effectively time-traveling through their actions.
+
+The encoder is largely a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal structure of arrays and strings exclusively, which is then encoded to a standard JSON serialized string.
 
 ---
 
-## Encode to JSON
+## Features
 
-The encoder is a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal structure of arrays, numbers, and strings exclusively.
+#### Majority Type Support
 
-## Referential Integrity
-
-Any Reference Type that points to the same memory location will be encoded as the same pointer string in the data. When decoding, these shared pointer strings will allow shared references to be retained.
-
-## Value Type Deduplication
-
-As Strings and Numbers are encoded to reference strings (Pointers), their values are all stored in the same area, by type. Since values are checked just like references, the same String or Number will never be stored more than once.
-
-## Referencial Deduplication
-
-The same Referencial Type value is only stored once, provided the underlying reference is the same. It is then only referred to by its reference string (Pointer).
-
-## Arbitrarily Deep Nesting
-
-json-complete does not use recursion to do encoding or decoding. As a result, it can support arbitrary deep nesting. The built in JSON `stringify` function appears to utilize recursion, and will throw if the depth of the encoded data grows to deep. This can easily be shown:
-
-```
-var outer = [];
-var arrayRef = outer;
-
-const depth = 16000;
-var d;
-for (d = 0; d < depth; d += 1) {
-    arrayRef[0] = [];
-    arrayRef = arrayRef[0];
-}
-
-console.log(outer);
-console.log(JSON.stringify(outer)); // Uncaught RangeError: Maximum call stack size exceeded
-```
-
-However, `JSON.stringify()` can encode the json-complete encoded output, as it tends to flatten data to a single layer of references.
-
----
-
-## Comparison to JSON
-
-| json  | json-complete | Supported Types                                      |
+| json  | json-complete | Types                                                |
 |-------|---------------|------------------------------------------------------|
 | ❌     | ✅             | undefined                                            |
 | ✅     | ✅             | null                                                 |
@@ -127,52 +92,126 @@ However, `JSON.stringify()` can encode the json-complete encoded output, as it t
 | ❌     | ✅ *3*         | Blob                                                 |
 | ❌     | ✅ *3*         | File                                                 |
 
-| json  | json-complete | Features                                             |
-|-------|---------------|------------------------------------------------------|
-| ❌ *4* | ✅             | Arbitrarily Deep Nesting                             |
-| ❌     | ✅             | Circular References                                  |
-| ❌     | ✅             | Shared Key and Value Symbol References               |
-| ❌     | ✅             | Shared Key and Value Map References                  |
-| ❌     | ✅             | Arbitrary Attached Data for All Object-like Types    |
-| ❌     | ✅ *5*         | Arbitrary Attached Data for Unsupported Types        |
-| ❌     | ✅             | Self-Containment for All Object-like Types           |
-| ❌     | ✅ *5*         | Self-Containment for Unsupported Types               |
-| ❌     | ✅             | Referencial Integrity for All Reference Types        |
-| ❌     | ✅ *5*         | Referencial Integrity for Unsupported Types          |
-| ❌     | ✅             | Referencial Deduplication                            |
-| ⚠ *6* | ✅             | Root-Level Encoding for All Supported Values         |
-| ⚠ *7* | ✅             | Built-in Symbol Keys Not Stored                      |
-| ❌     | ✅ *8*         | Supports non-throwing mode                           |
-| ✅     | ❌             | Built into environment                               |
-| ✅     | ❌             | Encodes to String                                    |
-
-
 * *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
 * *3* - The asynchronous form of `encode` is required if the value contains a Blob or File type.
-* *4* - `JSON.stringify()` appears to operate using recursion and will throw if the depth of encoded objects causes the maximum call stack to be reached. json-complete is non-recursive.
-* *5* - Unsupported Types cannot reasonably be encoded. The value of the Type will be encoded as an empty plain Object instead of its real type. Unsupported Types can still encode Arbitrary Attached Data, if it exists.
-* *6* - JSON will do root-level encoding only for the types it supports elsewhere.
-* *7* - JSON does not encode Built-in Symbol Keys on types because it doesn't encode Symbol Keys at all.
-* *8* - By default, if attempting to encode or decode a type that is not supported in the environment, or if trying to encode Blob or File types without the asynchronous `encode`, the library will throw. In `safeMode`, no throws will occur. Instead the library will attempt to return as much data as possible, though some data will not make it into the encoded/decoded forms.
+
+
+#### Internal Referential Integrity
+
+With json-complete, any references that point to the same memory location will be encoded as the same Pointer string in the output. When decoding, these shared Pointer strings will allow shared references to be retained, relative to the entire decoded data.
+
+Note that json-complete will not (and cannot) map decoded data to specific memory locations in an existing JavaScript environment due to the limitations of the language. As a result, just like JSON, encoding and then decoding the data results in an entirely new set of objects, lists, and references. The old references will not change.
+
+Data parsed from a JSON string loses all information about the interal referencial structure of the original data.
+
+
+#### Circular Reference Handling
+
+Because all references are maintained as Pointers, circular references are not a special case for json-complete.
+
+JSON, on the other hand, will refuse to handle data containing a circular reference.
+
+
+#### No Data Collision Possible
+
+Other JSON-alternative libraries attempt to handle circular references by attaching special-case keys to objects and arrays that the decoder will then look for, such as including metadata attached to a key prepended with a dollar sign (`$`). However, if the data to be encoded happens to contain the same key, there is a potential for data loss or the circular reference detection to fail.
+
+Since json-complete transforms all data into a referencial form of arrays and strings of a pre-specified form, the referencial information is stored in the relationships of the various arrays encoding that value. No extra information is ever added to the object's data itself, so there is no chance for collisions.
+
+
+#### Deduplication
+
+Strings, Numbers, and some other Primitive types will be stored no more than once, duplicating the Pointer rather than duplicating the value data in multiple places.
+
+Any time two or more non-value type references point to the same place in memory, the value at that location will only be encoded once, duplicating the Pointer rather than duplicating the value data in multiple places.
+
+JSON will simply duplicate the data multiple times.
+
+
+#### Arbitrarily Deep Nesting
+
+json-complete does not primarily use recursion to do encoding or decoding. As a result, it can support arbitrarily deep nesting of objects, such as encoding an array containing an array containing an array... and so on, for 50,000 times.
+
+The built in JSON implementation of `stringify` function, however, appears to utilize recursion. It will throw with a `Maximum call stack size exceeded` error if the depth of the encoded data grows to deep.
+
+
+#### Root Level Encoding of All Supported Types
+
+json-complete allows the top-level encodable item to be any type, not just an Array or Object.
+
+JSON also allows this, though it only supports this for the types it supports.
+
+
+#### Symbol Key and Value Referencial Integrety
+
+Symbols are unique in that they are a Primitive-like value type, but are addressed by reference by JavaScript. Additionally, they are the only other type of value allowed as an Object key besides String. As a result, it is possible to construct an Object that contains a key and a value that point to the same memory location, that of a single Symbol. json-complete will maintain referencial integrety even in this situation.
+
+JSON does not support Symbols.
+
+
+#### Built-in Symbols Ignored
+
+There are some built-in Symbols (such as `Symbol.iterator`) provided by type definitions or JavaScript itself that are never encoded, even if Symbol Key Encoding Option (below) is enabled. These are all methods that will be available on the decoded value by virtue of the fact that they will be decode to their pre-encoded type.
+
+
+#### Option: Safe Mode
+
+If the `safeMode` option is set to a truthy value, the library attempts to do its best to get the most information out of the encoding or decoding process without throwing errors. What can happen in safe mode?
+
+* Encoding
+  - If encoding a deferred type like Blob or File, but no `onFinish` option is provided, the output will output all the data it has minus the data from inside the deferred type. Any data attached data on the object may still be saved, and the referencial integrity will be retained.
+  - If an unencodable or unrecognized type is part of the data to be encoded, the reference will be encoded as a plain empty object. Any data attached data on the object may still be saved, and the referencial integrity will be retained.
+* Decoding
+  - If the Pointer type is not recognized, the Pointer string itself will be decoded in its place, rather than attempt to get its value.
+
+Safe Mode will **NOT** prevent throws related to malformed string data when decoding.
+
+
+#### Option: Symbol Key Encoding
+
+One of the primary purposes of using Symbols as object keys is to provide a way to attach methods without worrying about them being iterated over or modified using standard data reflection techniques. As a result, they are often not intended to be serialized, especially if their value is a function, which cannot be encoded by JSON or json-complete anyway.
+
+By default, json-complete will ignore Symbol keys. By setting, `encodeSymbolKeys` option to a truthy value, the Symbol keys will be encoded.
+
+On the other hand, non-built-in Symbols stored in value positions, not key positions, will not be ignored regardless of the `encodeSymbolKeys` setting.
+
+
+#### Library Size
+
+| Compression | ES Modules | CommonJS |
+|-------------|------------|----------|
+| Minified    | 6528 bytes ![](http://progressed.io/bar/100) | 8686 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2694 bytes ![](http://progressed.io/bar/41) | 2911 bytes ![](http://progressed.io/bar/34) |
+| zopfli      | 2642 bytes ![](http://progressed.io/bar/40) | 2850 bytes ![](http://progressed.io/bar/33) |
+| brotli      | 2456 bytes ![](http://progressed.io/bar/38) | 2634 bytes ![](http://progressed.io/bar/30) |
+
 
 ---
 
-## NOT Encoded
 
-Several types of objects are intentionally not encodable or decodable. Even if a particular object is not supported, any attachments to that object that can be encoded and decoded will be. However, the object's value itself will be stored as an empty object.
+## Limitations
+
+#### Relative JSON Size
+
+In very unscientific testing, for a large, non-circular object, the output length of both the JSON encoded string and the json-complete encoded string were compared. The json-complete string was approximately 25% larger than the JSON string.
+
+
+#### Unsupported Types
+
+Several types of objects are intentionally not encodable or decodable. Even if a particular object is not supported, any attachments to that object that can be encoded and decoded will be when `safeMode` is enabled. However, the object's value itself will be stored as an empty object.
 
 Objects may be skipped for one of several reasons:
 
 1. It is not data
 2. It cannot be fully or correctly encoded/decoded
-3. The data inherently tied to a particular execution context and can't be reasonably generalized
+3. The data is inherently tied to a particular execution context and can't be reasonably generalized
 4. It is a standard object that is built-in, and has no reason to be stored
 
 For some specific examples:
 
-* Functions - Functions, Named Function Expressions, Getters, Setters, Methods, Async Functions, Generators, and the like, all represent operations, not data. Furthermore, decoding them necessitates some form of an eval function or the use of iframes. Both decode methods can be indirectly blocked by server security headers through no fault of the library user. On top of all that, encoded functions wouldn't be able to handle closure information either, so they would only be useful for pure or global-scope functions anyway.
-* WeakSet and WeakMap - By design, these are not iterable for security reasons. Thus, they can't be encoded because json-complete cannot determine what is in them. To allow them to be iterable would potentially allow an attacker to check memory information about the computer it is running on.
+* Functions - Functions, Named Function Expressions, Getters, Setters, Methods, Async Functions, Generators, and the like, all represent operations, not data. Furthermore, decoding them necessitates some form of an eval function or the use of iframes. Both ways of decoding functions can be indirectly blocked by server security headers through no fault of the library user. On top of all that, encoded functions wouldn't be able to handle closure information either, so they would only be useful for pure or global-scope functions anyway. Lastly, this would constitute a massive security vulnerability.
+* WeakSet and WeakMap - By design, these are not iterable for security reasons. Thus, they can't be encoded because json-complete cannot determine what is inside them. To allow them to be iterable would potentially allow an attacker to check memory information about the computer it is running on.
 * Proxies - Proxies are specifically designed to hide information about how they operate, and are mostly functions wrapping primitive data.
 * Classes - These are largely syntatic sugar for Functions.
 * Various Built-ins
@@ -185,14 +224,7 @@ For some specific examples:
 * HTML Element Types - These are usually tied to a specific DOM because they were inserted into the page somewhere. Fully replicating not only their creation, but also their position in the page hierarchy is well beyond the scope of this library, and would be wrong if the data was decoded on a non-identical page anyway.
 
 
-### Library Size
 
-| Compression | ES Modules | CommonJS |
-|-------------|------------|----------|
-| Minified    | 6528 bytes ![](http://progressed.io/bar/100) | 8686 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2694 bytes ![](http://progressed.io/bar/41) | 2911 bytes ![](http://progressed.io/bar/34) |
-| zopfli      | 2642 bytes ![](http://progressed.io/bar/40) | 2850 bytes ![](http://progressed.io/bar/33) |
-| brotli      | 2456 bytes ![](http://progressed.io/bar/38) | 2634 bytes ![](http://progressed.io/bar/30) |
 
 ### Terms
 

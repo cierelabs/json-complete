@@ -5,7 +5,7 @@ import types from '/types.js';
 
 // Recursively look at the reference set for exploration values
 // This handles both pair arrays and individual values
-// This recursion is fine because it has a maximum depth of 3
+// This recursion is fine because it has a maximum depth of around 3
 const exploreParts = (store, parts) => {
     if (getSystemName(parts) === 'Array') {
         parts.forEach((part) => {
