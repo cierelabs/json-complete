@@ -21,7 +21,7 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     })[0], '--0');
 });
 
-test('Unknown Pointer Key: Value Data', (t) => {
+test('Unknown Pointer Key: Root Value', (t) => {
     t.plan(1);
 
     const valueData = [
@@ -54,4 +54,45 @@ test('Unknown Pointer Key: Key Data', (t) => {
 
     t.equal(decodedObjectKeys.length, 1);
     t.equal(decodedObjectKeys[0], '--0');
+});
+
+test('Unknown Pointer Key: Non-Safe Mode', (t) => {
+    t.plan(1);
+
+    const innerData = [
+        ['r', 'ar0'],
+        ['ar', [
+            [
+                ['--0'],
+            ],
+        ]],
+        ['--', ['a']],
+    ];
+
+    try {
+        decode(innerData, {
+            safeMode: false,
+        });
+        t.ok(false);
+    } catch (e) {
+        t.equal(e.message, 'Cannot decode unrecognized pointer type "--".');
+    }
+});
+
+test('Unknown Pointer Key: Root Value Non-Safe Mode', (t) => {
+    t.plan(1);
+
+    const valueData = [
+        ['r', '--0'],
+        ['--', ['a']],
+    ];
+
+    try {
+        decode(valueData, {
+            safeMode: false,
+        });
+        t.ok(false);
+    } catch (e) {
+        t.equal(e.message, 'Cannot decode unrecognized pointer type "--".');
+    }
 });

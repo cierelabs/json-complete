@@ -2,11 +2,18 @@
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+var genError = function genError(message, operation, type) {
+  var error = new Error(message);
+  error.operation = operation;
+  error.type = type;
+  return error;
+};
+
 var getSystemName = function getSystemName(v) {
   return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-var getAttachments = function getAttachments(v) {
+var getAttachments = function getAttachments(v, encodeSymbolKeys) {
   var attached = {
     _indices: [],
     _attachments: []
@@ -25,11 +32,16 @@ var getAttachments = function getAttachments(v) {
 
   var keys = Object.keys(v).filter(function (key) {
     return !indexObj[key];
-  }).concat(Object.getOwnPropertySymbols(v).filter(function (symbol) {
-    // Ignore built-in Symbols
-    // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-    return Symbol[String(symbol).slice(14, -1)] !== symbol;
-  })); // Create the lists
+  });
+
+  if (encodeSymbolKeys) {
+    keys = keys.concat(Object.getOwnPropertySymbols(v).filter(function (symbol) {
+      // Ignore built-in Symbols
+      // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+      return Symbol[String(symbol).slice(14, -1)] !== symbol;
+    }));
+  } // Create the lists
+
 
   return indices.concat(keys).reduce(function (accumulator, key) {
     if (key === i) {
@@ -50,7 +62,8 @@ var getPointerKey = function getPointerKey(store, item) {
   });
 
   if (!pointerKey && !store._safe) {
-    throw new Error("Cannot encode unsupported type \"".concat(getSystemName(item), "\"."));
+    var type = getSystemName(item);
+    throw genError("Cannot encode unsupported type \"".concat(type, "\"."), 'encode', type);
   } // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
 
 
@@ -59,7 +72,7 @@ var getPointerKey = function getPointerKey(store, item) {
 
 var prepExplorableItem = function prepExplorableItem(store, item) {
   // Type is known type and is a reference type (not simple), it should be explored
-  if ((store._types[getPointerKey(store, item)] || {})._build) {
+  if (store._types[getPointerKey(store, item)]._build) {
     store._explore.push(item);
   }
 };
@@ -84,7 +97,7 @@ var encounterItem = function encounterItem(store, item) {
   store._output[pointerKey].push(void 0);
 
   var pointerIndex = store._output[pointerKey].length - 1;
-  var attached = getAttachments(item);
+  var attached = getAttachments(item, store._encodeSymbolKeys);
   var dataItem = {
     _key: pointerKey,
     _index: pointerIndex,
@@ -228,21 +241,20 @@ var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
 
 
 var getDecoded = function getDecoded(store, pointer) {
+  // Simple type, return the value
   if (store._types[pointer]) {
     return store._types[pointer]._value;
-  }
+  } // Normal type, return the reference
+
 
   var p = extractPointer(pointer);
 
   if (store._types[p._key]) {
     return store._decoded[pointer]._reference;
-  }
+  } // We will never reach this point without being in safe mode, return the pointer string
 
-  if (store._safe) {
-    return pointer;
-  }
 
-  throw new Error("Cannot decode unrecognized pointer type \"".concat(p._key, "\"."));
+  return pointer;
 };
 
 var attachAttachments = function attachAttachments(store, dataItem, attachments) {
@@ -575,6 +587,7 @@ var encode = function encode(value, options) {
   options = options || {};
   var store = {
     _safe: options.safeMode,
+    _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
     _types: types,
     _references: new Map(),
@@ -608,7 +621,7 @@ var encode = function encode(value, options) {
         return prepOutput(store, rootPointerKey);
       }
 
-      throw new Error('Found deferred type, but no onFinish option provided.');
+      throw genError('Found deferred type, but no onFinish option provided.', 'encode');
     }
 
     var deferredLength = store._deferred.length;
@@ -646,9 +659,19 @@ var exploreParts = function exploreParts(store, parts) {
 };
 
 var explorePointer = function explorePointer(store, pointer) {
-  var p = extractPointer(pointer); // If a simple pointer, an unknown pointer, or an already explored pointer, ignore
+  var p = extractPointer(pointer); // Unknown pointer type
 
-  if (types[pointer] || !types[p._key] || store._decoded[pointer] !== void 0) {
+  if (!types[p._key]) {
+    // In safe mode, ignore
+    if (store._safe) {
+      return;
+    }
+
+    throw genError("Cannot decode unrecognized pointer type \"".concat(p._key, "\"."), 'decode', p._key);
+  } // If a simple pointer or an already explored pointer, ignore
+
+
+  if (types[pointer] || store._decoded[pointer] !== void 0) {
     return;
   }
 
@@ -659,7 +682,13 @@ var explorePointer = function explorePointer(store, pointer) {
     _reference: void 0,
     _parts: store._encoded[p._key][p._index]
   };
-  store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+
+  try {
+    store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+  } catch (e) {
+    // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
+    throw genError("Cannot generate recognized object type from pointer type \"".concat(p._key, "\"."), 'decode');
+  }
 
   if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
     exploreParts(store, store._decoded[pointer]._parts);
@@ -691,7 +720,7 @@ var decode = function decode(encoded, options) {
       return rootPointerKey;
     }
 
-    throw new Error("Cannot decode unrecognized pointer type \"".concat(rootP._key, "\"."));
+    throw genError("Cannot decode unrecognized pointer type \"".concat(rootP._key, "\"."), 'decode', rootP._key);
   } // Explore through data structure
 
 

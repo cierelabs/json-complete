@@ -1,4 +1,5 @@
 import extractPointer from '/utils/extractPointer.js';
+import genError from '/utils/genError.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
 
@@ -19,8 +20,18 @@ const exploreParts = (store, parts) => {
 const explorePointer = (store, pointer) => {
     const p = extractPointer(pointer);
 
-    // If a simple pointer, an unknown pointer, or an already explored pointer, ignore
-    if (types[pointer] || !types[p._key] || store._decoded[pointer] !== void 0) {
+    // Unknown pointer type
+    if (!types[p._key]) {
+        // In safe mode, ignore
+        if (store._safe) {
+            return;
+        }
+
+        throw genError(`Cannot decode unrecognized pointer type "${p._key}".`, 'decode', p._key);
+    }
+
+    // If a simple pointer or an already explored pointer, ignore
+    if (types[pointer] || store._decoded[pointer] !== void 0) {
         return;
     }
 
@@ -32,7 +43,12 @@ const explorePointer = (store, pointer) => {
         _parts: store._encoded[p._key][p._index],
     };
 
-    store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+    try {
+        store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+    } catch (e) {
+        // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
+        throw genError(`Cannot generate recognized object type from pointer type "${p._key}".`, 'decode');
+    }
 
     if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
         exploreParts(store, store._decoded[pointer]._parts);
@@ -68,7 +84,7 @@ export default (encoded, options) => {
             return rootPointerKey;
         }
 
-        throw new Error(`Cannot decode unrecognized pointer type "${rootP._key}".`);
+        throw genError(`Cannot decode unrecognized pointer type "${rootP._key}".`, 'decode', rootP._key);
     }
 
     // Explore through data structure

@@ -1,8 +1,15 @@
+var genError = (message, operation, type) => {
+    const error = new Error(message);
+    error.operation = operation;
+    error.type = type;
+    return error;
+};
+
 var getSystemName = (v) => {
     return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-const getAttachments = (v) => {
+const getAttachments = (v, encodeSymbolKeys) => {
     const attached = {
         _indices: [],
         _attachments: [],
@@ -24,11 +31,15 @@ const getAttachments = (v) => {
     // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
     let keys = Object.keys(v).filter((key) => {
         return !indexObj[key];
-    }).concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
-        // Ignore built-in Symbols
-        // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-        return Symbol[String(symbol).slice(14, -1)] !== symbol;
-    }));
+    });
+
+    if (encodeSymbolKeys) {
+        keys = keys.concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
+            // Ignore built-in Symbols
+            // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+            return Symbol[String(symbol).slice(14, -1)] !== symbol;
+        }));
+    }
 
     // Create the lists
     return indices.concat(keys).reduce((accumulator, key) => {
@@ -49,7 +60,8 @@ const getPointerKey = (store, item) => {
     });
 
     if (!pointerKey && !store._safe) {
-        throw(new Error(`Cannot encode unsupported type "${getSystemName(item)}".`));
+        const type = getSystemName(item);
+        throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
     }
 
     // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
@@ -58,7 +70,7 @@ const getPointerKey = (store, item) => {
 
 const prepExplorableItem = (store, item) => {
     // Type is known type and is a reference type (not simple), it should be explored
-    if ((store._types[getPointerKey(store, item)] || {})._build) {
+    if (store._types[getPointerKey(store, item)]._build) {
         store._explore.push(item);
     }
 };
@@ -85,7 +97,7 @@ var encounterItem = (store, item) => {
 
     const pointerIndex = store._output[pointerKey].length - 1;
 
-    const attached = getAttachments(item);
+    const attached = getAttachments(item, store._encodeSymbolKeys);
 
     const dataItem = {
         _key: pointerKey,
@@ -245,20 +257,19 @@ var arrayLikeEncodeValue = (store, dataItem) => {
 
 // This is the function for getting pointer references in the build functions
 var getDecoded = (store, pointer) => {
+    // Simple type, return the value
     if (store._types[pointer]) {
         return store._types[pointer]._value;
     }
 
+    // Normal type, return the reference
     const p = extractPointer(pointer);
     if (store._types[p._key]) {
         return store._decoded[pointer]._reference;
     }
 
-    if (store._safe) {
-        return pointer;
-    }
-
-    throw new Error(`Cannot decode unrecognized pointer type "${p._key}".`);
+    // We will never reach this point without being in safe mode, return the pointer string
+    return pointer;
 };
 
 var attachAttachments = (store, dataItem, attachments) => {
@@ -638,6 +649,7 @@ var encode = (value, options) => {
 
     const store = {
         _safe: options.safeMode,
+        _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
         _references: new Map(), // Known References
@@ -668,7 +680,7 @@ var encode = (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw new Error('Found deferred type, but no onFinish option provided.');
+            throw genError('Found deferred type, but no onFinish option provided.', 'encode');
         }
 
         let deferredLength = store._deferred.length;
@@ -708,8 +720,18 @@ const exploreParts = (store, parts) => {
 const explorePointer = (store, pointer) => {
     const p = extractPointer(pointer);
 
-    // If a simple pointer, an unknown pointer, or an already explored pointer, ignore
-    if (types[pointer] || !types[p._key] || store._decoded[pointer] !== void 0) {
+    // Unknown pointer type
+    if (!types[p._key]) {
+        // In safe mode, ignore
+        if (store._safe) {
+            return;
+        }
+
+        throw genError(`Cannot decode unrecognized pointer type "${p._key}".`, 'decode', p._key);
+    }
+
+    // If a simple pointer or an already explored pointer, ignore
+    if (types[pointer] || store._decoded[pointer] !== void 0) {
         return;
     }
 
@@ -721,7 +743,12 @@ const explorePointer = (store, pointer) => {
         _parts: store._encoded[p._key][p._index],
     };
 
-    store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+    try {
+        store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+    } catch (e) {
+        // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
+        throw genError(`Cannot generate recognized object type from pointer type "${p._key}".`, 'decode');
+    }
 
     if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
         exploreParts(store, store._decoded[pointer]._parts);
@@ -757,7 +784,7 @@ var decode = (encoded, options) => {
             return rootPointerKey;
         }
 
-        throw new Error(`Cannot decode unrecognized pointer type "${rootP._key}".`);
+        throw genError(`Cannot decode unrecognized pointer type "${rootP._key}".`, 'decode', rootP._key);
     }
 
     // Explore through data structure

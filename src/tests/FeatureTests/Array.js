@@ -100,7 +100,9 @@ test('Array: Non-Index Keys', (t) => {
     arr['obj'] = sharedObj;
     arr[Symbol()] = 6;
 
-    const decodedArray = decode(encode(arr));
+    const decodedArray = decode(encode(arr, {
+        encodeSymbolKeys: true,
+    }));
 
     t.ok(testHelpers.isArray(decodedArray));
     t.equal(decodedArray[0], 1);
@@ -134,6 +136,8 @@ test('Array: Arbitrary Attached Data', (t) => {
 
     const decodedArray = decode(encode({
         a: array,
+    }, {
+        encodeSymbolKeys: true,
     })).a;
 
     t.equal(decodedArray.length, 0);

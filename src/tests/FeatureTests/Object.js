@@ -33,7 +33,9 @@ test('Object: String Key', (t) => {
 test('Object: Symbol Key', (t) => {
     t.plan(3);
 
-    const decodedNormalSymbolObj = decode(encode({ [Symbol()]: 3 }));
+    const decodedNormalSymbolObj = decode(encode({ [Symbol()]: 3 }, {
+        encodeSymbolKeys: true,
+    }));
     const decodedNormalSymbolKeys = Object.keys(decodedNormalSymbolObj).concat(Object.getOwnPropertySymbols(decodedNormalSymbolObj));
 
     t.equal(decodedNormalSymbolKeys.length, 1);
@@ -44,7 +46,9 @@ test('Object: Symbol Key', (t) => {
 test('Object: Registered Symbol Key', (t) => {
     t.plan(4);
 
-    const decodedKeyedSymbolObj = decode(encode({ [Symbol.for('keyed')]: 4 }));
+    const decodedKeyedSymbolObj = decode(encode({ [Symbol.for('keyed')]: 4 }, {
+        encodeSymbolKeys: true,
+    }));
     const decodedKeyedSymbolKeys = Object.keys(decodedKeyedSymbolObj).concat(Object.getOwnPropertySymbols(decodedKeyedSymbolObj));
 
     t.equal(decodedKeyedSymbolKeys.length, 1);
@@ -62,6 +66,8 @@ test('Object: Shared Symbol Key References', (t) => {
         b: {
             [sharedSymbol]: 2,
         },
+    }, {
+        encodeSymbolKeys: true,
     }));
     const decodedSharedSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj);
     const decodedSharedInnerSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj.b);
@@ -112,7 +118,9 @@ test('Object: Arbitrary Attached Data', (t) => {
     const decodedObj = decode(encode([{
         x: 2,
         [Symbol.for('obj')]: 'test',
-    }]))[0];
+    }], {
+        encodeSymbolKeys: true,
+    }))[0];
 
     t.equal(decodedObj.x, 2);
     t.equal(decodedObj[Symbol.for('obj')], 'test');

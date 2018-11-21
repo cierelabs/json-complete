@@ -52,7 +52,9 @@ test('Object-Wrapped Boolean: Arbitrary Attached Data', (t) => {
     bool.x = 2;
     bool[Symbol.for('boolean')] = 'test';
 
-    const decodedBooleanObj = decode(encode([bool]))[0];
+    const decodedBooleanObj = decode(encode([bool], {
+        encodeSymbolKeys: true,
+    }))[0];
 
     t.equal(decodedBooleanObj.valueOf(), false);
     t.equal(decodedBooleanObj.x, 2);

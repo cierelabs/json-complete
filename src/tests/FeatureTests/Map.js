@@ -180,7 +180,9 @@ if (typeof Map === 'function') {
         map.x = 2;
         map[Symbol.for('map')] = 'test';
 
-        const decodedMap = decode(encode([map]))[0];
+        const decodedMap = decode(encode([map], {
+            encodeSymbolKeys: true,
+        }))[0];
 
         t.ok(decodedMap.has(0));
         t.equal(decodedMap.x, 2);

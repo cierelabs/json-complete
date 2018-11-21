@@ -1,4 +1,5 @@
 import encounterItem from '/utils/encounterItem.js';
+import genError from '/utils/genError.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
@@ -45,6 +46,7 @@ export default (value, options) => {
 
     const store = {
         _safe: options.safeMode,
+        _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
         _references: new Map(), // Known References
@@ -75,7 +77,7 @@ export default (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw new Error('Found deferred type, but no onFinish option provided.');
+            throw genError('Found deferred type, but no onFinish option provided.', 'encode');
         }
 
         let deferredLength = store._deferred.length;

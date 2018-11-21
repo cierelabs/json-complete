@@ -1,6 +1,7 @@
+import genError from '/utils/genError.js';
 import getSystemName from '/utils/getSystemName.js';
 
-const getAttachments = (v) => {
+const getAttachments = (v, encodeSymbolKeys) => {
     const attached = {
         _indices: [],
         _attachments: [],
@@ -22,11 +23,15 @@ const getAttachments = (v) => {
     // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
     let keys = Object.keys(v).filter((key) => {
         return !indexObj[key];
-    }).concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
-        // Ignore built-in Symbols
-        // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-        return Symbol[String(symbol).slice(14, -1)] !== symbol;
-    }));
+    });
+
+    if (encodeSymbolKeys) {
+        keys = keys.concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
+            // Ignore built-in Symbols
+            // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+            return Symbol[String(symbol).slice(14, -1)] !== symbol;
+        }));
+    }
 
     // Create the lists
     return indices.concat(keys).reduce((accumulator, key) => {
@@ -47,7 +52,8 @@ const getPointerKey = (store, item) => {
     });
 
     if (!pointerKey && !store._safe) {
-        throw(new Error(`Cannot encode unsupported type "${getSystemName(item)}".`));
+        const type = getSystemName(item);
+        throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
     }
 
     // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
@@ -56,7 +62,7 @@ const getPointerKey = (store, item) => {
 
 const prepExplorableItem = (store, item) => {
     // Type is known type and is a reference type (not simple), it should be explored
-    if ((store._types[getPointerKey(store, item)] || {})._build) {
+    if (store._types[getPointerKey(store, item)]._build) {
         store._explore.push(item);
     }
 };
@@ -83,7 +89,7 @@ export default (store, item) => {
 
     const pointerIndex = store._output[pointerKey].length - 1;
 
-    const attached = getAttachments(item);
+    const attached = getAttachments(item, store._encodeSymbolKeys);
 
     const dataItem = {
         _key: pointerKey,

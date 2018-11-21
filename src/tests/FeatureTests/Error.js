@@ -122,7 +122,9 @@ test('Error: Arbitrary Attached Data', (t) => {
     value.x = 2;
     value[Symbol.for('error')] = 'test';
 
-    const decoded = decode(encode([value]))[0];
+    const decoded = decode(encode([value], {
+        encodeSymbolKeys: true,
+    }))[0];
 
     t.ok(decoded instanceof Error);
     t.equal(decoded.x, 2);

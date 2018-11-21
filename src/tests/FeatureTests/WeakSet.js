@@ -32,6 +32,7 @@ if (typeof WeakSet === 'function') {
 
         const decodedWeakSet = decode(encode([weakSet], {
             safeMode: true,
+            encodeSymbolKeys: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decodedWeakSet));

@@ -189,10 +189,10 @@ For some specific examples:
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6300 bytes ![](http://progressed.io/bar/100) | 8448 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2624 bytes ![](http://progressed.io/bar/42) | 2832 bytes ![](http://progressed.io/bar/34) |
-| zopfli      | 2571 bytes ![](http://progressed.io/bar/41) | 2771 bytes ![](http://progressed.io/bar/33) |
-| brotli      | 2390 bytes ![](http://progressed.io/bar/38) | 2563 bytes ![](http://progressed.io/bar/30) |
+| Minified    | 6528 bytes ![](http://progressed.io/bar/100) | 8686 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2694 bytes ![](http://progressed.io/bar/41) | 2911 bytes ![](http://progressed.io/bar/34) |
+| zopfli      | 2642 bytes ![](http://progressed.io/bar/40) | 2850 bytes ![](http://progressed.io/bar/33) |
+| brotli      | 2456 bytes ![](http://progressed.io/bar/38) | 2634 bytes ![](http://progressed.io/bar/30) |
 
 ### Terms
 
@@ -360,15 +360,14 @@ TODO
 
 ## To Fix and Add
 
-- [ ] Write tests for non-safeMode usage
+- [x] Write tests for non-safeMode usage
 - [x] Write tests for ensuring the correct format of encoded data
 - [x] Write tests for extreme depth of Set and Map items
 - [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
-- [ ] Add option for ignoring Symbol keys during encoding
+- [x] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
 - [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
-- [ ] In non-debug mode, encode the indices of pointers as base36 ints
-- [ ] Allow pointers to be auto-expanding to arbitrary number of indices, allowing arbitrary numbers of items of every type (Do this by making the last index a new array, and a special sentinal value to indicate the extended array. This array can do the same thing, thus expanding as needed.)
+- [ ] Convert the output to string and allow the decoder to accept a string
 - [ ] Test Edge, IE 11, and earlier versions
 - [ ] Create polyfill for older IE (espcially the use of Map, without creating a false-positive on the existance of Map)
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await

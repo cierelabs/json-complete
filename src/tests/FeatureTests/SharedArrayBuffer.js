@@ -90,7 +90,9 @@ if (typeof SharedArrayBuffer === 'function') {
         sab.x = 2;
         sab[Symbol.for('SharedArrayBuffer')] = 'test';
 
-        const decoded = decode(encode([sab]))[0];
+        const decoded = decode(encode([sab], {
+            encodeSymbolKeys: true,
+        }))[0];
 
         t.equal(decoded.x, 2);
         t.equal(decoded[Symbol.for('SharedArrayBuffer')], 'test');

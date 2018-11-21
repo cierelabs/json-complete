@@ -32,6 +32,7 @@ if (typeof WeakMap === 'function') {
 
         const decodedWeakMap = decode(encode([weakMap], {
             safeMode: true,
+            encodeSymbolKeys: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decodedWeakMap));

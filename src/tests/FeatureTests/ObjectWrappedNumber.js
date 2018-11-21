@@ -97,7 +97,9 @@ test('Object-Wrapped Number: Arbitrary Attached Data', (t) => {
     num.x = 2;
     num[Symbol.for('number')] = 'test';
 
-    const decodedNumberObj = decode(encode([num]))[0];
+    const decodedNumberObj = decode(encode([num], {
+        encodeSymbolKeys: true,
+    }))[0];
 
     t.equal(decodedNumberObj.valueOf(), 1);
     t.equal(decodedNumberObj.x, 2);

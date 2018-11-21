@@ -76,7 +76,9 @@ test('Regex: Arbitrary Attached Data', (t) => {
     regex.x = 2;
     regex[Symbol.for('regex')] = 'test';
 
-    const decodedRegex = decode(encode([regex]))[0];
+    const decodedRegex = decode(encode([regex], {
+        encodeSymbolKeys: true,
+    }))[0];
     t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
     t.equal(decodedRegex.x, 2);
     t.equal(decodedRegex[Symbol.for('regex')], 'test');

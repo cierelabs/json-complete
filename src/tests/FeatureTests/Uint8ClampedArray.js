@@ -55,7 +55,9 @@ if (typeof Uint8ClampedArray === 'function') {
         a.x = 2;
         a[Symbol.for('Uint8ClampedArray')] = 'test';
 
-        const decoded = decode(encode([a]))[0];
+        const decoded = decode(encode([a], {
+            encodeSymbolKeys: true,
+        }))[0];
 
         t.equal(decoded.x, 2);
         t.equal(decoded[Symbol.for('Uint8ClampedArray')], 'test');

@@ -29,6 +29,34 @@ test('Unsupported Types: Root Value', (t) => {
     t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
 });
 
+test('Unsupported Types: Normal Throw', (t) => {
+    t.plan(1);
+
+    try {
+        encode([Math], {
+            safeMode: false,
+        });
+
+        t.ok(false);
+    } catch (e) {
+        t.equal('Cannot encode unsupported type "Math".', e.message);
+    }
+});
+
+test('Unsupported Types: Root Value Throw', (t) => {
+    t.plan(1);
+
+    try {
+        encode(Math, {
+            safeMode: false,
+        });
+
+        t.ok(false);
+    } catch (e) {
+        t.equal('Cannot encode unsupported type "Math".', e.message);
+    }
+});
+
 test('Unsupported Types: Arbitrary Attached Data', (t) => {
     t.plan(3);
 
@@ -38,6 +66,7 @@ test('Unsupported Types: Arbitrary Attached Data', (t) => {
 
     const decodedFullyUnsupportedTypes = decode(encode([source], {
         safeMode: true,
+        encodeSymbolKeys: true,
     }))[0];
 
     t.ok(testHelpers.isObject(decodedFullyUnsupportedTypes));

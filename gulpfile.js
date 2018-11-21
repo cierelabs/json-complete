@@ -135,7 +135,7 @@ gulp.task('test-node-test-js', () => {
 });
 
 gulp.task('test-node', () => {
-    return gulp.src(['./_testing/node/tests/TypeTests/*.js'])
+    return gulp.src(['./_testing/node/tests/FeatureTests/*.js'])
         .pipe(gulpTape({
             bail: true,
             nyc: true,

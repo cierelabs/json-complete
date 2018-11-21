@@ -119,6 +119,26 @@ if (typeof File === 'function') {
         });
     });
 
+    test('Blob: Missing onFinish Option', (t) => {
+        t.plan(1);
+
+        const now = Date.now() + 1000;
+
+        const obj = { a: 1 };
+        const blob = new Blob([JSON.stringify(obj)]);
+        const file = new File([blob], 'test.json', {
+            type: 'application/json',
+            lastModified: now,
+        });
+
+        try {
+            encode([file]);
+            t.ok(false);
+        } catch (e) {
+            t.equal(e.message, 'Found deferred type, but no onFinish option provided.');
+        }
+    });
+
     test('File: Arbitrary Attached Data', (t) => {
         t.plan(3);
 
@@ -129,6 +149,7 @@ if (typeof File === 'function') {
         file[Symbol.for('File')] = 'test';
 
         encode([file], {
+            encodeSymbolKeys: true,
             onFinish: (encoded) => {
                 const decoded = decode(encoded)[0];
 

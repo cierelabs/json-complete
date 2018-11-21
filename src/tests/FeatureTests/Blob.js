@@ -66,6 +66,20 @@ if (typeof Blob === 'function') {
         });
     });
 
+    test('Blob: Missing onFinish Option', (t) => {
+        t.plan(1);
+
+        const obj = { a: 1 };
+        const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+
+        try {
+            encode([source]);
+            t.ok(false);
+        } catch (e) {
+            t.equal(e.message, 'Found deferred type, but no onFinish option provided.');
+        }
+    });
+
     test('Blob: Arbitrary Attached Data', (t) => {
         t.plan(3);
 
@@ -75,6 +89,7 @@ if (typeof Blob === 'function') {
         source[Symbol.for('Blob')] = 'test';
 
         encode([source], {
+            encodeSymbolKeys: true,
             onFinish: (encoded) => {
                 const decoded = decode(encoded)[0];
 

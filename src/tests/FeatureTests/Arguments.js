@@ -80,7 +80,9 @@ test('Arguments: Non-Index Keys', (t) => {
     args['obj'] = sharedObj;
     args[Symbol.for('arguments')] = 6;
 
-    const decoded = decode(encode(args));
+    const decoded = decode(encode(args, {
+        encodeSymbolKeys: true,
+    }));
 
     t.equal(testHelpers.systemName(decoded), '[object Arguments]');
     t.equal(decoded[0], 1);
@@ -112,8 +114,16 @@ test('Arguments: Arbitrary Attached Data', (t) => {
     args.x = 2;
     args[Symbol.for('arguments')] = 'test';
 
+    console.log(encode({
+        a: args,
+    }, {
+        encodeSymbolKeys: true,
+    }))
+
     const decoded = decode(encode({
         a: args,
+    }, {
+        encodeSymbolKeys: true,
     })).a;
 
     t.equal(decoded.length, 0);

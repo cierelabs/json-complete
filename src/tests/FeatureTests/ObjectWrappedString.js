@@ -52,7 +52,9 @@ test('Object-Wrapped String: Arbitrary Attached Data', (t) => {
     str.x = 2;
     str[Symbol.for('string')] = 'test';
 
-    const decodedStringObj = decode(encode([str]))[0];
+    const decodedStringObj = decode(encode([str], {
+        encodeSymbolKeys: true,
+    }))[0];
 
     t.equal(decodedStringObj.valueOf(), 'string');
     t.equal(decodedStringObj.x, 2);

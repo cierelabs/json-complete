@@ -41,7 +41,9 @@ if (typeof Symbol === 'function') {
             args[item[0]] = item[1];
         });
 
-        const encoded = encode(args);
+        const encoded = encode(args, {
+            encodeSymbolKeys: true,
+        });
 
         encoded.forEach((types) => {
             if (types[0] === 'ag') {
@@ -76,7 +78,9 @@ if (typeof Symbol === 'function') {
         const args = genArgs();
         args[Symbol('Symbol.iterator')] = 'overriding';
 
-        const encoded = encode(args);
+        const encoded = encode(args, {
+            encodeSymbolKeys: true,
+        });
 
         encoded.forEach((types) => {
             if (types[0] === 'ag') {

@@ -106,7 +106,9 @@ if (typeof Set === 'function') {
         set.x = 2;
         set[Symbol.for('set')] = 'test';
 
-        const decodedSet = decode(encode([set]))[0];
+        const decodedSet = decode(encode([set], {
+            encodeSymbolKeys: true,
+        }))[0];
 
         t.ok(decodedSet.has(1));
         t.equal(decodedSet.x, 2);

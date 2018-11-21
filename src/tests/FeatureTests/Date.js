@@ -33,7 +33,9 @@ test('Date: Arbitrary Attached Data', (t) => {
     const date = new Date(now);
     date.x = 2;
     date[Symbol.for('date')] = 'test';
-    const decodedDate = decode(encode([date]))[0];
+    const decodedDate = decode(encode([date], {
+        encodeSymbolKeys: true,
+    }))[0];
     t.equal(decodedDate.getTime(), now);
     t.equal(decodedDate.x, 2);
     t.equal(decodedDate[Symbol.for('date')], 'test');
