@@ -79,13 +79,13 @@ test('Number: Encoding Expected Normal', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(1)), {
-        nm: [
-            'st0',
+        Nu: [
+            'St0',
         ],
-        st: [
+        St: [
             '1',
         ],
-        r: 'nm0',
+        r: 'Nu0',
     });
 });
 
@@ -109,7 +109,7 @@ test('Number: Encoding Expected NaN', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(NaN)), {
-        r: 'na',
+        r: 'Na',
     });
 });
 

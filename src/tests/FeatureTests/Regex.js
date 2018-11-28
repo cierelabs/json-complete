@@ -61,7 +61,10 @@ test('Regex: Root Value Source', (t) => {
 
 test('Regex: Root Value Flags', (t) => {
     t.plan(1);
-    t.equal(decode(encode(/\s+/g)).flags, 'g');
+    const decodedRegex = decode(encode(/\s+/g));
+    // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
+    const flags = decodedRegex.flags === void 0 ? decodedRegex.options : decodedRegex.flags;
+    t.equal(flags, 'g');
 });
 
 test('Regex: Root Value lastIndex', (t) => {
@@ -116,28 +119,28 @@ test('Regex: Encoding Expected', (t) => {
     source.b = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        re: [
+        Re: [
             [
                 [
-                    'st1',
-                    'st2',
-                    'nm0',
+                    'St1',
+                    'St2',
+                    'Nu0',
                 ],
                 [
-                    'st0',
-                    'bf',
+                    'St0',
+                    'fa',
                 ],
             ],
         ],
-        nm: [
-            'st3',
+        Nu: [
+            'St3',
         ],
-        st: [
+        St: [
             'b',
             '\\s+',
             'g',
             '0',
         ],
-        r: 're0',
+        r: 'Re0',
     });
 });

@@ -114,12 +114,6 @@ test('Arguments: Arbitrary Attached Data', (t) => {
     args.x = 2;
     args[Symbol.for('arguments')] = 'test';
 
-    console.log(encode({
-        a: args,
-    }, {
-        encodeSymbolKeys: true,
-    }))
-
     const decoded = decode(encode({
         a: args,
     }, {
@@ -162,16 +156,16 @@ test('Arguments: Encoding Expected', (t) => {
     const args = genArgs('a');
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(args)), {
-        ag: [
+        rg: [
             [
                 [
-                    'st0',
+                    'St0',
                 ],
             ],
         ],
-        st: [
+        St: [
             'a',
         ],
-        r: 'ag0',
+        r: 'rg0',
     });
 });

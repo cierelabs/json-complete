@@ -216,17 +216,17 @@ if (typeof File === 'function') {
                         [
                             [
                                 'U10',
-                                'st1',
-                                'st2',
-                                'nm0',
+                                'St1',
+                                'St2',
+                                'Nu0',
                             ],
                             [
-                                'st0',
-                                'bf',
+                                'St0',
+                                'fa',
                             ],
                         ],
                     ],
-                    st: [
+                    St: [
                         'a',
                         'test.json',
                         'application/json',
@@ -236,13 +236,13 @@ if (typeof File === 'function') {
                     U1: [
                         [
                             [
-                                'nm1',
+                                'Nu1',
                             ],
                         ],
                     ],
-                    nm: [
-                        'st3',
-                        'st4',
+                    Nu: [
+                        'St3',
+                        'St4',
                     ],
                     r: 'Fi0',
                 });

@@ -91,6 +91,7 @@ The encoder is largely a pre-process step to make the non-JSON encodable data su
 | ❌     | ✅             | Map                                                  |
 | ❌     | ✅ *3*         | Blob                                                 |
 | ❌     | ✅ *3*         | File                                                 |
+| ❌     | ✅             | BigInt                                               |
 
 * *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
@@ -181,10 +182,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6528 bytes ![](http://progressed.io/bar/100) | 8686 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2694 bytes ![](http://progressed.io/bar/41) | 2911 bytes ![](http://progressed.io/bar/34) |
-| zopfli      | 2642 bytes ![](http://progressed.io/bar/40) | 2850 bytes ![](http://progressed.io/bar/33) |
-| brotli      | 2456 bytes ![](http://progressed.io/bar/38) | 2634 bytes ![](http://progressed.io/bar/30) |
+| Minified    | 6604 bytes ![](http://progressed.io/bar/100) | 7867 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2628 bytes ![](http://progressed.io/bar/40) | 2732 bytes ![](http://progressed.io/bar/35) |
+| zopfli      | 2593 bytes ![](http://progressed.io/bar/39) | 2689 bytes ![](http://progressed.io/bar/34) |
+| brotli      | 2403 bytes ![](http://progressed.io/bar/36) | 2493 bytes ![](http://progressed.io/bar/32) |
 
 
 ---
@@ -399,6 +400,7 @@ TODO
 - [x] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
 - [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
+- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [ ] Convert the output to string and allow the decoder to accept a string
 - [ ] Test Edge, IE 11, and earlier versions
 - [ ] Create polyfill for older IE (espcially the use of Map, without creating a false-positive on the existance of Map)

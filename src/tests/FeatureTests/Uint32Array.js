@@ -99,18 +99,18 @@ if (typeof Uint32Array === 'function') {
             U3: [
                 [
                     [
-                        'nm0',
+                        'Nu0',
                     ],
                     [
-                        'st0',
-                        'bf'
+                        'St0',
+                        'fa'
                     ],
                 ],
             ],
-            nm: [
-                'st1',
+            Nu: [
+                'St1',
             ],
-            st: [
+            St: [
                 'a',
                 '1',
             ],

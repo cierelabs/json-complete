@@ -9,19 +9,19 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
 
     const malformedEncoded = [
         [
-            're',
+            'Re',
             [
                 [
                     [
-                        'st0',
-                        'st1',
-                        'nm0',
+                        'St0',
+                        'St1',
+                        'Nu0',
                     ],
                 ],
             ],
         ],
         [
-            'st',
+            'St',
             [
                 '\\s+',
                 '6', // Invalid Regex flag
@@ -29,14 +29,14 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
             ],
         ],
         [
-            'nm',
+            'Nu',
             [
-                'st2',
+                'St2',
             ],
         ],
         [
             'r',
-            're0',
+            'Re0',
         ],
         [
             'v',
@@ -48,6 +48,6 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
         decode(malformedEncoded);
         t.ok(false);
     } catch (e) {
-        t.equal(e.message, 'Cannot generate recognized object type from pointer type "re".');
+        t.equal(e.message, 'Cannot generate recognized object type from pointer type "Re".');
     }
 });

@@ -148,15 +148,15 @@ if (typeof Blob === 'function') {
                         [
                             [
                                 'U10',
-                                'st1',
+                                'St1',
                             ],
                             [
-                                'st0',
-                                'bf',
+                                'St0',
+                                'fa',
                             ],
                         ],
                     ],
-                    st: [
+                    St: [
                         'a',
                         'application/json',
                         '49',
@@ -164,12 +164,12 @@ if (typeof Blob === 'function') {
                     U1: [
                         [
                             [
-                                'nm0',
+                                'Nu0',
                             ],
                         ],
                     ],
-                    nm: [
-                        'st2',
+                    Nu: [
+                        'St2',
                     ],
                     r: 'Bl0',
                 });

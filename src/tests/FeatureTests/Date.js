@@ -73,22 +73,22 @@ test('Date: Encoding Expected', (t) => {
     date.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
-        da: [
+        Da: [
             [
-                'nm0',
+                'Nu0',
                 [
-                    'st0',
-                    'bf',
+                    'St0',
+                    'fa',
                 ],
             ],
         ],
-        st: [
+        St: [
             'a',
             String(now),
         ],
-        nm: [
-            'st1',
+        Nu: [
+            'St1',
         ],
-        r: 'da0',
+        r: 'Da0',
     });
 });

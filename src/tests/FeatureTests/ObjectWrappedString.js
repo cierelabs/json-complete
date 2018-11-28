@@ -96,14 +96,14 @@ test('Object-Wrapped String: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
         ST: [
             [
-                'st0',
+                'St0',
                 [
-                    'st0',
-                    'bf',
+                    'St0',
+                    'fa',
                 ],
             ],
         ],
-        st: [
+        St: [
             'a',
         ],
         r: 'ST0',

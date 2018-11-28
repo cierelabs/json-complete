@@ -46,7 +46,7 @@ if (typeof Symbol === 'function') {
         });
 
         encoded.forEach((types) => {
-            if (types[0] === 'ag') {
+            if (types[0] === 'rg') {
                 const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
                     if (item.length === 2) {
                         accumulator += 1;
@@ -83,7 +83,7 @@ if (typeof Symbol === 'function') {
         });
 
         encoded.forEach((types) => {
-            if (types[0] === 'ag') {
+            if (types[0] === 'rg') {
                 const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
                     if (item.length === 2) {
                         accumulator += 1;

@@ -61,16 +61,16 @@ if (typeof Symbol === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
-            sy: [
+            Sy: [
                 [
-                    'bt',
-                    'st0',
+                    'tr',
+                    'St0',
                 ],
             ],
-            st: [
+            St: [
                 'a',
             ],
-            r: 'sy0',
+            r: 'Sy0',
         });
     });
 }

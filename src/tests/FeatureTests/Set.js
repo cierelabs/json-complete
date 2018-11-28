@@ -150,15 +150,15 @@ if (typeof Set === 'function') {
             Se: [
                 [
                     [
-                        'bt',
+                        'tr',
                     ],
                     [
-                        'st0',
-                        'bf',
+                        'St0',
+                        'fa',
                     ],
                 ],
             ],
-            st: [
+            St: [
                 'b',
             ],
             r: 'Se0',

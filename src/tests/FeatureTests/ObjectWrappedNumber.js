@@ -139,23 +139,23 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NM: [
+        NU: [
             [
-                'nm0',
+                'Nu0',
                 [
-                    'st0',
-                    'bf',
+                    'St0',
+                    'fa',
                 ],
             ],
         ],
-        nm: [
-            'st1',
+        Nu: [
+            'St1',
         ],
-        st: [
+        St: [
             'a',
             '1',
         ],
-        r: 'NM0',
+        r: 'NU0',
     });
 });
 
@@ -165,12 +165,12 @@ test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
     const source = new Number(Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NM: [
+        NU: [
             [
                 'pI',
             ],
         ],
-        r: 'NM0',
+        r: 'NU0',
     });
 });
 
@@ -180,12 +180,12 @@ test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
     const source = new Number(-Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NM: [
+        NU: [
             [
                 'nI',
             ],
         ],
-        r: 'NM0',
+        r: 'NU0',
     });
 });
 
@@ -195,12 +195,12 @@ test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
     const source = new Number(NaN);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NM: [
+        NU: [
             [
-                'na',
+                'Na',
             ],
         ],
-        r: 'NM0',
+        r: 'NU0',
     });
 });
 
@@ -210,11 +210,11 @@ test('Object-Wrapped Number: Encoding Expected -0', (t) => {
     const source = new Number(-0);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NM: [
+        NU: [
             [
                 'n0',
             ],
         ],
-        r: 'NM0',
+        r: 'NU0',
     });
 });

@@ -225,17 +225,17 @@ if (typeof Map === 'function') {
                 [
                     [
                         [
-                            'bf',
-                            'bt',
+                            'fa',
+                            'tr',
                         ],
                     ],
                     [
-                        'st0',
-                        'bf',
+                        'St0',
+                        'fa',
                     ],
                 ],
             ],
-            st: [
+            St: [
                 'b',
             ],
             r: 'Ma0',

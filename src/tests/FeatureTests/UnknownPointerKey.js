@@ -7,8 +7,8 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     t.plan(1);
 
     const innerData = [
-        ['r', 'ar0'],
-        ['ar', [
+        ['r', 'Ar0'],
+        ['Ar', [
             [
                 ['--0'],
             ],
@@ -38,13 +38,13 @@ test('Unknown Pointer Key: Key Data', (t) => {
     t.plan(2);
 
     const objectKeyData = [
-        ['r', 'ob0'],
-        ['ob', [
+        ['r', 'Ob0'],
+        ['Ob', [
             [
-                ['--0', 'st0'],
+                ['--0', 'St0'],
             ],
         ]],
-        ['st', ['1']],
+        ['St', ['1']],
         ['--', ['a']],
     ];
 
@@ -60,8 +60,8 @@ test('Unknown Pointer Key: Non-Safe Mode', (t) => {
     t.plan(1);
 
     const innerData = [
-        ['r', 'ar0'],
-        ['ar', [
+        ['r', 'Ar0'],
+        ['Ar', [
             [
                 ['--0'],
             ],

@@ -99,18 +99,18 @@ if (typeof Float32Array === 'function') {
             F4: [
                 [
                     [
-                        'nm0',
+                        'Nu0',
                     ],
                     [
-                        'st0',
-                        'bf'
+                        'St0',
+                        'fa'
                     ],
                 ],
             ],
-            nm: [
-                'st1',
+            Nu: [
+                'St1',
             ],
-            st: [
+            St: [
                 'a',
                 '1',
             ],

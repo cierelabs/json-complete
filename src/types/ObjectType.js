@@ -1,15 +1,18 @@
 import attachAttachments from '/utils/attachAttachments.js';
-import genDoesMatchSystemName from '/utils/genDoesMatchSystemName.js';
 
-export default {
-    _identify: genDoesMatchSystemName('Object'),
-    _encodeValue: () => {
-        return [];
-    },
-    _generateReference: () => {
-        return {};
-    },
-    _build: (store, dataItem) => {
-        attachAttachments(store, dataItem, dataItem._parts);
-    },
+export default (typeObj) => {
+    typeObj.Ob = {
+        _systemName: 'Object',
+        _encodeValue: () => {
+            return [];
+        },
+        _generateReference: () => {
+            return {};
+        },
+        _build: (store, dataItem) => {
+            attachAttachments(store, dataItem, dataItem._parts);
+        },
+    };
+
+    return typeObj;
 };

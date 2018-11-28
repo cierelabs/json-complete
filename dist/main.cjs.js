@@ -56,10 +56,63 @@ var getAttachments = function getAttachments(v, encodeSymbolKeys) {
   }, attached);
 };
 
-var getPointerKey = function getPointerKey(store, item) {
-  var pointerKey = Object.keys(store._types).find(function (typeKey) {
-    return store._types[typeKey]._identify(item);
+var wrappedPrimitives = {
+  Boolean: 'Bo',
+  // Object-Wrapped Boolean
+  Number: 'NU',
+  // Object-Wrapped Number
+  String: 'ST' // Object-Wrapped String
+
+};
+
+var findTypeKey = function findTypeKey(types, item) {
+  if (item === void 0) {
+    return 'un';
+  }
+
+  if (item === null) {
+    return 'nl';
+  }
+
+  if (item === true) {
+    return 'tr';
+  }
+
+  if (item === false) {
+    return 'fa';
+  }
+
+  if (typeof item === 'number') {
+    if (item === Infinity) {
+      return 'pI';
+    }
+
+    if (item === -Infinity) {
+      return 'nI';
+    }
+
+    if (item !== item) {
+      return 'Na';
+    }
+
+    if (item === 0 && 1 / item === -Infinity) {
+      return 'n0';
+    }
+  }
+
+  var systemName = getSystemName(item);
+
+  if (_typeof(item) === 'object' && wrappedPrimitives[systemName]) {
+    return wrappedPrimitives[systemName];
+  }
+
+  return Object.keys(types).find(function (typeKey) {
+    return systemName === types[typeKey]._systemName;
   });
+};
+
+var getPointerKey = function getPointerKey(store, item) {
+  var pointerKey = findTypeKey(store._types, item);
 
   if (!pointerKey && !store._safe) {
     var type = getSystemName(item);
@@ -67,7 +120,7 @@ var getPointerKey = function getPointerKey(store, item) {
   } // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
 
 
-  return pointerKey ? pointerKey : 'ob';
+  return pointerKey ? pointerKey : 'Ob';
 };
 
 var prepExplorableItem = function prepExplorableItem(store, item) {
@@ -131,112 +184,17 @@ var encounterItem = function encounterItem(store, item) {
   return dataItem._pointer;
 };
 
-var genSimpleEqualityType = function genSimpleEqualityType(value) {
-  return {
-    _identify: function _identify(v) {
-      return v === value;
-    },
-    _value: value
-  };
+var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
+  return [dataItem._indices.map(function (subValue) {
+    return encounterItem(store, subValue);
+  })];
 };
-
-var undefinedType = genSimpleEqualityType(void 0);
-var nullType = genSimpleEqualityType(null);
-var NaNType = {
-  _identify: function _identify(v) {
-    return v !== v;
-  },
-  _value: NaN
-};
-var InfinityType = genSimpleEqualityType(Infinity);
-var NegativeInfinityType = genSimpleEqualityType(-Infinity);
-var Negative0Type = {
-  _identify: function _identify(v) {
-    return v === 0 && 1 / v === -Infinity;
-  },
-  _value: -0
-};
-var trueType = genSimpleEqualityType(true);
-var falseType = genSimpleEqualityType(false);
 
 var extractPointer = function extractPointer(pointer) {
   return {
     _key: pointer.slice(0, 2),
     _index: parseInt(pointer.slice(2), 10)
   };
-}; // This is the function for getting pointer values in the generateReference functions
-
-
-var decodePointer = function decodePointer(store, pointer) {
-  if (store._types[pointer]) {
-    return store._types[pointer]._value;
-  }
-
-  var p = extractPointer(pointer);
-  return store._types[p._key]._generateReference(store, p._key, p._index);
-};
-
-var genPrimitive = function genPrimitive(systemName, type, encodeValue, generateReference) {
-  return {
-    _identify: function _identify(v) {
-      return getSystemName(v) === systemName && !(v instanceof type);
-    },
-    _encodeValue: encodeValue,
-    _generateReference: generateReference,
-    _build: function _build() {}
-  };
-};
-
-var NumberType = genPrimitive('Number', Number, function (store, dataItem) {
-  return encounterItem(store, String(dataItem._reference));
-}, function (store, key, index) {
-  return parseFloat(decodePointer(store, store._encoded[key][index]));
-});
-var StringType = Object.assign({
-  // Strings allow index access into the string value, which is already stored, so ignore indices
-  _ignoreIndices: 1
-}, genPrimitive('String', String, function (store, dataItem) {
-  return dataItem._reference;
-}, function (store, key, index) {
-  return store._encoded[key][index];
-}));
-
-var genDoesMatchSystemName = function genDoesMatchSystemName(systemName) {
-  return function (v) {
-    return getSystemName(v) === systemName;
-  };
-};
-
-var tryCreateType = function tryCreateType(typeOf, typeCreator) {
-  return typeOf === 'function' ? typeCreator() : {
-    _identify: function _identify() {}
-  };
-};
-
-var SymbolType = tryCreateType(typeof Symbol === "undefined" ? "undefined" : _typeof(Symbol), function () {
-  return {
-    _identify: genDoesMatchSystemName('Symbol'),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      var symbolStringKey = Symbol.keyFor(dataItem._reference);
-      var isRegistered = symbolStringKey !== void 0;
-      return [// For Registered Symbols, specify with true value and store the registered string value
-      // For unique Symbols, specify with false value and also store the optional identifying string
-      encounterItem(store, isRegistered ? true : false), encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1))];
-    },
-    _generateReference: function _generateReference(store, key, index) {
-      var encodedValue = store._encoded[key][index];
-      var identifierString = decodePointer(store, encodedValue[1]);
-      return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
-    },
-    _build: function _build() {} // Symbols doesn't allow attachments, no-op
-
-  };
-});
-
-var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
-  return [dataItem._indices.map(function (subValue) {
-    return encounterItem(store, subValue);
-  })];
 }; // This is the function for getting pointer references in the build functions
 
 
@@ -265,106 +223,24 @@ var attachAttachments = function attachAttachments(store, dataItem, attachments)
 
 var attachAttachmentsSkipFirst = function attachAttachmentsSkipFirst(store, dataItem) {
   attachAttachments(store, dataItem, dataItem._parts.slice(1));
-};
+}; // This is the function for getting pointer values in the generateReference functions
 
-var genArrayLike = function genArrayLike(systemName, generateReference) {
-  return {
-    _identify: genDoesMatchSystemName(systemName),
-    _encodeValue: arrayLikeEncodeValue,
-    _generateReference: generateReference,
-    _build: function _build(store, dataItem) {
-      dataItem._parts[0].forEach(function (pointer, index) {
-        dataItem._reference[index] = getDecoded(store, pointer);
-      });
 
-      attachAttachmentsSkipFirst(store, dataItem);
-    }
-  };
-};
-
-var ArrayType = genArrayLike('Array', function () {
-  return [];
-});
-var ArgumentsType = genArrayLike('Arguments', function (store, key, index) {
-  return function () {
-    return arguments;
-  }.apply(null, Array(store._encoded[key][index][0].length));
-});
-var ObjectType = {
-  _identify: genDoesMatchSystemName('Object'),
-  _encodeValue: function _encodeValue() {
-    return [];
-  },
-  _generateReference: function _generateReference() {
-    return {};
-  },
-  _build: function _build(store, dataItem) {
-    attachAttachments(store, dataItem, dataItem._parts);
+var decodePointer = function decodePointer(store, pointer) {
+  if (store._types[pointer]) {
+    return store._types[pointer]._value;
   }
+
+  var p = extractPointer(pointer);
+  return store._types[p._key]._generateReference(store, p._key, p._index);
 };
 
-var genPrimitiveObject = function genPrimitiveObject(systemName, type) {
+var genArrayBuffer = function genArrayBuffer(type) {
   return {
-    _identify: function _identify(v) {
-      return getSystemName(v) === systemName && v instanceof type;
-    },
+    _systemName: getSystemName(new type()),
     _encodeValue: function _encodeValue(store, dataItem) {
-      return [encounterItem(store, dataItem._reference.valueOf())];
-    },
-    _generateReference: function _generateReference(store, key, index) {
-      return new type(decodePointer(store, store._encoded[key][index][0]));
-    },
-    _build: attachAttachmentsSkipFirst
-  };
-};
-
-var BooleanObjectType = genPrimitiveObject('Boolean', Boolean);
-var NumberObjectType = genPrimitiveObject('Number', Number);
-var StringObjectType = Object.assign({
-  // String Objects allow index access into the string value, which is already stored, so ignore indices
-  _ignoreIndices: 1
-}, genPrimitiveObject('String', String));
-var DateType = genPrimitiveObject('Date', Date);
-
-var genAttachableValueObject = function genAttachableValueObject(systemName, encodeValue, generateReference) {
-  return {
-    _identify: genDoesMatchSystemName(systemName),
-    _encodeValue: encodeValue,
-    _generateReference: generateReference,
-    _build: attachAttachmentsSkipFirst
-  };
-};
-
-var RegExpType = genAttachableValueObject('RegExp', function (store, dataItem) {
-  return [[encounterItem(store, dataItem._reference.source), encounterItem(store, dataItem._reference.flags), encounterItem(store, dataItem._reference.lastIndex)]];
-}, function (store, key, index) {
-  var dataArray = store._encoded[key][index][0];
-  var value = new RegExp(decodePointer(store, dataArray[0]), decodePointer(store, dataArray[1]));
-  value.lastIndex = decodePointer(store, dataArray[2]);
-  return value;
-});
-var standardErrors = {
-  'EvalError': EvalError,
-  'RangeError': RangeError,
-  'ReferenceError': ReferenceError,
-  'SyntaxError': SyntaxError,
-  'TypeError': TypeError,
-  'URIError': URIError
-};
-var ErrorType = genAttachableValueObject('Error', function (store, dataItem) {
-  return [[encounterItem(store, standardErrors[dataItem._reference.name] ? dataItem._reference.name : 'Error'), encounterItem(store, dataItem._reference.message), encounterItem(store, dataItem._reference.stack)]];
-}, function (store, key, index) {
-  var dataArray = store._encoded[key][index][0];
-  var value = new (standardErrors[decodePointer(store, dataArray[0])] || Error)(decodePointer(store, dataArray[1]));
-  value.stack = decodePointer(store, dataArray[2]);
-  return value;
-});
-
-var genArrayBuffer = function genArrayBuffer(systemName, type) {
-  return {
-    _identify: genDoesMatchSystemName(systemName),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      dataItem._indices = Array.from(new Uint8Array(dataItem._reference));
+      // Might have used Array.from here, but it isn't supported in IE
+      dataItem._indices = Array.prototype.slice.call(new Uint8Array(dataItem._reference));
       return arrayLikeEncodeValue(store, dataItem);
     },
     _generateReference: function _generateReference(store, key, index) {
@@ -380,87 +256,102 @@ var genArrayBuffer = function genArrayBuffer(systemName, type) {
   };
 };
 
-var ArrayBufferType = tryCreateType(typeof ArrayBuffer === "undefined" ? "undefined" : _typeof(ArrayBuffer), function () {
-  return genArrayBuffer('ArrayBuffer', ArrayBuffer);
-});
-var SharedArrayBufferType = tryCreateType(typeof SharedArrayBuffer === "undefined" ? "undefined" : _typeof(SharedArrayBuffer), function () {
-  return genArrayBuffer('SharedArrayBuffer', SharedArrayBuffer);
-});
+var ArrayBufferTypes = function ArrayBufferTypes(typeObj) {
+  /* istanbul ignore else */
+  if (typeof ArrayBuffer === 'function') {
+    typeObj.AB = genArrayBuffer(ArrayBuffer);
+  } // Support does not exist or was removed from most environments due to Spectre and Meltdown vulnerabilities
+  // https://caniuse.com/#feat=sharedarraybuffer
 
-var genTypedArray = function genTypedArray(systemName, type) {
-  return genArrayLike(systemName, function (store, key, index) {
-    return new type(store._encoded[key][index][0].length);
-  });
+  /* istanbul ignore else */
+
+
+  if (typeof SharedArrayBuffer === 'function') {
+    typeObj.Sh = genArrayBuffer(SharedArrayBuffer);
+  }
+
+  return typeObj;
 };
 
-var Int8ArrayType = tryCreateType(typeof Int8Array === "undefined" ? "undefined" : _typeof(Int8Array), function () {
-  return genTypedArray('Int8Array', Int8Array);
-});
-var Uint8ArrayType = tryCreateType(typeof Uint8Array === "undefined" ? "undefined" : _typeof(Uint8Array), function () {
-  return genTypedArray('Uint8Array', Uint8Array);
-});
-var Uint8ClampedArrayType = tryCreateType(typeof Uint8ClampedArray === "undefined" ? "undefined" : _typeof(Uint8ClampedArray), function () {
-  return genTypedArray('Uint8ClampedArray', Uint8ClampedArray);
-});
-var Int16ArrayType = tryCreateType(typeof Int16Array === "undefined" ? "undefined" : _typeof(Int16Array), function () {
-  return genTypedArray('Int16Array', Int16Array);
-});
-var Uint16ArrayType = tryCreateType(typeof Uint16Array === "undefined" ? "undefined" : _typeof(Uint16Array), function () {
-  return genTypedArray('Uint16Array', Uint16Array);
-});
-var Int32ArrayType = tryCreateType(typeof Int32Array === "undefined" ? "undefined" : _typeof(Int32Array), function () {
-  return genTypedArray('Int32Array', Int32Array);
-});
-var Uint32ArrayType = tryCreateType(typeof Uint32Array === "undefined" ? "undefined" : _typeof(Uint32Array), function () {
-  return genTypedArray('Uint32Array', Uint32Array);
-});
-var Float32ArrayType = tryCreateType(typeof Float32Array === "undefined" ? "undefined" : _typeof(Float32Array), function () {
-  return genTypedArray('Float32Array', Float32Array);
-});
-var Float64ArrayType = tryCreateType(typeof Float64Array === "undefined" ? "undefined" : _typeof(Float64Array), function () {
-  return genTypedArray('Float64Array', Float64Array);
-});
+var arrayLikeBuild = function arrayLikeBuild(store, dataItem) {
+  dataItem._parts[0].forEach(function (pointer, index) {
+    dataItem._reference[index] = getDecoded(store, pointer);
+  });
 
-var genSetLike = function genSetLike(systemName, type, encodeSubValue, buildSubPointers) {
-  return {
-    _identify: genDoesMatchSystemName(systemName),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [Array.from(dataItem._reference).map(function (subValue) {
-        return encodeSubValue(store, subValue);
-      })];
-    },
+  attachAttachmentsSkipFirst(store, dataItem);
+};
+
+var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
+  typeObj.Ar = {
+    _systemName: 'Array',
+    _encodeValue: arrayLikeEncodeValue,
     _generateReference: function _generateReference() {
-      return new type();
+      return [];
     },
-    _build: function _build(store, dataItem) {
-      dataItem._parts[0].forEach(function (subPointers) {
-        buildSubPointers(store, dataItem._reference, subPointers);
-      });
-
-      attachAttachmentsSkipFirst(store, dataItem);
-    }
+    _build: arrayLikeBuild
   };
+  typeObj.rg = {
+    _systemName: 'Arguments',
+    _encodeValue: arrayLikeEncodeValue,
+    _generateReference: function _generateReference(store, key, index) {
+      return function () {
+        return arguments;
+      }.apply(null, Array(store._encoded[key][index][0].length));
+    },
+    _build: arrayLikeBuild
+  };
+  return typeObj;
 };
 
-var SetType = tryCreateType(typeof Set === "undefined" ? "undefined" : _typeof(Set), function () {
-  return genSetLike('Set', Set, function (store, subValue) {
-    return encounterItem(store, subValue);
-  }, function (store, addTo, subPointer) {
-    addTo.add(getDecoded(store, subPointer));
-  });
-});
-var MapType = tryCreateType(typeof Map === "undefined" ? "undefined" : _typeof(Map), function () {
-  return genSetLike('Map', Map, function (store, subValue) {
-    return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
-  }, function (store, addTo, subPointers) {
-    addTo.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
-  });
-});
+var BasePrimitiveTypes = function BasePrimitiveTypes(typeObj) {
+  typeObj.St = {
+    _ignoreIndices: 1,
+    // Strings allow index access into the string value, which is already stored, so ignore indices
+    _systemName: 'String',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return dataItem._reference;
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      return store._encoded[key][index];
+    },
+    _build: function _build() {}
+  };
+  typeObj.Nu = {
+    _systemName: 'Number',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return encounterItem(store, String(dataItem._reference));
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      return parseFloat(decodePointer(store, store._encoded[key][index]));
+    },
+    _build: function _build() {}
+  };
+  return typeObj;
+};
+
+var BigIntType = function BigIntType(typeObj) {
+  /* istanbul ignore if */
+  if (typeof BigInt === 'function') {
+    typeObj.Bi = {
+      _systemName: 'BigInt',
+      _encodeValue: function _encodeValue(store, dataItem) {
+        return encounterItem(store, String(dataItem._reference));
+      },
+      _generateReference: function _generateReference(store, key, index) {
+        return BigInt(decodePointer(store, store._encoded[key][index]));
+      },
+      _build: function _build() {}
+    };
+  }
+
+  return typeObj;
+};
 /* istanbul ignore next */
+
 
 var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
   return {
-    _identify: genDoesMatchSystemName(systemName),
+    _systemName: systemName,
     _deferredEncode: function _deferredEncode(store, dataItem, callback) {
       var reader = new FileReader();
       reader.addEventListener('loadend', function () {
@@ -484,80 +375,298 @@ var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
     _build: attachAttachmentsSkipFirst
   };
 };
-/* istanbul ignore next */
 
+var BlobTypes = function BlobTypes(typeObj) {
+  // Supported back to IE10
 
-var BlobType = tryCreateType(typeof Blob === "undefined" ? "undefined" : _typeof(Blob), function () {
-  return genBlobLike('Blob', ['type'], function (store, buffer, dataArray) {
-    return new Blob(buffer, {
-      type: decodePointer(store, dataArray[1])
+  /* istanbul ignore if */
+  if (typeof Blob === 'function') {
+    typeObj.Bl = genBlobLike('Blob', ['type'], function (store, buffer, dataArray) {
+      return new Blob(buffer, {
+        type: decodePointer(store, dataArray[1])
+      });
     });
-  });
-});
-/* istanbul ignore next */
+  } // Supported back to IE10, but it doesn't support the File constructor
 
-var FileType = tryCreateType(typeof File === "undefined" ? "undefined" : _typeof(File), function () {
-  return genBlobLike('File', ['name', 'type', 'lastModified'], function (store, buffer, dataArray) {
-    return new File(buffer, decodePointer(store, dataArray[1]), {
-      type: decodePointer(store, dataArray[2]),
-      lastModified: decodePointer(store, dataArray[3])
+  /* istanbul ignore if */
+
+
+  if (typeof File === 'function') {
+    typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], function (store, buffer, dataArray) {
+      return new File(buffer, decodePointer(store, dataArray[1]), {
+        type: decodePointer(store, dataArray[2]),
+        lastModified: decodePointer(store, dataArray[3])
+      });
     });
-  });
-});
-/* istanbul ignore next */
+  }
 
-var BigIntType = tryCreateType(typeof BigInt === "undefined" ? "undefined" : _typeof(BigInt), function () {
-  return genPrimitive('BigInt', BigInt, function (store, dataItem) {
-    return encounterItem(store, String(dataItem._reference));
-  }, function (store, key, index) {
-    return BigInt(decodePointer(store, store._encoded[key][index]));
-  });
-});
-var types = {
-  un: undefinedType,
-  nl: nullType,
-  na: NaNType,
-  pI: InfinityType,
-  nI: NegativeInfinityType,
-  n0: Negative0Type,
-  bt: trueType,
-  bf: falseType,
-  nm: NumberType,
-  // ORDER MATTERS: General Number must come after special numbers NaN, -0, Infinity, and -Infinity
-  st: StringType,
-  sy: SymbolType,
-  ar: ArrayType,
-  ag: ArgumentsType,
-  ob: ObjectType,
-  BO: BooleanObjectType,
-  NM: NumberObjectType,
-  ST: StringObjectType,
-  da: DateType,
-  re: RegExpType,
-  er: ErrorType,
-  AB: ArrayBufferType,
-  SA: SharedArrayBufferType,
-  I1: Int8ArrayType,
-  U1: Uint8ArrayType,
-  C1: Uint8ClampedArrayType,
-  I2: Int16ArrayType,
-  U2: Uint16ArrayType,
-  I3: Int32ArrayType,
-  U3: Uint32ArrayType,
-  F3: Float32ArrayType,
-  F4: Float64ArrayType,
-  Se: SetType,
-  Ma: MapType,
-  Bl: BlobType,
-  Fi: FileType,
-  BI: BigIntType
+  return typeObj;
 };
+
+var DateType = function DateType(typeObj) {
+  typeObj.Da = {
+    _systemName: 'Date',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return [encounterItem(store, dataItem._reference.valueOf())];
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      return new Date(decodePointer(store, store._encoded[key][index][0]));
+    },
+    _build: attachAttachmentsSkipFirst
+  };
+  return typeObj;
+};
+
+var standardErrors = {
+  'EvalError': EvalError,
+  'RangeError': RangeError,
+  'ReferenceError': ReferenceError,
+  'SyntaxError': SyntaxError,
+  'TypeError': TypeError,
+  'URIError': URIError
+};
+
+var ErrorType = function ErrorType(typeObj) {
+  typeObj.Er = {
+    _systemName: 'Error',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return [[encounterItem(store, standardErrors[dataItem._reference.name] ? dataItem._reference.name : 'Error'), encounterItem(store, dataItem._reference.message), encounterItem(store, dataItem._reference.stack)]];
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      var dataArray = store._encoded[key][index][0];
+      var value = new (standardErrors[decodePointer(store, dataArray[0])] || Error)(decodePointer(store, dataArray[1]));
+      value.stack = decodePointer(store, dataArray[2]);
+      return value;
+    },
+    _build: attachAttachmentsSkipFirst
+  };
+  return typeObj;
+};
+
+var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
+  // If Set is supported, Map is also supported
+
+  /* istanbul ignore else */
+  if (typeof Set === 'function') {
+    typeObj.Se = {
+      _systemName: 'Set',
+      _encodeValue: function _encodeValue(store, dataItem) {
+        return [Array.from(dataItem._reference).map(function (subValue) {
+          return encounterItem(store, subValue);
+        })];
+      },
+      _generateReference: function _generateReference() {
+        return new Set();
+      },
+      _build: function _build(store, dataItem) {
+        dataItem._parts[0].forEach(function (subPointer) {
+          dataItem._reference.add(getDecoded(store, subPointer));
+        });
+
+        attachAttachmentsSkipFirst(store, dataItem);
+      }
+    };
+    typeObj.Ma = {
+      _systemName: 'Map',
+      _encodeValue: function _encodeValue(store, dataItem) {
+        return [Array.from(dataItem._reference).map(function (subValue) {
+          return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
+        })];
+      },
+      _generateReference: function _generateReference() {
+        return new Map();
+      },
+      _build: function _build(store, dataItem) {
+        dataItem._parts[0].forEach(function (subPointers) {
+          dataItem._reference.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
+        });
+
+        attachAttachmentsSkipFirst(store, dataItem);
+      }
+    };
+  }
+
+  return typeObj;
+};
+
+var ObjectType = function ObjectType(typeObj) {
+  typeObj.Ob = {
+    _systemName: 'Object',
+    _encodeValue: function _encodeValue() {
+      return [];
+    },
+    _generateReference: function _generateReference() {
+      return {};
+    },
+    _build: function _build(store, dataItem) {
+      attachAttachments(store, dataItem, dataItem._parts);
+    }
+  };
+  return typeObj;
+};
+
+var RegExpType = function RegExpType(typeObj) {
+  typeObj.Re = {
+    _systemName: 'RegExp',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      var reference = dataItem._reference;
+      return [[encounterItem(store, reference.source), // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
+      encounterItem(store, reference.flags === void 0 ? reference.options : reference.flags), encounterItem(store, reference.lastIndex)]];
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      var dataArray = store._encoded[key][index][0];
+      var value = new RegExp(decodePointer(store, dataArray[0]), decodePointer(store, dataArray[1]));
+      value.lastIndex = decodePointer(store, dataArray[2]);
+      return value;
+    },
+    _build: attachAttachmentsSkipFirst
+  };
+  return typeObj;
+};
+
+var SimpleTypes = function SimpleTypes(typeObj) {
+  typeObj.un = {
+    _value: void 0
+  };
+  typeObj.nl = {
+    _value: null
+  };
+  typeObj.tr = {
+    _value: true
+  };
+  typeObj.fa = {
+    _value: false
+  };
+  typeObj.pI = {
+    _value: Infinity
+  };
+  typeObj.nI = {
+    _value: -Infinity
+  };
+  typeObj.Na = {
+    _value: NaN
+  };
+  typeObj.n0 = {
+    _value: -0
+  };
+  return typeObj;
+};
+
+var SymbolType = function SymbolType(typeObj) {
+  /* istanbul ignore else */
+  if (typeof Symbol === 'function') {
+    typeObj.Sy = {
+      _systemName: 'Symbol',
+      _encodeValue: function _encodeValue(store, dataItem) {
+        var symbolStringKey = Symbol.keyFor(dataItem._reference);
+        var isRegistered = symbolStringKey !== void 0;
+        return [// For Registered Symbols, specify with true value and store the registered string value
+        // For unique Symbols, specify with false value and also store the optional identifying string
+        encounterItem(store, isRegistered ? true : false), encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1))];
+      },
+      _generateReference: function _generateReference(store, key, index) {
+        var encodedValue = store._encoded[key][index];
+        var identifierString = decodePointer(store, encodedValue[1]);
+        return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
+      },
+      _build: function _build() {} // Symbols doesn't allow attachments, no-op
+
+    };
+  }
+
+  return typeObj;
+};
+
+var genTypedArray = function genTypedArray(type) {
+  return {
+    _systemName: getSystemName(new type()),
+    _encodeValue: arrayLikeEncodeValue,
+    _generateReference: function _generateReference(store, key, index) {
+      return new type(store._encoded[key][index][0].length);
+    },
+    _build: arrayLikeBuild
+  };
+};
+
+var TypedArrayTypes = function TypedArrayTypes(typeObj) {
+  // If an environment supports Int8Array, it will support most of the TypedArray types
+
+  /* istanbul ignore else */
+  if (typeof Int8Array === 'function') {
+    typeObj.I1 = genTypedArray(Int8Array);
+    typeObj.I2 = genTypedArray(Int16Array);
+    typeObj.I3 = genTypedArray(Int32Array);
+    typeObj.U1 = genTypedArray(Uint8Array);
+    typeObj.U2 = genTypedArray(Uint16Array);
+    typeObj.U3 = genTypedArray(Uint32Array);
+    typeObj.F3 = genTypedArray(Float32Array);
+  } // IE10 and IE Mobile do not support Uint8ClampedArray
+  // https://caniuse.com/#feat=typedarrays
+
+  /* istanbul ignore else */
+
+
+  if (typeof Uint8ClampedArray === 'function') {
+    typeObj.C1 = genTypedArray(Uint8ClampedArray);
+  } // Safari versions prior to 5.1 might not support the Float64ArrayType, even as they support other TypeArray types
+  // https://caniuse.com/#feat=typedarrays
+
+  /* istanbul ignore else */
+
+
+  if (typeof Float64Array === 'function') {
+    typeObj.F4 = genTypedArray(Float64Array);
+  }
+
+  return typeObj;
+};
+
+var genWrappedPrimitive = function genWrappedPrimitive(type) {
+  return {
+    // The type is determined elsewhere
+    _systemName: '',
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return [encounterItem(store, dataItem._reference.valueOf())];
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      return new type(decodePointer(store, store._encoded[key][index][0]));
+    },
+    _build: attachAttachmentsSkipFirst
+  };
+};
+
+var WrappedPrimitiveTypes = function WrappedPrimitiveTypes(typeObj) {
+  typeObj.Bo = genWrappedPrimitive(Boolean);
+  typeObj.NU = genWrappedPrimitive(Number);
+  typeObj.ST = genWrappedPrimitive(String); // String Objects allow index access into the string value, which is already stored, so ignore indices
+
+  typeObj.ST._ignoreIndices = 1;
+  return typeObj;
+};
+
+var types = {};
+types = SimpleTypes(types);
+types = BasePrimitiveTypes(types);
+types = WrappedPrimitiveTypes(types);
+types = ArrayLikeTypes(types);
+types = ObjectType(types);
+types = DateType(types);
+types = RegExpType(types);
+types = ErrorType(types); // TODO: Exclude from legacy version
+
+types = SymbolType(types);
+types = KeyedCollectionTypes(types);
+types = TypedArrayTypes(types);
+types = ArrayBufferTypes(types);
+types = BlobTypes(types);
+types = BigIntType(types);
+var types$1 = types;
 
 var prepOutput = function prepOutput(store, root) {
   // Having found all data structure contents, encode each value into the encoded output
   store._references.forEach(function (dataItem) {
     // Encode the actual value
-    store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
+    store._output[dataItem._key][dataItem._index] = types$1[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
 
     if (dataItem._attachments.length > 0) {
       store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
@@ -589,7 +698,7 @@ var encode = function encode(value, options) {
     _safe: options.safeMode,
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
-    _types: types,
+    _types: types$1,
     _references: new Map(),
     // Known References
     _explore: [],
@@ -600,7 +709,7 @@ var encode = function encode(value, options) {
   };
   var rootPointerKey = encounterItem(store, value); // Root value is simple, can skip main encoding steps
 
-  if (types[rootPointerKey]) {
+  if (types$1[rootPointerKey]) {
     return prepOutput(store, rootPointerKey);
   } // Explore through the data structure
 
@@ -635,7 +744,7 @@ var encode = function encode(value, options) {
     };
 
     store._deferred.forEach(function (dataItem) {
-      types[dataItem._key]._deferredEncode(store, dataItem, onCallback);
+      types$1[dataItem._key]._deferredEncode(store, dataItem, onCallback);
     });
 
     return;
@@ -645,7 +754,7 @@ var encode = function encode(value, options) {
   return prepOutput(store, rootPointerKey);
 }; // Recursively look at the reference set for exploration values
 // This handles both pair arrays and individual values
-// This recursion is fine because it has a maximum depth of 3
+// This recursion is fine because it has a maximum depth of around 3
 
 
 var exploreParts = function exploreParts(store, parts) {
@@ -661,7 +770,7 @@ var exploreParts = function exploreParts(store, parts) {
 var explorePointer = function explorePointer(store, pointer) {
   var p = extractPointer(pointer); // Unknown pointer type
 
-  if (!types[p._key]) {
+  if (!types$1[p._key]) {
     // In safe mode, ignore
     if (store._safe) {
       return;
@@ -671,7 +780,7 @@ var explorePointer = function explorePointer(store, pointer) {
   } // If a simple pointer or an already explored pointer, ignore
 
 
-  if (types[pointer] || store._decoded[pointer] !== void 0) {
+  if (types$1[pointer] || store._decoded[pointer] !== void 0) {
     return;
   }
 
@@ -684,7 +793,7 @@ var explorePointer = function explorePointer(store, pointer) {
   };
 
   try {
-    store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+    store._decoded[pointer]._reference = types$1[p._key]._generateReference(store, p._key, p._index);
   } catch (e) {
     // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
     throw genError("Cannot generate recognized object type from pointer type \"".concat(p._key, "\"."), 'decode');
@@ -699,7 +808,7 @@ var decode = function decode(encoded, options) {
   options = options || {};
   var store = {
     _safe: options.safeMode,
-    _types: types,
+    _types: types$1,
     _encoded: encoded.reduce(function (accumulator, e) {
       accumulator[e[0]] = e[1];
       return accumulator;
@@ -709,13 +818,13 @@ var decode = function decode(encoded, options) {
   };
   var rootPointerKey = store._encoded.r; // Simple pointer, return value
 
-  if (types[rootPointerKey]) {
-    return types[rootPointerKey]._value;
+  if (types$1[rootPointerKey]) {
+    return types$1[rootPointerKey]._value;
   }
 
   var rootP = extractPointer(rootPointerKey); // Unrecognized root type
 
-  if (!types[rootP._key]) {
+  if (!types$1[rootP._key]) {
     if (store._safe) {
       return rootPointerKey;
     }
@@ -732,7 +841,7 @@ var decode = function decode(encoded, options) {
 
 
   Object.values(store._decoded).forEach(function (dataItem) {
-    types[dataItem._key]._build(store, dataItem);
+    types$1[dataItem._key]._build(store, dataItem);
   });
   return store._decoded[rootPointerKey]._reference;
 };

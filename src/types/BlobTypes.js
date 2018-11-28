@@ -2,12 +2,11 @@ import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
 import encounterItem from '/utils/encounterItem.js';
 import extractPointer from '/utils/extractPointer.js';
-import genDoesMatchSystemName from '/utils/genDoesMatchSystemName.js';
 
 /* istanbul ignore next */
-export default (systemName, propertiesKeys, create) => {
+const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
-        _identify: genDoesMatchSystemName(systemName),
+        _systemName: systemName,
         _deferredEncode: (store, dataItem, callback) => {
             const reader = new FileReader();
             reader.addEventListener('loadend', () => {
@@ -33,4 +32,29 @@ export default (systemName, propertiesKeys, create) => {
         },
         _build: attachAttachmentsSkipFirst,
     };
+};
+
+export default (typeObj) => {
+    // Supported back to IE10
+    /* istanbul ignore if */
+    if (typeof Blob === 'function') {
+        typeObj.Bl = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
+            return new Blob(buffer, {
+                type: decodePointer(store, dataArray[1]),
+            });
+        });
+    }
+
+    // Supported back to IE10, but it doesn't support the File constructor
+    /* istanbul ignore if */
+    if (typeof File === 'function') {
+        typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
+            return new File(buffer, decodePointer(store, dataArray[1]), {
+                type: decodePointer(store, dataArray[2]),
+                lastModified: decodePointer(store, dataArray[3])
+            });
+        });
+    }
+
+    return typeObj;
 };
