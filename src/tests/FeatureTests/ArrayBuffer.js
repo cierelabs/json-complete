@@ -128,11 +128,10 @@ if (typeof ArrayBuffer === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'b',
-                '1',
             ],
             r: 'AB0',
         });

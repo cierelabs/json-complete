@@ -108,11 +108,10 @@ if (typeof Int32Array === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'a',
-                '1',
             ],
             r: 'I30',
         });

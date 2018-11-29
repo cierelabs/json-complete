@@ -25,13 +25,12 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
             [
                 '\\s+',
                 '6', // Invalid Regex flag
-                '0',
             ],
         ],
         [
             'Nu',
             [
-                'St2',
+                '0',
             ],
         ],
         [

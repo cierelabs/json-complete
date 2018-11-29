@@ -133,13 +133,12 @@ test('Regex: Encoding Expected', (t) => {
             ],
         ],
         Nu: [
-            'St3',
+            '0',
         ],
         St: [
             'b',
             '\\s+',
             'g',
-            '0',
         ],
         r: 'Re0',
     });

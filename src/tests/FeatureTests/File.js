@@ -230,8 +230,6 @@ if (typeof File === 'function') {
                         'a',
                         'test.json',
                         'application/json',
-                        String(now),
-                        '49',
                     ],
                     U1: [
                         [
@@ -241,8 +239,8 @@ if (typeof File === 'function') {
                         ],
                     ],
                     Nu: [
-                        'St3',
-                        'St4',
+                        String(now),
+                        '49',
                     ],
                     r: 'Fi0',
                 });

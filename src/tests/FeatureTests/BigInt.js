@@ -55,9 +55,6 @@ if (typeof BigInt === 'function') {
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(BigInt(extremeSizeNumber))), {
             Bi: [
-                'St0',
-            ],
-            St: [
                 extremeSizeNumber,
             ],
             r: 'Bi0',

@@ -108,11 +108,10 @@ if (typeof Int16Array === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'a',
-                '1',
             ],
             r: 'I20',
         });

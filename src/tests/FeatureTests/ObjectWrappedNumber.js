@@ -149,11 +149,10 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
             ],
         ],
         Nu: [
-            'St1',
+            '1',
         ],
         St: [
             'a',
-            '1',
         ],
         r: 'NU0',
     });

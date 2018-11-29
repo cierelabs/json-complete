@@ -108,11 +108,10 @@ if (typeof Uint8ClampedArray === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'a',
-                '1',
             ],
             r: 'C10',
         });

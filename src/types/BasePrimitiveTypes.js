@@ -1,29 +1,12 @@
-import decodePointer from '/utils/decodePointer.js';
-import encounterItem from '/utils/encounterItem.js';
+import genPrimitive from '/utils/genPrimitive.js';
 
 export default (typeObj) => {
-    typeObj.St = {
-        _ignoreIndices: 1, // Strings allow index access into the string value, which is already stored, so ignore indices
-        _systemName: 'String',
-        _encodeValue: (store, dataItem) => {
-            return dataItem._reference;
-        },
-        _generateReference: (store, key, index) => {
-            return store._encoded[key][index];
-        },
-        _build: () => {},
-    };
+    typeObj.St = genPrimitive(String);
 
-    typeObj.Nu = {
-        _systemName: 'Number',
-        _encodeValue: (store, dataItem) => {
-            return encounterItem(store, String(dataItem._reference));
-        },
-        _generateReference: (store, key, index) => {
-            return parseFloat(decodePointer(store, store._encoded[key][index]));
-        },
-        _build: () => {},
-    };
+    // Strings allow index access into the string value, which is already stored, so ignore indices
+    typeObj.St._ignoreIndices = 1;
+
+    typeObj.Nu = genPrimitive(Number);
 
     return typeObj;
 };

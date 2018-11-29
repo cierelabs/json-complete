@@ -80,9 +80,6 @@ test('Number: Encoding Expected Normal', (t) => {
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(1)), {
         Nu: [
-            'St0',
-        ],
-        St: [
             '1',
         ],
         r: 'Nu0',

@@ -159,7 +159,6 @@ if (typeof Blob === 'function') {
                     St: [
                         'a',
                         'application/json',
-                        '49',
                     ],
                     U1: [
                         [
@@ -169,7 +168,7 @@ if (typeof Blob === 'function') {
                         ],
                     ],
                     Nu: [
-                        'St2',
+                        '49',
                     ],
                     r: 'Bl0',
                 });

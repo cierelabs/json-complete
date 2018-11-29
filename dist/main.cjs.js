@@ -303,45 +303,31 @@ var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
   return typeObj;
 };
 
+var genPrimitive = function genPrimitive(type) {
+  return {
+    _systemName: getSystemName(type('')),
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return String(dataItem._reference);
+    },
+    _generateReference: function _generateReference(store, key, index) {
+      return type(store._encoded[key][index]);
+    },
+    _build: function _build() {}
+  };
+};
+
 var BasePrimitiveTypes = function BasePrimitiveTypes(typeObj) {
-  typeObj.St = {
-    _ignoreIndices: 1,
-    // Strings allow index access into the string value, which is already stored, so ignore indices
-    _systemName: 'String',
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return dataItem._reference;
-    },
-    _generateReference: function _generateReference(store, key, index) {
-      return store._encoded[key][index];
-    },
-    _build: function _build() {}
-  };
-  typeObj.Nu = {
-    _systemName: 'Number',
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return encounterItem(store, String(dataItem._reference));
-    },
-    _generateReference: function _generateReference(store, key, index) {
-      return parseFloat(decodePointer(store, store._encoded[key][index]));
-    },
-    _build: function _build() {}
-  };
+  typeObj.St = genPrimitive(String); // Strings allow index access into the string value, which is already stored, so ignore indices
+
+  typeObj.St._ignoreIndices = 1;
+  typeObj.Nu = genPrimitive(Number);
   return typeObj;
 };
 
 var BigIntType = function BigIntType(typeObj) {
   /* istanbul ignore if */
   if (typeof BigInt === 'function') {
-    typeObj.Bi = {
-      _systemName: 'BigInt',
-      _encodeValue: function _encodeValue(store, dataItem) {
-        return encounterItem(store, String(dataItem._reference));
-      },
-      _generateReference: function _generateReference(store, key, index) {
-        return BigInt(decodePointer(store, store._encoded[key][index]));
-      },
-      _build: function _build() {}
-    };
+    typeObj.Bi = genPrimitive(BigInt);
   }
 
   return typeObj;

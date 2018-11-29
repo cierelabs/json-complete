@@ -108,11 +108,10 @@ if (typeof Float32Array === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'a',
-                '1',
             ],
             r: 'F30',
         });

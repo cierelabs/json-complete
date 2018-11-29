@@ -84,10 +84,9 @@ test('Date: Encoding Expected', (t) => {
         ],
         St: [
             'a',
-            String(now),
         ],
         Nu: [
-            'St1',
+            String(now),
         ],
         r: 'Da0',
     });

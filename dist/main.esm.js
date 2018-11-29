@@ -304,29 +304,26 @@ var ArrayLikeTypes = (typeObj) => {
     return typeObj;
 };
 
-var BasePrimitiveTypes = (typeObj) => {
-    typeObj.St = {
-        _ignoreIndices: 1, // Strings allow index access into the string value, which is already stored, so ignore indices
-        _systemName: 'String',
+var genPrimitive = (type) => {
+    return {
+        _systemName: getSystemName(type('')),
         _encodeValue: (store, dataItem) => {
-            return dataItem._reference;
+            return String(dataItem._reference);
         },
         _generateReference: (store, key, index) => {
-            return store._encoded[key][index];
+            return type(store._encoded[key][index]);
         },
         _build: () => {},
     };
+};
 
-    typeObj.Nu = {
-        _systemName: 'Number',
-        _encodeValue: (store, dataItem) => {
-            return encounterItem(store, String(dataItem._reference));
-        },
-        _generateReference: (store, key, index) => {
-            return parseFloat(decodePointer(store, store._encoded[key][index]));
-        },
-        _build: () => {},
-    };
+var BasePrimitiveTypes = (typeObj) => {
+    typeObj.St = genPrimitive(String);
+
+    // Strings allow index access into the string value, which is already stored, so ignore indices
+    typeObj.St._ignoreIndices = 1;
+
+    typeObj.Nu = genPrimitive(Number);
 
     return typeObj;
 };
@@ -334,16 +331,7 @@ var BasePrimitiveTypes = (typeObj) => {
 var BigIntType = (typeObj) => {
     /* istanbul ignore if */
     if (typeof BigInt === 'function') {
-        typeObj.Bi = {
-            _systemName: 'BigInt',
-            _encodeValue: (store, dataItem) => {
-                return encounterItem(store, String(dataItem._reference));
-            },
-            _generateReference: (store, key, index) => {
-                return BigInt(decodePointer(store, store._encoded[key][index]));
-            },
-            _build: () => {},
-        };
+        typeObj.Bi = genPrimitive(BigInt);
     }
 
     return typeObj;

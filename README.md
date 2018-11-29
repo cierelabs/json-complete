@@ -182,10 +182,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6604 bytes ![](http://progressed.io/bar/100) | 7867 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2628 bytes ![](http://progressed.io/bar/40) | 2732 bytes ![](http://progressed.io/bar/35) |
-| zopfli      | 2593 bytes ![](http://progressed.io/bar/39) | 2689 bytes ![](http://progressed.io/bar/34) |
-| brotli      | 2403 bytes ![](http://progressed.io/bar/36) | 2493 bytes ![](http://progressed.io/bar/32) |
+| Minified    | 6489 bytes ![](http://progressed.io/bar/100) | 7694 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2611 bytes ![](http://progressed.io/bar/40) | 2716 bytes ![](http://progressed.io/bar/35) |
+| zopfli      | 2576 bytes ![](http://progressed.io/bar/40) | 2673 bytes ![](http://progressed.io/bar/35) |
+| brotli      | 2389 bytes ![](http://progressed.io/bar/37) | 2472 bytes ![](http://progressed.io/bar/32) |
 
 
 ---

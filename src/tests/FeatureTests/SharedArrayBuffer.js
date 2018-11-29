@@ -145,11 +145,10 @@ if (typeof SharedArrayBuffer === 'function') {
                 ],
             ],
             Nu: [
-                'St1',
+                '1',
             ],
             St: [
                 'b',
-                '1',
             ],
             r: 'Sh0',
         });
