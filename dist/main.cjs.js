@@ -13,49 +13,6 @@ var getSystemName = function getSystemName(v) {
   return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-var getAttachments = function getAttachments(v, encodeSymbolKeys) {
-  var attached = {
-    _indices: [],
-    _attachments: []
-  }; // Find all indices
-
-  var indices = [];
-  var indexObj = {}; // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
-
-  Array.prototype.forEach.call(v, function (value, index) {
-    indexObj[String(index)] = 1;
-    indices.push(index);
-  }); // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
-
-  var i = 0; // Find all String keys that are not indices
-  // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
-
-  var keys = Object.keys(v).filter(function (key) {
-    return !indexObj[key];
-  });
-
-  if (encodeSymbolKeys) {
-    keys = keys.concat(Object.getOwnPropertySymbols(v).filter(function (symbol) {
-      // Ignore built-in Symbols
-      // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-      return Symbol[String(symbol).slice(14, -1)] !== symbol;
-    }));
-  } // Create the lists
-
-
-  return indices.concat(keys).reduce(function (accumulator, key) {
-    if (key === i) {
-      i += 1;
-
-      accumulator._indices.push(v[key]);
-    } else {
-      accumulator._attachments.push([key, v[key]]);
-    }
-
-    return accumulator;
-  }, attached);
-};
-
 var wrappedPrimitives = {
   Boolean: 'Bo',
   // Object-Wrapped Boolean
@@ -65,7 +22,7 @@ var wrappedPrimitives = {
 
 };
 
-var findTypeKey = function findTypeKey(types, item) {
+var findItemKey = function findItemKey(types, item) {
   if (item === void 0) {
     return 'un';
   }
@@ -111,8 +68,51 @@ var findTypeKey = function findTypeKey(types, item) {
   });
 };
 
+var getAttachments = function getAttachments(v, encodeSymbolKeys) {
+  var attached = {
+    _indices: [],
+    _attachments: []
+  }; // Find all indices
+
+  var indices = [];
+  var indexObj = {}; // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
+
+  Array.prototype.forEach.call(v, function (value, index) {
+    indexObj[String(index)] = 1;
+    indices.push(index);
+  }); // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
+
+  var i = 0; // Find all String keys that are not indices
+  // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
+
+  var keys = Object.keys(v).filter(function (key) {
+    return !indexObj[key];
+  });
+
+  if (encodeSymbolKeys) {
+    keys = keys.concat(Object.getOwnPropertySymbols(v).filter(function (symbol) {
+      // Ignore built-in Symbols
+      // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+      return Symbol[String(symbol).slice(14, -1)] !== symbol;
+    }));
+  } // Create the lists
+
+
+  return indices.concat(keys).reduce(function (accumulator, key) {
+    if (key === i) {
+      i += 1;
+
+      accumulator._indices.push(v[key]);
+    } else {
+      accumulator._attachments.push([key, v[key]]);
+    }
+
+    return accumulator;
+  }, attached);
+};
+
 var getPointerKey = function getPointerKey(store, item) {
-  var pointerKey = findTypeKey(store._types, item);
+  var pointerKey = findItemKey(store._types, item);
 
   if (!pointerKey && !store._safe) {
     var type = getSystemName(item);
@@ -138,7 +138,7 @@ var encounterItem = function encounterItem(store, item) {
   } // Already encountered, return pointer
 
 
-  var existingDataItem = store._references.get(item);
+  var existingDataItem = store._references._get(item, pointerKey);
 
   if (existingDataItem !== void 0) {
     return existingDataItem._pointer;
@@ -162,7 +162,7 @@ var encounterItem = function encounterItem(store, item) {
     _attachments: attached._attachments
   }; // Store the reference uniquely along with location information
 
-  store._references.set(item, dataItem); // Some values can only be obtained asynchronously, so add them to a list of items to check
+  store._references._set(item, dataItem); // Some values can only be obtained asynchronously, so add them to a list of items to check
 
   /* istanbul ignore next */
 
@@ -184,6 +184,83 @@ var encounterItem = function encounterItem(store, item) {
   return dataItem._pointer;
 };
 
+var canUseNormalMap = function canUseNormalMap(encodeSymbolKeys) {
+  // Map not supported at all or is some kind of polyfill, ignore
+  if (typeof Map !== 'function' || getSystemName(new Map()) !== 'Map') {
+    return false;
+  } // Even though Maps are supported, Symbols are not supported at all or we are ignoring Symbol keys, so assume Map works normally
+  // Even if Symbols are used after this point, it will error out somewhere else anyway
+
+
+  if (typeof Symbol !== 'function' || getSystemName(Symbol()) !== 'Symbol' || !encodeSymbolKeys) {
+    return true;
+  } // Versions of Microsoft Edge before 18 support both Symbols and Maps, but can occasionally (randomly) allow Map keys to be duplicated if they are obtained from Object keys
+  // Here, the code statistically attempts to detect the possibility of key duplication
+  // With 50 set operations, the chances of a successfully detecting this failure case is at least 99.999998% likely
+  // https://github.com/Microsoft/ChakraCore/issues/5852
+
+
+  var obj = {};
+  obj[Symbol()] = 1;
+  var box = new Map();
+
+  for (var i = 0; i < 50; i += 1) {
+    box.set(Object.getOwnPropertySymbols(obj)[0], {});
+  }
+
+  return box.size === 1;
+};
+
+var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
+  // TODO: Exclude entirely from legacy version
+  // For modern browsers that both support Map and won't be tripped up by special kinds of Symbol keys, using a Map to store the references is far faster than an array because it allows for roughly O(1) lookup time when checking for duplicate keys
+  if (canUseNormalMap(encodeSymbolKeys)) {
+    var references = new Map();
+    return {
+      _get: function _get(item) {
+        return references.get(item);
+      },
+      _set: function _set(item, dataItem) {
+        if (!references.get(item)) {
+          references.set(item, dataItem);
+        }
+      },
+      _forEach: function _forEach(callback) {
+        references.forEach(callback);
+      }
+    };
+  } // In the fallback legacy mode, uses an array instead of a Map
+  // The items cannot be broken up by type, because their insertion order matters to the algorithm
+  // There were plans to make the array "infinite" in size by making nested arrays, however even under the smallest forms of objects, browsers can't get anywhere near full array usage before running out of memory and crashing the page
+
+
+  var items = [];
+  var dataItems = [];
+
+  var get = function get(item) {
+    for (var i = 0; i < items.length; i += 1) {
+      if (items[i] === item) {
+        return dataItems[i];
+      }
+    }
+  };
+
+  return {
+    _get: get,
+    _set: function _set(item, dataItem) {
+      if (!get(item)) {
+        items.push(item);
+        dataItems.push(dataItem);
+      }
+    },
+    _forEach: function _forEach(callback) {
+      for (var i = 0; i < dataItems.length; i += 1) {
+        callback(dataItems[i]);
+      }
+    }
+  };
+};
+
 var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
   return [dataItem._indices.map(function (subValue) {
     return encounterItem(store, subValue);
@@ -193,7 +270,7 @@ var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
 var extractPointer = function extractPointer(pointer) {
   return {
     _key: pointer.slice(0, 2),
-    _index: parseInt(pointer.slice(2), 10)
+    _index: Number(pointer.slice(2))
   };
 }; // This is the function for getting pointer references in the build functions
 
@@ -372,17 +449,21 @@ var BlobTypes = function BlobTypes(typeObj) {
         type: decodePointer(store, dataArray[1])
       });
     });
-  } // Supported back to IE10, but it doesn't support the File constructor
+  } // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
 
   /* istanbul ignore if */
 
 
   if (typeof File === 'function') {
     typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], function (store, buffer, dataArray) {
-      return new File(buffer, decodePointer(store, dataArray[1]), {
-        type: decodePointer(store, dataArray[2]),
-        lastModified: decodePointer(store, dataArray[3])
-      });
+      try {
+        return new File(buffer, decodePointer(store, dataArray[1]), {
+          type: decodePointer(store, dataArray[2]),
+          lastModified: decodePointer(store, dataArray[3])
+        });
+      } catch (e) {
+        console.log(e.message);
+      }
     });
   }
 
@@ -638,7 +719,7 @@ types = ArrayLikeTypes(types);
 types = ObjectType(types);
 types = DateType(types);
 types = RegExpType(types);
-types = ErrorType(types); // TODO: Exclude from legacy version
+types = ErrorType(types); // TODO: Exclude entirely from legacy version
 
 types = SymbolType(types);
 types = KeyedCollectionTypes(types);
@@ -650,7 +731,7 @@ var types$1 = types;
 
 var prepOutput = function prepOutput(store, root) {
   // Having found all data structure contents, encode each value into the encoded output
-  store._references.forEach(function (dataItem) {
+  store._references._forEach(function (dataItem) {
     // Encode the actual value
     store._output[dataItem._key][dataItem._index] = types$1[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
 
@@ -685,7 +766,7 @@ var encode = function encode(value, options) {
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
     _types: types$1,
-    _references: new Map(),
+    _references: genReferenceTracker(options.encodeSymbolKeys),
     // Known References
     _explore: [],
     // Exploration queue
@@ -697,7 +778,8 @@ var encode = function encode(value, options) {
 
   if (types$1[rootPointerKey]) {
     return prepOutput(store, rootPointerKey);
-  } // Explore through the data structure
+  } // TODO: encounterItem can do the same thing, provided steps are taken to handle deferment: so, keep track of the "encountered index" throughout the process and resume it again after the deferred are finished getting data
+  // Explore through the data structure
 
 
   store._explore.push(value);

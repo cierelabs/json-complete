@@ -5,7 +5,19 @@ const jsonComplete = require('/main.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-if (typeof File === 'function') {
+const supportsFileCreation = () => {
+    try {
+        const file = new File([''], 'empty.txt', {
+            type: 'text/plain',
+        });
+
+        return testHelpers.systemName(file) === '[object File]';
+    } catch (e) {
+        return false;
+    }
+};
+
+if (typeof File === 'function' && supportsFileCreation()) {
     test('File: Normal', (t) => {
         t.plan(5);
 

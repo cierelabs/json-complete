@@ -1,10 +1,11 @@
 import encounterItem from '/utils/encounterItem.js';
 import genError from '/utils/genError.js';
+import genReferenceTracker from '/utils/genReferenceTracker.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
     // Having found all data structure contents, encode each value into the encoded output
-    store._references.forEach((dataItem) => {
+    store._references._forEach((dataItem) => {
         // Encode the actual value
         store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
 
@@ -49,7 +50,7 @@ export default (value, options) => {
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
-        _references: new Map(), // Known References
+        _references: genReferenceTracker(options.encodeSymbolKeys), // Known References
         _explore: [], // Exploration queue
         _deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
         _output: {},
@@ -62,6 +63,7 @@ export default (value, options) => {
         return prepOutput(store, rootPointerKey);
     }
 
+    // TODO: encounterItem can do the same thing, provided steps are taken to handle deferment: so, keep track of the "encountered index" throughout the process and resume it again after the deferred are finished getting data
     // Explore through the data structure
     store._explore.push(value);
     while (store._explore.length) {

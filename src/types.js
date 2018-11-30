@@ -23,7 +23,7 @@ types = DateType(types);
 types = RegExpType(types);
 types = ErrorType(types);
 
-// TODO: Exclude from legacy version
+// TODO: Exclude entirely from legacy version
 types = SymbolType(types);
 types = KeyedCollectionTypes(types);
 types = TypedArrayTypes(types);

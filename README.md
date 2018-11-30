@@ -182,10 +182,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 6489 bytes ![](http://progressed.io/bar/100) | 7694 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2611 bytes ![](http://progressed.io/bar/40) | 2716 bytes ![](http://progressed.io/bar/35) |
-| zopfli      | 2576 bytes ![](http://progressed.io/bar/40) | 2673 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2389 bytes ![](http://progressed.io/bar/37) | 2472 bytes ![](http://progressed.io/bar/32) |
+| Minified    | 7077 bytes ![](http://progressed.io/bar/100) | 8318 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2856 bytes ![](http://progressed.io/bar/40) | 2942 bytes ![](http://progressed.io/bar/35) |
+| zopfli      | 2810 bytes ![](http://progressed.io/bar/40) | 2893 bytes ![](http://progressed.io/bar/35) |
+| brotli      | 2615 bytes ![](http://progressed.io/bar/37) | 2702 bytes ![](http://progressed.io/bar/32) |
 
 
 ---
@@ -400,6 +400,8 @@ TODO
 - [x] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
 - [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
+- [ ] What happens, in safe mode, when decoding an object as a Symbol key?
+- [ ] Make the encode startup proceedure convert the types into forms useful for the getItemKey function
 - [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [ ] Convert the output to string and allow the decoder to accept a string
 - [ ] Test Edge, IE 11, and earlier versions

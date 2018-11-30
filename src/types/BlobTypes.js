@@ -45,14 +45,19 @@ export default (typeObj) => {
         });
     }
 
-    // Supported back to IE10, but it doesn't support the File constructor
+    // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
     /* istanbul ignore if */
     if (typeof File === 'function') {
         typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
-            return new File(buffer, decodePointer(store, dataArray[1]), {
-                type: decodePointer(store, dataArray[2]),
-                lastModified: decodePointer(store, dataArray[3])
-            });
+            try {
+                return new File(buffer, decodePointer(store, dataArray[1]), {
+                    type: decodePointer(store, dataArray[2]),
+                    lastModified: decodePointer(store, dataArray[3])
+                });
+            } catch (e) {
+                // TODO: Finish
+                console.log(e.message);
+            }
         });
     }
 
