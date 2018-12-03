@@ -209,9 +209,7 @@ var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
         return references.get(item);
       },
       _set: function _set(item, dataItem) {
-        if (!references.get(item)) {
-          references.set(item, dataItem);
-        }
+        references.set(item, dataItem);
       },
       _forEach: function _forEach(callback) {
         references.forEach(callback);
@@ -224,22 +222,17 @@ var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
 
   var items = [];
   var dataItems = [];
-
-  var get = function get(item) {
-    for (var i = 0; i < items.length; i += 1) {
-      if (items[i] === item) {
-        return dataItems[i];
-      }
-    }
-  };
-
   return {
-    _get: get,
-    _set: function _set(item, dataItem) {
-      if (!get(item)) {
-        items.push(item);
-        dataItems.push(dataItem);
+    _get: function _get(item) {
+      for (var i = 0; i < items.length; i += 1) {
+        if (items[i] === item) {
+          return dataItems[i];
+        }
       }
+    },
+    _set: function _set(item, dataItem) {
+      items.push(item);
+      dataItems.push(dataItem);
     },
     _forEach: function _forEach(callback) {
       for (var i = 0; i < dataItems.length; i += 1) {
@@ -561,13 +554,22 @@ var ObjectType = function ObjectType(typeObj) {
   return typeObj;
 };
 
+var getFlags = function getFlags(reference) {
+  /* istanbul ignore if */
+  if (reference.flags === void 0) {
+    // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
+    return reference.options;
+  }
+
+  return reference.flags;
+};
+
 var RegExpType = function RegExpType(typeObj) {
   typeObj.Re = {
     _systemName: 'RegExp',
     _encodeValue: function _encodeValue(store, dataItem) {
       var reference = dataItem._reference;
-      return [[encounterItem(store, reference.source), // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
-      encounterItem(store, reference.flags === void 0 ? reference.options : reference.flags), encounterItem(store, reference.lastIndex)]];
+      return [[encounterItem(store, reference.source), encounterItem(store, getFlags(reference)), encounterItem(store, reference.lastIndex)]];
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];

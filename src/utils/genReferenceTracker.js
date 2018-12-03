@@ -37,9 +37,7 @@ export default (encodeSymbolKeys) => {
                 return references.get(item);
             },
             _set: (item, dataItem) => {
-                if (!references.get(item)) {
-                    references.set(item, dataItem);
-                }
+                references.set(item, dataItem);
             },
             _forEach: (callback) => {
                 references.forEach(callback);
@@ -54,21 +52,17 @@ export default (encodeSymbolKeys) => {
     const items = [];
     const dataItems = [];
 
-    const get = (item) => {
-        for (let i = 0; i < items.length; i += 1) {
-            if (items[i] === item) {
-                return dataItems[i];
-            }
-        }
-    };
-
     return {
-        _get: get,
-        _set: (item, dataItem) => {
-            if (!get(item)) {
-                items.push(item);
-                dataItems.push(dataItem);
+        _get: (item) => {
+            for (let i = 0; i < items.length; i += 1) {
+                if (items[i] === item) {
+                    return dataItems[i];
+                }
             }
+        },
+        _set: (item, dataItem) => {
+            items.push(item);
+            dataItems.push(dataItem);
         },
         _forEach: (callback) => {
             for (let i = 0; i < dataItems.length; i += 1) {

@@ -182,10 +182,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7202 bytes ![](http://progressed.io/bar/100) | 8172 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2883 bytes ![](http://progressed.io/bar/40) | 2900 bytes ![](http://progressed.io/bar/35) |
-| zopfli      | 2838 bytes ![](http://progressed.io/bar/39) | 2849 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2648 bytes ![](http://progressed.io/bar/37) | 2652 bytes ![](http://progressed.io/bar/32) |
+| Minified    | 7200 bytes ![](http://progressed.io/bar/100) | 8177 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2889 bytes ![](http://progressed.io/bar/40) | 2896 bytes ![](http://progressed.io/bar/35) |
+| zopfli      | 2841 bytes ![](http://progressed.io/bar/39) | 2846 bytes ![](http://progressed.io/bar/35) |
+| brotli      | 2641 bytes ![](http://progressed.io/bar/37) | 2650 bytes ![](http://progressed.io/bar/32) |
 
 
 ---
@@ -400,10 +400,11 @@ TODO
 - [x] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
 - [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
-- [ ] What happens, in safe mode, when decoding an object as a Symbol key?
+- [ ] What happens, in safe mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [x] Make the encode startup proceedure convert the types into forms useful for the getItemKey function
-- [ ] Make tests that forcably remove the Map from availability to cover the fallback lists
-- [ ] Write test to make sure that a different blob attached to a blob won't cause missing data
+- [x] Make tests that forcably remove the Map from availability to cover the fallback lists
+- [ ] Add fallback blob support for Edge/IE11/IE10 when decoding files
+- [ ] Write test to make sure that a different blob attached to a blob won't cause missing data, or a Blob inside a Set
 - [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [ ] Convert the output to string and allow the decoder to accept a string
 - [ ] Test Edge, IE 11, and earlier versions

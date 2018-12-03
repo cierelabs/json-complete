@@ -8,6 +8,7 @@ require('/tests/FeatureTests/Blob.js');
 require('/tests/FeatureTests/Boolean.js');
 require('/tests/FeatureTests/Date.js');
 require('/tests/FeatureTests/Error.js');
+require('/tests/FeatureTests/FallbackReferenceTracker.js');
 require('/tests/FeatureTests/File.js');
 require('/tests/FeatureTests/Float32Array.js');
 require('/tests/FeatureTests/Float64Array.js');

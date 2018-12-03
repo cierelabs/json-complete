@@ -2,6 +2,16 @@ import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
 import encounterItem from '/utils/encounterItem.js';
 
+const getFlags = (reference) => {
+    /* istanbul ignore if */
+    if (reference.flags === void 0) {
+        // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
+        return reference.options;
+    }
+
+    return reference.flags;
+};
+
 export default (typeObj) => {
     typeObj.Re = {
         _systemName: 'RegExp',
@@ -10,8 +20,7 @@ export default (typeObj) => {
             return [
                 [
                     encounterItem(store, reference.source),
-                    // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
-                    encounterItem(store, reference.flags === void 0 ? reference.options : reference.flags),
+                    encounterItem(store, getFlags(reference)),
                     encounterItem(store, reference.lastIndex),
                 ],
             ];
