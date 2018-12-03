@@ -10,15 +10,94 @@ const gulpTape = require('gulp-tape');
 const gulpTerser = require('gulp-terser');
 const gulpWatch = require('gulp-watch');
 const path = require('path');
+const rollupPluginRootImport = require('rollup-plugin-root-import');
 const runSequence = require('run-sequence');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
-const rollupPluginRootImport = require('rollup-plugin-root-import');
 
 function onError(e) {
     console.error(e); // eslint-disable-line no-console
     this.emit('end');
 }
+
+const rollupJs = (stream, format) => {
+    stream = stream.pipe(gulpBetterRollup({
+        plugins: [
+            rollupPluginRootImport({
+                root: './src',
+            }),
+        ],
+    }, {
+        format: format,
+    }));
+    stream = stream.on('error', onError);
+
+    return stream;
+};
+
+const babelModern = (stream) => {
+    stream = stream.pipe(gulpBabel({
+        presets: [
+            ['@babel/env', {
+                targets: {
+                    browsers: [
+                        '> 0.2%, ie >= 9, not ie <= 8, not op_mini all',
+                    ],
+                },
+                loose: true, // Safe because typeof x === 'object' will never be called relative to a Symbol
+            }],
+        ],
+    }));
+    stream = stream.on('error', onError);
+
+    return stream;
+};
+
+const js = (options) => {
+    const format = options.format || 'esm';
+
+    let stream = gulp.src(options.entry);
+    stream = rollupJs(stream, format);
+
+    stream = stream.pipe(gulpRename({
+        basename: options.filename,
+        suffix: `.${options.format}`,
+    }));
+
+    if (format !== 'esm') {
+        stream = babelModern(stream);
+    }
+
+    if (options.unminify) {
+        stream = stream.pipe(gulp.dest(options.destination));
+    }
+
+    if (options.minify) {
+        stream = stream.pipe(gulpTerser({
+            mangle: {
+                toplevel: true,
+                properties: {
+                    regex: /_\w+/,
+                },
+            },
+            compress: {
+                inline: true,
+            },
+        }));
+
+        stream = stream.on('error', onError);
+
+        stream = stream.pipe(gulpRename({
+            suffix: '.min',
+        }));
+
+        stream = stream.pipe(gulp.dest(options.destination));
+    }
+
+    return stream;
+};
+
+
 
 gulp.task('clear-browser', () => {
     return del([
@@ -26,7 +105,7 @@ gulp.task('clear-browser', () => {
     ]);
 });
 
-gulp.task('test-browser-js', () => {
+gulp.task('test-browser-js-tests', () => {
     var b = browserify({
         entries: './src/tests/tests.js',
         debug: false,
@@ -34,16 +113,19 @@ gulp.task('test-browser-js', () => {
     b.transform('babelify', {
         plugins: [
             ['module-resolver', { root: ['./src'] }],
-            'babel-plugin-transform-esm-to-cjs'
+            'babel-plugin-transform-esm-to-cjs',
         ],
     });
 
-    return b.bundle()
-        .on('error', onError)
-        .pipe(vinylSourceStream('tests.js'))
-        .pipe(vinylBuffer())
-        .on('error', onError)
-        .pipe(gulp.dest('./_testing/browser'));
+    let stream = b.bundle();
+    stream = stream.on('error', onError);
+    stream = stream.pipe(vinylSourceStream('tests.js'));
+    stream = stream.pipe(vinylBuffer());
+    stream = stream.on('error', onError);
+    stream = babelModern(stream);
+    stream = stream.pipe(gulp.dest('./_testing/browser'));
+
+    return stream;
 });
 
 gulp.task('test-browser-html', () => {
@@ -56,7 +138,7 @@ gulp.task('test-browser-html', () => {
 
 gulp.task('test-browser-builder', (end) => {
     runSequence(
-        ['test-browser-js', 'test-browser-html'],
+        ['test-browser-js-tests', 'test-browser-html'],
         end
     );
 });
@@ -113,7 +195,7 @@ gulp.task('clear-node', () => {
     ]);
 });
 
-gulp.task('test-node-library-js', () => {
+gulp.task('test-node-js-library', () => {
     return gulp.src(['./src/**/*.js', '!./src/tests/**/*.js'])
         .pipe(gulpBabel({
             plugins: [
@@ -124,7 +206,7 @@ gulp.task('test-node-library-js', () => {
         .pipe(gulp.dest('./_testing/node'));
 });
 
-gulp.task('test-node-test-js', () => {
+gulp.task('test-node-js-test', () => {
     return gulp.src(['./src/tests/**/*.js'])
         .pipe(gulpBabel({
             plugins: [
@@ -146,74 +228,25 @@ gulp.task('test-node', () => {
 gulp.task('test', (end) => {
     runSequence(
         ['clear-node'],
-        ['test-node-library-js', 'test-node-test-js'],
+        ['test-node-js-library', 'test-node-js-test'],
         ['test-node'],
-        // ['clear-node'],
+        ['clear-node'],
         end
     );
 });
 
 
 
-const js = (options) => {
-    const format = options.format || 'esm';
-
-    let stream = gulp.src(options.entry);
-    stream = stream.pipe(gulpBetterRollup({
-        plugins: [
-            rollupPluginRootImport({
-                root: './src',
-            }),
-        ],
-    }, {
-        format: format,
-        name: 'json-complete',
-    }));
-    stream = stream.on('error', onError);
-
-    stream = stream.pipe(gulpRename({
-        suffix: `.${format}`,
-    }));
-
-    if (format !== 'esm') {
-        stream = stream.pipe(gulpBabel({
-            presets: ['@babel/env'],
-        }));
-        stream = stream.on('error', onError);
-    }
-
-    if (options.unminify) {
-        stream = stream.pipe(gulp.dest(options.destination));
-    }
-
-    if (options.minify) {
-        stream = stream.pipe(gulpTerser({
-            mangle: {
-                toplevel: true,
-                properties: {
-                    regex: /_\w+/,
-                },
-            },
-            compress: {
-                inline: true,
-            },
-        }));
-
-        stream = stream.on('error', onError);
-
-        stream = stream.pipe(gulpRename({
-            suffix: '.min',
-        }));
-
-        stream = stream.pipe(gulp.dest(options.destination));
-    }
-
-    return stream;
-};
+gulp.task('clear-dist', () => {
+    return del([
+        './dist/**/*',
+    ]);
+});
 
 gulp.task('prod-esm', () => {
     return js({
         entry: './src/main.js',
+        filename: 'json_complete',
         format: 'esm',
         unminify: true,
         minify: true,
@@ -224,6 +257,7 @@ gulp.task('prod-esm', () => {
 gulp.task('prod-cjs', () => {
     return js({
         entry: './src/main.js',
+        filename: 'json_complete',
         format: 'cjs',
         unminify: true,
         minify: true,
@@ -233,6 +267,7 @@ gulp.task('prod-cjs', () => {
 
 gulp.task('prod', (end) => {
     runSequence(
+        ['clear-dist'],
         ['prod-esm', 'prod-cjs'],
         end
     );

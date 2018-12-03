@@ -9,13 +9,7 @@ var getSystemName = (v) => {
     return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-const wrappedPrimitives = {
-    Boolean: 'Bo', // Object-Wrapped Boolean
-    Number: 'NU', // Object-Wrapped Number
-    String: 'ST', // Object-Wrapped String
-};
-
-var findItemKey = (types, item) => {
+var findItemKey = (store, item) => {
     if (item === void 0) {
         return 'un';
     }
@@ -50,15 +44,14 @@ var findItemKey = (types, item) => {
         }
     }
 
-    const systemName = getSystemName(item);
+    let systemName = getSystemName(item);
+    const wrappedTypeSystemName = store._wrappedTypeMap[systemName];
 
-    if (typeof item === 'object' && wrappedPrimitives[systemName]) {
-        return wrappedPrimitives[systemName];
+    if (wrappedTypeSystemName && typeof item === 'object') {
+        systemName = wrappedTypeSystemName;
     }
 
-    return Object.keys(types).find((typeKey) => {
-        return systemName === types[typeKey]._systemName;
-    });
+    return store._typeMap[systemName];
 };
 
 const getAttachments = (v, encodeSymbolKeys) => {
@@ -107,7 +100,7 @@ const getAttachments = (v, encodeSymbolKeys) => {
 };
 
 const getPointerKey = (store, item) => {
-    const pointerKey = findItemKey(store._types, item);
+    const pointerKey = findItemKey(store, item);
 
     if (!pointerKey && !store._safe) {
         const type = getSystemName(item);
@@ -215,15 +208,15 @@ var genReferenceTracker = (encodeSymbolKeys) => {
         const references = new Map();
 
         return {
-            _get(item) {
+            _get: (item) => {
                 return references.get(item);
             },
-            _set(item, dataItem) {
+            _set: (item, dataItem) => {
                 if (!references.get(item)) {
                     references.set(item, dataItem);
                 }
             },
-            _forEach(callback) {
+            _forEach: (callback) => {
                 references.forEach(callback);
             },
         };
@@ -246,13 +239,13 @@ var genReferenceTracker = (encodeSymbolKeys) => {
 
     return {
         _get: get,
-        _set (item, dataItem) {
+        _set: (item, dataItem) => {
             if (!get(item)) {
                 items.push(item);
                 dataItems.push(dataItem);
             }
         },
-        _forEach (callback) {
+        _forEach: (callback) => {
             for (let i = 0; i < dataItems.length; i += 1) {
                 callback(dataItems[i]);
             }
@@ -467,6 +460,7 @@ var BlobTypes = (typeObj) => {
                     lastModified: decodePointer(store, dataArray[3])
                 });
             } catch (e) {
+                // TODO: Finish
                 console.log(e.message);
             }
         });
@@ -706,7 +700,7 @@ var TypedArrayTypes = (typeObj) => {
 const genWrappedPrimitive = (type) => {
     return {
         // The type is determined elsewhere
-        _systemName: '',
+        _systemName: `_${getSystemName(new type(''))}`,
         _encodeValue: (store, dataItem) => {
             return [
                 encounterItem(store, dataItem._reference.valueOf()),
@@ -799,6 +793,20 @@ var encode = (value, options) => {
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types$1,
+        _typeMap: Object.keys(types$1).reduce((accumulator, key) => {
+            const systemName = types$1[key]._systemName;
+            if (systemName) {
+                accumulator[systemName] = key;
+            }
+            return accumulator;
+        }, {}),
+        _wrappedTypeMap: Object.keys(types$1).reduce((accumulator, key) => {
+            const systemName = types$1[key]._systemName;
+            if ((systemName || '')[0] === '_') {
+                accumulator[systemName.slice(1)] = systemName;
+            }
+            return accumulator;
+        }, {}),
         _references: genReferenceTracker(options.encodeSymbolKeys), // Known References
         _explore: [], // Exploration queue
         _deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design

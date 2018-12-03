@@ -1,7 +1,5 @@
 'use strict';
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 var genError = function genError(message, operation, type) {
   var error = new Error(message);
   error.operation = operation;
@@ -13,16 +11,7 @@ var getSystemName = function getSystemName(v) {
   return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-var wrappedPrimitives = {
-  Boolean: 'Bo',
-  // Object-Wrapped Boolean
-  Number: 'NU',
-  // Object-Wrapped Number
-  String: 'ST' // Object-Wrapped String
-
-};
-
-var findItemKey = function findItemKey(types, item) {
+var findItemKey = function findItemKey(store, item) {
   if (item === void 0) {
     return 'un';
   }
@@ -58,14 +47,13 @@ var findItemKey = function findItemKey(types, item) {
   }
 
   var systemName = getSystemName(item);
+  var wrappedTypeSystemName = store._wrappedTypeMap[systemName];
 
-  if (_typeof(item) === 'object' && wrappedPrimitives[systemName]) {
-    return wrappedPrimitives[systemName];
+  if (wrappedTypeSystemName && typeof item === 'object') {
+    systemName = wrappedTypeSystemName;
   }
 
-  return Object.keys(types).find(function (typeKey) {
-    return systemName === types[typeKey]._systemName;
-  });
+  return store._typeMap[systemName];
 };
 
 var getAttachments = function getAttachments(v, encodeSymbolKeys) {
@@ -112,11 +100,11 @@ var getAttachments = function getAttachments(v, encodeSymbolKeys) {
 };
 
 var getPointerKey = function getPointerKey(store, item) {
-  var pointerKey = findItemKey(store._types, item);
+  var pointerKey = findItemKey(store, item);
 
   if (!pointerKey && !store._safe) {
     var type = getSystemName(item);
-    throw genError("Cannot encode unsupported type \"".concat(type, "\"."), 'encode', type);
+    throw genError("Cannot encode unsupported type \"" + type + "\".", 'encode', type);
   } // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
 
 
@@ -462,6 +450,7 @@ var BlobTypes = function BlobTypes(typeObj) {
           lastModified: decodePointer(store, dataArray[3])
         });
       } catch (e) {
+        // TODO: Finish
         console.log(e.message);
       }
     });
@@ -691,7 +680,7 @@ var TypedArrayTypes = function TypedArrayTypes(typeObj) {
 var genWrappedPrimitive = function genWrappedPrimitive(type) {
   return {
     // The type is determined elsewhere
-    _systemName: '',
+    _systemName: "_" + getSystemName(new type('')),
     _encodeValue: function _encodeValue(store, dataItem) {
       return [encounterItem(store, dataItem._reference.valueOf())];
     },
@@ -766,6 +755,24 @@ var encode = function encode(value, options) {
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
     _types: types$1,
+    _typeMap: Object.keys(types$1).reduce(function (accumulator, key) {
+      var systemName = types$1[key]._systemName;
+
+      if (systemName) {
+        accumulator[systemName] = key;
+      }
+
+      return accumulator;
+    }, {}),
+    _wrappedTypeMap: Object.keys(types$1).reduce(function (accumulator, key) {
+      var systemName = types$1[key]._systemName;
+
+      if ((systemName || '')[0] === '_') {
+        accumulator[systemName.slice(1)] = systemName;
+      }
+
+      return accumulator;
+    }, {}),
     _references: genReferenceTracker(options.encodeSymbolKeys),
     // Known References
     _explore: [],
@@ -844,7 +851,7 @@ var explorePointer = function explorePointer(store, pointer) {
       return;
     }
 
-    throw genError("Cannot decode unrecognized pointer type \"".concat(p._key, "\"."), 'decode', p._key);
+    throw genError("Cannot decode unrecognized pointer type \"" + p._key + "\".", 'decode', p._key);
   } // If a simple pointer or an already explored pointer, ignore
 
 
@@ -864,7 +871,7 @@ var explorePointer = function explorePointer(store, pointer) {
     store._decoded[pointer]._reference = types$1[p._key]._generateReference(store, p._key, p._index);
   } catch (e) {
     // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
-    throw genError("Cannot generate recognized object type from pointer type \"".concat(p._key, "\"."), 'decode');
+    throw genError("Cannot generate recognized object type from pointer type \"" + p._key + "\".", 'decode');
   }
 
   if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
@@ -897,7 +904,7 @@ var decode = function decode(encoded, options) {
       return rootPointerKey;
     }
 
-    throw genError("Cannot decode unrecognized pointer type \"".concat(rootP._key, "\"."), 'decode', rootP._key);
+    throw genError("Cannot decode unrecognized pointer type \"" + rootP._key + "\".", 'decode', rootP._key);
   } // Explore through data structure
 
 

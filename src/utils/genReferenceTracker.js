@@ -33,15 +33,15 @@ export default (encodeSymbolKeys) => {
         const references = new Map();
 
         return {
-            _get(item) {
+            _get: (item) => {
                 return references.get(item);
             },
-            _set(item, dataItem) {
+            _set: (item, dataItem) => {
                 if (!references.get(item)) {
                     references.set(item, dataItem);
                 }
             },
-            _forEach(callback) {
+            _forEach: (callback) => {
                 references.forEach(callback);
             },
         };
@@ -64,13 +64,13 @@ export default (encodeSymbolKeys) => {
 
     return {
         _get: get,
-        _set (item, dataItem) {
+        _set: (item, dataItem) => {
             if (!get(item)) {
                 items.push(item);
                 dataItems.push(dataItem);
             }
         },
-        _forEach (callback) {
+        _forEach: (callback) => {
             for (let i = 0; i < dataItems.length; i += 1) {
                 callback(dataItems[i]);
             }

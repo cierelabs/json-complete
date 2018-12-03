@@ -50,6 +50,20 @@ export default (value, options) => {
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
+        _typeMap: Object.keys(types).reduce((accumulator, key) => {
+            const systemName = types[key]._systemName;
+            if (systemName) {
+                accumulator[systemName] = key;
+            }
+            return accumulator;
+        }, {}),
+        _wrappedTypeMap: Object.keys(types).reduce((accumulator, key) => {
+            const systemName = types[key]._systemName;
+            if ((systemName || '')[0] === '_') {
+                accumulator[systemName.slice(1)] = systemName;
+            }
+            return accumulator;
+        }, {}),
         _references: genReferenceTracker(options.encodeSymbolKeys), // Known References
         _explore: [], // Exploration queue
         _deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design

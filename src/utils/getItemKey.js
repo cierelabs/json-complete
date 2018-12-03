@@ -1,12 +1,6 @@
 import getSystemName from '/utils/getSystemName.js';
 
-const wrappedPrimitives = {
-    Boolean: 'Bo', // Object-Wrapped Boolean
-    Number: 'NU', // Object-Wrapped Number
-    String: 'ST', // Object-Wrapped String
-};
-
-export default (types, item) => {
+export default (store, item) => {
     if (item === void 0) {
         return 'un';
     }
@@ -41,13 +35,12 @@ export default (types, item) => {
         }
     }
 
-    const systemName = getSystemName(item);
+    let systemName = getSystemName(item);
+    const wrappedTypeSystemName = store._wrappedTypeMap[systemName];
 
-    if (typeof item === 'object' && wrappedPrimitives[systemName]) {
-        return wrappedPrimitives[systemName];
+    if (wrappedTypeSystemName && typeof item === 'object') {
+        systemName = wrappedTypeSystemName;
     }
 
-    return Object.keys(types).find((typeKey) => {
-        return systemName === types[typeKey]._systemName;
-    });
+    return store._typeMap[systemName];
 };

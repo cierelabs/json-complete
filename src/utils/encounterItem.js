@@ -48,7 +48,7 @@ const getAttachments = (v, encodeSymbolKeys) => {
 };
 
 const getPointerKey = (store, item) => {
-    const pointerKey = findItemKey(store._types, item);
+    const pointerKey = findItemKey(store, item);
 
     if (!pointerKey && !store._safe) {
         const type = getSystemName(item);

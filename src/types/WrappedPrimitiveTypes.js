@@ -1,11 +1,12 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
 import encounterItem from '/utils/encounterItem.js';
+import getSystemName from '/utils/getSystemName.js';
 
 const genWrappedPrimitive = (type) => {
     return {
         // The type is determined elsewhere
-        _systemName: '',
+        _systemName: `_${getSystemName(new type(''))}`,
         _encodeValue: (store, dataItem) => {
             return [
                 encounterItem(store, dataItem._reference.valueOf()),
