@@ -156,17 +156,18 @@ JSON does not support Symbols.
 There are some built-in Symbols (such as `Symbol.iterator`) provided by type definitions or JavaScript itself that are never encoded, even if Symbol Key Encoding Option (below) is enabled. These are all methods that will be available on the decoded value by virtue of the fact that they will be decode to their pre-encoded type.
 
 
-#### Option: Safe Mode
+#### Option: Compat Mode
 
-If the `safeMode` option is set to a truthy value, the library attempts to do its best to get the most information out of the encoding or decoding process without throwing errors. What can happen in safe mode?
+If the `compat` option is set to a truthy value, the library attempts to do its best to get the most information out of the encoding or decoding process without throwing errors. What can happen in compat mode?
 
 * Encoding
-  - If encoding a deferred type like Blob or File, but no `onFinish` option is provided, the output will output all the data it has minus the data from inside the deferred type. Any data attached data on the object may still be saved, and the referencial integrity will be retained.
+  - If encoding a deferred type like Blob or File, but no `onFinish` option is provided, the encoder will output all the data it has minus the data from inside the deferred type. Any data attached data on the object may still be saved, and the referencial integrity will be retained.
   - If an unencodable or unrecognized type is part of the data to be encoded, the reference will be encoded as a plain empty object. Any data attached data on the object may still be saved, and the referencial integrity will be retained.
 * Decoding
   - If the Pointer type is not recognized, the Pointer string itself will be decoded in its place, rather than attempt to get its value.
+  - If attempting to decode a File object in an environment that supports Files but doesn't support the File Constructor (IE10, IE11, and Edge), the File will be decoded as a Blob type, with the `name` and `lastModified` values simply attached as properties.
 
-Safe Mode will **NOT** prevent throws related to malformed string data when decoding.
+Compat Mode will **NOT** prevent throws related to malformed string data when decoding.
 
 
 #### Option: Symbol Key Encoding
@@ -182,10 +183,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7200 bytes ![](http://progressed.io/bar/100) | 8177 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2889 bytes ![](http://progressed.io/bar/40) | 2896 bytes ![](http://progressed.io/bar/35) |
-| zopfli      | 2841 bytes ![](http://progressed.io/bar/39) | 2846 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2641 bytes ![](http://progressed.io/bar/37) | 2650 bytes ![](http://progressed.io/bar/32) |
+| Minified    | 7277 bytes ![](http://progressed.io/bar/100) | 8252 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2901 bytes ![](http://progressed.io/bar/40) | 2909 bytes ![](http://progressed.io/bar/35) |
+| zopfli      | 2852 bytes ![](http://progressed.io/bar/39) | 2854 bytes ![](http://progressed.io/bar/35) |
+| brotli      | 2661 bytes ![](http://progressed.io/bar/37) | 2654 bytes ![](http://progressed.io/bar/32) |
 
 
 ---
@@ -200,7 +201,7 @@ In very unscientific testing, for a large, non-circular object, the output lengt
 
 #### Unsupported Types
 
-Several types of objects are intentionally not encodable or decodable. Even if a particular object is not supported, any attachments to that object that can be encoded and decoded will be when `safeMode` is enabled. However, the object's value itself will be stored as an empty object.
+Several types of objects are intentionally not encodable or decodable. Even if a particular object is not supported, any attachments to that object that can be encoded and decoded will be when `compat` is enabled. However, the object's value itself will be stored as an empty object.
 
 Objects may be skipped for one of several reasons:
 
@@ -393,22 +394,30 @@ TODO
 
 ## To Fix and Add
 
-- [x] Write tests for non-safeMode usage
+- [x] Write tests for non-compat mode usage
 - [x] Write tests for ensuring the correct format of encoded data
 - [x] Write tests for extreme depth of Set and Map items
 - [x] Add [BigInt](https://github.com/tc39/proposal-bigint) support
 - [x] Add option for ignoring Symbol keys during encoding
 - [x] Explore encoding numbers as strings
 - [x] Reorder the deferment process to pull the blob/file data out first before trying to encode the data, allowing the normal encoding process to work
-- [ ] What happens, in safe mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [x] Make the encode startup proceedure convert the types into forms useful for the getItemKey function
 - [x] Make tests that forcably remove the Map from availability to cover the fallback lists
-- [ ] Add fallback blob support for Edge/IE11/IE10 when decoding files
-- [ ] Write test to make sure that a different blob attached to a blob won't cause missing data, or a Blob inside a Set
+- [x] Add fallback blob support for files when decoding in compat mode
+- [x] Finish features for Edge
+- [x] Write test to make sure that a different blob attached to a blob won't cause missing data
+- [ ] Fix the bug related to storing Blob inside a Keyed Collection (DeferredTypeInsideKeyedCollection.js)
+- [x] Change "Safe Mode" to "Compat Mode"
+- [ ] What happens, in compat mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
+- [ ] Support IE11
+- [ ] Support IE10
+- [ ] Support IE9
+- [ ] Support IE8 with legacy version
+- [ ] Support IE7 with legacy version
+- [ ] Support IE6 with legacy version
+
 - [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [ ] Convert the output to string and allow the decoder to accept a string
-- [ ] Test Edge, IE 11, and earlier versions
-- [ ] Create polyfill for older IE (espcially the use of Map, without creating a false-positive on the existance of Map)
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await
 - [ ] Update decoding error messages for types not supported in a given environment
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data

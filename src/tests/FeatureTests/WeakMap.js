@@ -16,7 +16,7 @@ if (typeof WeakMap === 'function') {
         const source = [[{ a: { b: 2 } }, { a: { b: 2 } }]];
 
         const decoded = decode(encode([new WeakMap(source)], {
-            safeMode: true,
+            compat: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decoded));
@@ -31,7 +31,7 @@ if (typeof WeakMap === 'function') {
         weakMap[Symbol.for('weakMap')] = 'test';
 
         const decodedWeakMap = decode(encode([weakMap], {
-            safeMode: true,
+            compat: true,
             encodeSymbolKeys: true,
         }))[0];
 
@@ -47,7 +47,7 @@ if (typeof WeakMap === 'function') {
         weakMap.me = weakMap;
 
         const decodedWeakMap = decode(encode([weakMap], {
-            safeMode: true,
+            compat: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decodedWeakMap));
@@ -63,7 +63,7 @@ if (typeof WeakMap === 'function') {
             x: source,
             y: source,
         }, {
-            safeMode: true,
+            compat: true,
         }));
 
         t.equal(decoded.x, decoded.y);

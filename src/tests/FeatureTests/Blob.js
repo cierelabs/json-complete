@@ -17,7 +17,7 @@ if (typeof Blob === 'function') {
                 const decoded = decode(encoded)[0];
 
                 const reader = new FileReader();
-                reader.addEventListener('loadend', function() {
+                reader.addEventListener('loadend', () => {
                     t.deepEqual(JSON.parse(reader.result), obj);
                 });
                 reader.readAsText(decoded);
@@ -55,7 +55,7 @@ if (typeof Blob === 'function') {
                 const decoded = decode(encoded);
 
                 const reader = new FileReader();
-                reader.addEventListener('loadend', function() {
+                reader.addEventListener('loadend', () => {
                     t.deepEqual(JSON.parse(reader.result), obj);
                 });
                 reader.readAsText(decoded);

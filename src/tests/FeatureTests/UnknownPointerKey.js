@@ -17,7 +17,7 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     ];
 
     t.equal(decode(innerData, {
-        safeMode: true,
+        compat: true,
     })[0], '--0');
 });
 
@@ -30,7 +30,7 @@ test('Unknown Pointer Key: Root Value', (t) => {
     ];
 
     t.equal(decode(valueData, {
-        safeMode: true,
+        compat: true,
     }), '--0');
 });
 
@@ -49,14 +49,14 @@ test('Unknown Pointer Key: Key Data', (t) => {
     ];
 
     const decodedObjectKeys = Object.keys(decode(objectKeyData, {
-        safeMode: true,
+        compat: true,
     }));
 
     t.equal(decodedObjectKeys.length, 1);
     t.equal(decodedObjectKeys[0], '--0');
 });
 
-test('Unknown Pointer Key: Non-Safe Mode', (t) => {
+test('Unknown Pointer Key: Non-Compat Mode', (t) => {
     t.plan(1);
 
     const innerData = [
@@ -71,7 +71,7 @@ test('Unknown Pointer Key: Non-Safe Mode', (t) => {
 
     try {
         decode(innerData, {
-            safeMode: false,
+            compat: false,
         });
         t.ok(false);
     } catch (e) {
@@ -79,7 +79,7 @@ test('Unknown Pointer Key: Non-Safe Mode', (t) => {
     }
 });
 
-test('Unknown Pointer Key: Root Value Non-Safe Mode', (t) => {
+test('Unknown Pointer Key: Root Value Non-Compat Mode', (t) => {
     t.plan(1);
 
     const valueData = [
@@ -89,7 +89,7 @@ test('Unknown Pointer Key: Root Value Non-Safe Mode', (t) => {
 
     try {
         decode(valueData, {
-            safeMode: false,
+            compat: false,
         });
         t.ok(false);
     } catch (e) {

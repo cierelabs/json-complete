@@ -102,12 +102,12 @@ const getAttachments = (v, encodeSymbolKeys) => {
 const getPointerKey = (store, item) => {
     const pointerKey = findItemKey(store, item);
 
-    if (!pointerKey && !store._safe) {
+    if (!pointerKey && !store._compat) {
         const type = getSystemName(item);
         throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
     }
 
-    // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
     return pointerKey ? pointerKey : 'Ob';
 };
 
@@ -275,7 +275,7 @@ var getDecoded = (store, pointer) => {
         return store._decoded[pointer]._reference;
     }
 
-    // We will never reach this point without being in safe mode, return the pointer string
+    // We will never reach this point without being in compat mode, return the pointer string
     return pointer;
 };
 
@@ -447,15 +447,28 @@ var BlobTypes = (typeObj) => {
     // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
     /* istanbul ignore if */
     if (typeof File === 'function') {
-        typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
+        typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
             try {
-                return new File(buffer, decodePointer(store, dataArray[1]), {
-                    type: decodePointer(store, dataArray[2]),
+                return new File(buffer, decodePointer(store, dataArray[2]), {
+                    type: decodePointer(store, dataArray[1]),
                     lastModified: decodePointer(store, dataArray[3])
                 });
             } catch (e) {
-                // TODO: Finish
-                console.log(e.message);
+                // IE10, IE11, and Edge does not support the File constructor
+                // In compat mode, decoding an encoded File object results in a Blob that is duck-typed to be like a File object
+                // Such a Blob will still report its System Name as "Blob" instead of "File"
+                if (store._compat) {
+                    const fallbackBlob = new Blob(buffer, {
+                        type: decodePointer(store, dataArray[1]),
+                    });
+
+                    fallbackBlob.name = decodePointer(store, dataArray[2]);
+                    fallbackBlob.lastModified = decodePointer(store, dataArray[3]);
+
+                    return fallbackBlob;
+                }
+
+                throw e;
             }
         });
     }
@@ -792,7 +805,7 @@ var encode = (value, options) => {
     options = options || {};
 
     const store = {
-        _safe: options.safeMode,
+        _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types$1,
@@ -834,8 +847,8 @@ var encode = (value, options) => {
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
         if (typeof options.onFinish !== 'function') {
-            if (store._safe) {
-                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
+            if (store._compat) {
+                // In compat mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
                 return prepOutput(store, rootPointerKey);
             }
 
@@ -881,8 +894,8 @@ const explorePointer = (store, pointer) => {
 
     // Unknown pointer type
     if (!types$1[p._key]) {
-        // In safe mode, ignore
-        if (store._safe) {
+        // In compat mode, ignore
+        if (store._compat) {
             return;
         }
 
@@ -918,7 +931,7 @@ var decode = (encoded, options) => {
     options = options || {};
 
     const store = {
-        _safe: options.safeMode,
+        _compat: options.compat,
         _types: types$1,
         _encoded: encoded.reduce((accumulator, e) => {
             accumulator[e[0]] = e[1];
@@ -939,7 +952,7 @@ var decode = (encoded, options) => {
 
     // Unrecognized root type
     if (!types$1[rootP._key]) {
-        if (store._safe) {
+        if (store._compat) {
             return rootPointerKey;
         }
 

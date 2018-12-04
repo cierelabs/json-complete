@@ -240,8 +240,8 @@ if (typeof File === 'function' && supportsFileCreation()) {
                     ],
                     St: [
                         'a',
-                        'test.json',
                         'application/json',
+                        'test.json',
                     ],
                     U1: [
                         [
@@ -261,5 +261,5 @@ if (typeof File === 'function' && supportsFileCreation()) {
     });
 }
 else {
-    console.warn('Tests for File type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.warn('Tests for File type skipped because the File type or the File Constructor is not supported in the current environment.'); // eslint-disable-line no-console
 }

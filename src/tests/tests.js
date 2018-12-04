@@ -7,9 +7,11 @@ require('/tests/FeatureTests/BigInt.js');
 require('/tests/FeatureTests/Blob.js');
 require('/tests/FeatureTests/Boolean.js');
 require('/tests/FeatureTests/Date.js');
+require('/tests/FeatureTests/DeferredTypeAttachedToDeferredType.js');
 require('/tests/FeatureTests/Error.js');
 require('/tests/FeatureTests/FallbackReferenceTracker.js');
 require('/tests/FeatureTests/File.js');
+require('/tests/FeatureTests/FileBlobFallback.js');
 require('/tests/FeatureTests/Float32Array.js');
 require('/tests/FeatureTests/Float64Array.js');
 require('/tests/FeatureTests/Int16Array.js');
@@ -40,6 +42,10 @@ require('/tests/FeatureTests/UnknownPointerKey.js');
 require('/tests/FeatureTests/UnsupportedTypes.js');
 require('/tests/FeatureTests/WeakMap.js');
 require('/tests/FeatureTests/WeakSet.js');
+
+// Currently broken, TODO Fix
+// require('/tests/FeatureTests/DeferredTypeInsideKeyedCollection.js');
+
 
 
 

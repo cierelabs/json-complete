@@ -50,12 +50,12 @@ const getAttachments = (v, encodeSymbolKeys) => {
 const getPointerKey = (store, item) => {
     const pointerKey = findItemKey(store, item);
 
-    if (!pointerKey && !store._safe) {
+    if (!pointerKey && !store._compat) {
         const type = getSystemName(item);
         throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
     }
 
-    // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
     return pointerKey ? pointerKey : 'Ob';
 };
 

@@ -16,7 +16,7 @@ if (typeof WeakSet === 'function') {
         const source = [{ a: { b: 2 } }];
 
         const decoded = decode(encode([new WeakSet(source)], {
-            safeMode: true,
+            compat: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decoded));
@@ -31,7 +31,7 @@ if (typeof WeakSet === 'function') {
         weakSet[Symbol.for('weakSet')] = 'test';
 
         const decodedWeakSet = decode(encode([weakSet], {
-            safeMode: true,
+            compat: true,
             encodeSymbolKeys: true,
         }))[0];
 
@@ -47,7 +47,7 @@ if (typeof WeakSet === 'function') {
         weakSet.me = weakSet;
 
         const decodedWeakSet = decode(encode([weakSet], {
-            safeMode: true,
+            compat: true,
         }))[0];
 
         t.ok(testHelpers.isObject(decodedWeakSet));
@@ -63,7 +63,7 @@ if (typeof WeakSet === 'function') {
             x: source,
             y: source,
         }, {
-            safeMode: true,
+            compat: true,
         }));
 
         t.equal(decoded.x, decoded.y);

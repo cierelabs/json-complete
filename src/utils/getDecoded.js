@@ -13,6 +13,6 @@ export default (store, pointer) => {
         return store._decoded[pointer]._reference;
     }
 
-    // We will never reach this point without being in safe mode, return the pointer string
+    // We will never reach this point without being in compat mode, return the pointer string
     return pointer;
 };

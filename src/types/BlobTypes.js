@@ -48,15 +48,28 @@ export default (typeObj) => {
     // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
     /* istanbul ignore if */
     if (typeof File === 'function') {
-        typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], (store, buffer, dataArray) => {
+        typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
             try {
-                return new File(buffer, decodePointer(store, dataArray[1]), {
-                    type: decodePointer(store, dataArray[2]),
+                return new File(buffer, decodePointer(store, dataArray[2]), {
+                    type: decodePointer(store, dataArray[1]),
                     lastModified: decodePointer(store, dataArray[3])
                 });
             } catch (e) {
-                // TODO: Finish
-                console.log(e.message);
+                // IE10, IE11, and Edge does not support the File constructor
+                // In compat mode, decoding an encoded File object results in a Blob that is duck-typed to be like a File object
+                // Such a Blob will still report its System Name as "Blob" instead of "File"
+                if (store._compat) {
+                    const fallbackBlob = new Blob(buffer, {
+                        type: decodePointer(store, dataArray[1]),
+                    });
+
+                    fallbackBlob.name = decodePointer(store, dataArray[2]);
+                    fallbackBlob.lastModified = decodePointer(store, dataArray[3]);
+
+                    return fallbackBlob;
+                }
+
+                throw e;
             }
         });
     }

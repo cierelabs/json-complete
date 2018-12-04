@@ -46,7 +46,7 @@ export default (value, options) => {
     options = options || {};
 
     const store = {
-        _safe: options.safeMode,
+        _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
@@ -88,8 +88,8 @@ export default (value, options) => {
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
         if (typeof options.onFinish !== 'function') {
-            if (store._safe) {
-                // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
+            if (store._compat) {
+                // In compat mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
                 return prepOutput(store, rootPointerKey);
             }
 

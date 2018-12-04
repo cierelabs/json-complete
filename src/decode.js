@@ -22,8 +22,8 @@ const explorePointer = (store, pointer) => {
 
     // Unknown pointer type
     if (!types[p._key]) {
-        // In safe mode, ignore
-        if (store._safe) {
+        // In compat mode, ignore
+        if (store._compat) {
             return;
         }
 
@@ -59,7 +59,7 @@ export default (encoded, options) => {
     options = options || {};
 
     const store = {
-        _safe: options.safeMode,
+        _compat: options.compat,
         _types: types,
         _encoded: encoded.reduce((accumulator, e) => {
             accumulator[e[0]] = e[1];
@@ -80,7 +80,7 @@ export default (encoded, options) => {
 
     // Unrecognized root type
     if (!types[rootP._key]) {
-        if (store._safe) {
+        if (store._compat) {
             return rootPointerKey;
         }
 

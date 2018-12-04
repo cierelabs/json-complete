@@ -102,10 +102,10 @@ var getAttachments = function getAttachments(v, encodeSymbolKeys) {
 var getPointerKey = function getPointerKey(store, item) {
   var pointerKey = findItemKey(store, item);
 
-  if (!pointerKey && !store._safe) {
+  if (!pointerKey && !store._compat) {
     var type = getSystemName(item);
     throw genError("Cannot encode unsupported type \"" + type + "\".", 'encode', type);
-  } // In safe mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+  } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
 
 
   return pointerKey ? pointerKey : 'Ob';
@@ -267,7 +267,7 @@ var getDecoded = function getDecoded(store, pointer) {
 
   if (store._types[p._key]) {
     return store._decoded[pointer]._reference;
-  } // We will never reach this point without being in safe mode, return the pointer string
+  } // We will never reach this point without being in compat mode, return the pointer string
 
 
   return pointer;
@@ -436,15 +436,26 @@ var BlobTypes = function BlobTypes(typeObj) {
 
 
   if (typeof File === 'function') {
-    typeObj.Fi = genBlobLike('File', ['name', 'type', 'lastModified'], function (store, buffer, dataArray) {
+    typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], function (store, buffer, dataArray) {
       try {
-        return new File(buffer, decodePointer(store, dataArray[1]), {
-          type: decodePointer(store, dataArray[2]),
+        return new File(buffer, decodePointer(store, dataArray[2]), {
+          type: decodePointer(store, dataArray[1]),
           lastModified: decodePointer(store, dataArray[3])
         });
       } catch (e) {
-        // TODO: Finish
-        console.log(e.message);
+        // IE10, IE11, and Edge does not support the File constructor
+        // In compat mode, decoding an encoded File object results in a Blob that is duck-typed to be like a File object
+        // Such a Blob will still report its System Name as "Blob" instead of "File"
+        if (store._compat) {
+          var fallbackBlob = new Blob(buffer, {
+            type: decodePointer(store, dataArray[1])
+          });
+          fallbackBlob.name = decodePointer(store, dataArray[2]);
+          fallbackBlob.lastModified = decodePointer(store, dataArray[3]);
+          return fallbackBlob;
+        }
+
+        throw e;
       }
     });
   }
@@ -753,7 +764,7 @@ var prepOutput = function prepOutput(store, root) {
 var encode = function encode(value, options) {
   options = options || {};
   var store = {
-    _safe: options.safeMode,
+    _compat: options.compat,
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
     _types: types$1,
@@ -802,8 +813,8 @@ var encode = function encode(value, options) {
   if (store._deferred.length > 0) {
     // Handle Blob or File type encoding
     if (typeof options.onFinish !== 'function') {
-      if (store._safe) {
-        // In safe mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
+      if (store._compat) {
+        // In compat mode, if the onFinish function is not provided, File and Blob object data will be discarded as empty and returns data immediately
         return prepOutput(store, rootPointerKey);
       }
 
@@ -848,8 +859,8 @@ var explorePointer = function explorePointer(store, pointer) {
   var p = extractPointer(pointer); // Unknown pointer type
 
   if (!types$1[p._key]) {
-    // In safe mode, ignore
-    if (store._safe) {
+    // In compat mode, ignore
+    if (store._compat) {
       return;
     }
 
@@ -884,7 +895,7 @@ var explorePointer = function explorePointer(store, pointer) {
 var decode = function decode(encoded, options) {
   options = options || {};
   var store = {
-    _safe: options.safeMode,
+    _compat: options.compat,
     _types: types$1,
     _encoded: encoded.reduce(function (accumulator, e) {
       accumulator[e[0]] = e[1];
@@ -902,7 +913,7 @@ var decode = function decode(encoded, options) {
   var rootP = extractPointer(rootPointerKey); // Unrecognized root type
 
   if (!types$1[rootP._key]) {
-    if (store._safe) {
+    if (store._compat) {
       return rootPointerKey;
     }
 

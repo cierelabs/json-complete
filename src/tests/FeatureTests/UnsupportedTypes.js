@@ -9,7 +9,7 @@ test('Unsupported Types: Normal', (t) => {
     t.plan(2);
 
     const encoded = encode([Math], {
-        safeMode: true,
+        compat: true,
     });
     const decoded = decode(encoded)[0];
 
@@ -21,7 +21,7 @@ test('Unsupported Types: Root Value', (t) => {
     t.plan(2);
 
     const encoded = encode(Math, {
-        safeMode: true,
+        compat: true,
     });
     const decoded = decode(encoded);
 
@@ -34,7 +34,7 @@ test('Unsupported Types: Normal Throw', (t) => {
 
     try {
         encode([Math], {
-            safeMode: false,
+            compat: false,
         });
 
         t.ok(false);
@@ -48,7 +48,7 @@ test('Unsupported Types: Root Value Throw', (t) => {
 
     try {
         encode(Math, {
-            safeMode: false,
+            compat: false,
         });
 
         t.ok(false);
@@ -65,7 +65,7 @@ test('Unsupported Types: Arbitrary Attached Data', (t) => {
     source[Symbol.for('FullyUnsupportedTypes')] = 'test';
 
     const decodedFullyUnsupportedTypes = decode(encode([source], {
-        safeMode: true,
+        compat: true,
         encodeSymbolKeys: true,
     }))[0];
 
@@ -84,7 +84,7 @@ test('Unsupported Types: Self-Containment', (t) => {
     source.me = source;
 
     const decodedFullyUnsupportedTypes = decode(encode([source], {
-        safeMode: true,
+        compat: true,
     }))[0];
 
     t.ok(testHelpers.isObject(decodedFullyUnsupportedTypes));
@@ -102,7 +102,7 @@ test('Unsupported Types: Referencial Integrity', (t) => {
         x: source,
         y: source,
     }, {
-        safeMode: true,
+        compat: true,
     }));
 
     t.equal(decoded.x, decoded.y);
@@ -116,7 +116,7 @@ test('Unsupported Types: Encoding Expected', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source, {
-        safeMode: true,
+        compat: true,
     })), {
         Ob: [
             [
