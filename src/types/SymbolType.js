@@ -10,20 +10,14 @@ export default (typeObj) => {
                 const symbolStringKey = Symbol.keyFor(dataItem._reference);
                 const isRegistered = symbolStringKey !== void 0;
 
-                return [
-                    // For Registered Symbols, specify with true value and store the registered string value
-                    // For unique Symbols, specify with false value and also store the optional identifying string
-                    encounterItem(store, isRegistered ? true : false),
-                    encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1)),
-                ];
+                return encounterItem(store, isRegistered ? `R${symbolStringKey}` : `S${String(dataItem._reference).slice(7, -1)}`);
             },
             _generateReference: (store, key, index) => {
-                const encodedValue = store._encoded[key][index];
-                const identifierString = decodePointer(store, encodedValue[1]);
+                const decodedString = decodePointer(store, store._encoded[key][index]);
 
-                return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
+                return decodedString[0] === 'R' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
             },
-            _build: () => {}, // Symbols doesn't allow attachments, no-op
+            _build: () => {}, // Symbols do not allow attachments, no-op
         };
     }
 

@@ -203,6 +203,8 @@ var genReferenceTracker = (encodeSymbolKeys) => {
                 let count = 0;
 
                 references.forEach((dataItem) => {
+                    // count will never be greater than resumeFromIndex when not encoding a deferred type, which Node doesn't support
+                    /* istanbul ignore else */
                     if (count >= resumeFromIndex) {
                         callback(dataItem);
                     }
@@ -650,20 +652,14 @@ var SymbolType = (typeObj) => {
                 const symbolStringKey = Symbol.keyFor(dataItem._reference);
                 const isRegistered = symbolStringKey !== void 0;
 
-                return [
-                    // For Registered Symbols, specify with true value and store the registered string value
-                    // For unique Symbols, specify with false value and also store the optional identifying string
-                    encounterItem(store, isRegistered ? true : false),
-                    encounterItem(store, isRegistered ? symbolStringKey : String(dataItem._reference).slice(7, -1)),
-                ];
+                return encounterItem(store, isRegistered ? `R${symbolStringKey}` : `S${String(dataItem._reference).slice(7, -1)}`);
             },
             _generateReference: (store, key, index) => {
-                const encodedValue = store._encoded[key][index];
-                const identifierString = decodePointer(store, encodedValue[1]);
+                const decodedString = decodePointer(store, store._encoded[key][index]);
 
-                return decodePointer(store, encodedValue[0]) ? Symbol.for(identifierString) : Symbol(identifierString);
+                return decodedString[0] === 'R' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
             },
-            _build: () => {}, // Symbols doesn't allow attachments, no-op
+            _build: () => {}, // Symbols do not allow attachments, no-op
         };
     }
 
@@ -834,6 +830,7 @@ var encode = (value, options) => {
 
     const resumeIndex = encodeAll(store);
 
+    // Node does not support the deferred types
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
@@ -843,7 +840,7 @@ var encode = (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw genError('Found deferred type, but no onFinish option provided.', 'encode');
+            throw genError('Deferred Types require onFinish option.', 'encode');
         }
 
         let deferredLength = store._deferred.length;
@@ -910,8 +907,8 @@ const explorePointer = (store, pointer) => {
     try {
         store._decoded[pointer]._reference = types$1[p._key]._generateReference(store, p._key, p._index);
     } catch (e) {
-        // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
-        throw genError(`Cannot generate recognized object type from pointer type "${p._key}".`, 'decode');
+        // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
+        throw genError(`Cannot decode recognized pointer type "${p._key}".`, 'decode');
     }
 
     if (getSystemName(store._decoded[pointer]._parts) === 'Array') {

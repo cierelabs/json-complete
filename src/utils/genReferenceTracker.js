@@ -44,6 +44,8 @@ export default (encodeSymbolKeys) => {
                 let count = 0;
 
                 references.forEach((dataItem) => {
+                    // count will never be greater than resumeFromIndex when not encoding a deferred type, which Node doesn't support
+                    /* istanbul ignore else */
                     if (count >= resumeFromIndex) {
                         callback(dataItem);
                     }

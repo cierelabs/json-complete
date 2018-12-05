@@ -77,6 +77,7 @@ export default (value, options) => {
 
     const resumeIndex = encodeAll(store);
 
+    // Node does not support the deferred types
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
         // Handle Blob or File type encoding
@@ -86,7 +87,7 @@ export default (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw genError('Deferred type requires onFinish option.', 'encode');
+            throw genError('Deferred Types require onFinish option.', 'encode');
         }
 
         let deferredLength = store._deferred.length;

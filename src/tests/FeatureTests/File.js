@@ -147,7 +147,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
             encode([file]);
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Deferred type requires onFinish option.');
+            t.equal(e.message, 'Deferred Types require onFinish option.');
         }
     });
 

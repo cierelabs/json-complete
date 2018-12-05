@@ -30,7 +30,6 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
         Nu: [
             '1',
             '2',
-            '1',
         ],
         r: 'Ar0',
     });

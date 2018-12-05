@@ -76,7 +76,7 @@ if (typeof Blob === 'function') {
             encode([source]);
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Deferred type requires onFinish option.');
+            t.equal(e.message, 'Deferred Types require onFinish option.');
         }
     });
 
