@@ -15,8 +15,6 @@ if (typeof Blob === 'function' && typeof Set === 'function') {
 
         encode(source, {
             onFinish: (encoded) => {
-                console.log(JSON.stringify(encoded, null, 4));
-
                 const decoded = decode(encoded);
                 const blob = decoded.get(1);
 

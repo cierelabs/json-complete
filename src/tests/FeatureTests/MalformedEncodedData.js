@@ -47,6 +47,6 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
         decode(malformedEncoded);
         t.ok(false);
     } catch (e) {
-        t.equal(e.message, 'Cannot generate recognized object type from pointer type "Re".');
+        t.equal(e.message, 'Cannot decode recognized pointer type "Re".');
     }
 });

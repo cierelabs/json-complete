@@ -4,25 +4,6 @@ import genReferenceTracker from '/utils/genReferenceTracker.js';
 import types from '/types.js';
 
 const prepOutput = (store, root) => {
-    // Having found all data structure contents, encode each value into the encoded output
-    store._references._forEach((dataItem) => {
-        // Encode the actual value
-        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
-
-        // Encode any values attached to the value
-        if (dataItem._attachments.length > 0) {
-            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
-                // Technically, here we might expect to only request items from the already explored set
-                // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
-                // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
-                return [
-                    encounterItem(store, attachment[0]),
-                    encounterItem(store, attachment[1]),
-                ];
-            }));
-        }
-    });
-
     store._output.r = root;
     store._output.v = '1.0.0';
 
@@ -42,47 +23,59 @@ const prepOutput = (store, root) => {
     }
 };
 
+const encodeAll = (store, resumeFromIndex) => {
+    return store._references._resumableForEach((dataItem) => {
+        // Encode the actual value
+        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
+
+        // Encode any values attached to the value
+        if (dataItem._attachments.length > 0) {
+            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map((attachment) => {
+                // Technically, here we might expect to only request items from the already explored set
+                // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
+                // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
+                return [
+                    encounterItem(store, attachment[0]),
+                    encounterItem(store, attachment[1]),
+                ];
+            }));
+        }
+    }, resumeFromIndex);
+};
+
 export default (value, options) => {
     options = options || {};
+
+    let typeMap = {};
+    let wrappedTypeMap = {};
+
+    Object.keys(types).forEach((key) => {
+        const systemName = types[key]._systemName;
+
+        if (systemName) {
+            typeMap[systemName] = key;
+        }
+
+        if ((systemName || '')[0] === '_') {
+            wrappedTypeMap[systemName.slice(1)] = systemName;
+        }
+    });
 
     const store = {
         _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
         _types: types,
-        _typeMap: Object.keys(types).reduce((accumulator, key) => {
-            const systemName = types[key]._systemName;
-            if (systemName) {
-                accumulator[systemName] = key;
-            }
-            return accumulator;
-        }, {}),
-        _wrappedTypeMap: Object.keys(types).reduce((accumulator, key) => {
-            const systemName = types[key]._systemName;
-            if ((systemName || '')[0] === '_') {
-                accumulator[systemName.slice(1)] = systemName;
-            }
-            return accumulator;
-        }, {}),
+        _typeMap: typeMap,
+        _wrappedTypeMap: wrappedTypeMap,
         _references: genReferenceTracker(options.encodeSymbolKeys), // Known References
-        _explore: [], // Exploration queue
         _deferred: [], // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
         _output: {},
     };
 
     const rootPointerKey = encounterItem(store, value);
 
-    // Root value is simple, can skip main encoding steps
-    if (types[rootPointerKey]) {
-        return prepOutput(store, rootPointerKey);
-    }
-
-    // TODO: encounterItem can do the same thing, provided steps are taken to handle deferment: so, keep track of the "encountered index" throughout the process and resume it again after the deferred are finished getting data
-    // Explore through the data structure
-    store._explore.push(value);
-    while (store._explore.length) {
-        encounterItem(store, store._explore.shift());
-    }
+    const resumeIndex = encodeAll(store);
 
     /* istanbul ignore next */
     if (store._deferred.length > 0) {
@@ -93,7 +86,7 @@ export default (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw genError('Found deferred type, but no onFinish option provided.', 'encode');
+            throw genError('Deferred type requires onFinish option.', 'encode');
         }
 
         let deferredLength = store._deferred.length;
@@ -101,6 +94,7 @@ export default (value, options) => {
         const onCallback = () => {
             deferredLength -= 1;
             if (deferredLength === 0) {
+                encodeAll(store, resumeIndex);
                 return prepOutput(store, rootPointerKey);
             }
         };

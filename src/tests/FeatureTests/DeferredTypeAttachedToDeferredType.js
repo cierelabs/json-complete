@@ -17,8 +17,6 @@ if (typeof Blob === 'function') {
 
         encode(blob1, {
             onFinish: (encoded) => {
-                console.log(JSON.stringify(encoded, null, 4));
-
                 const decodedBlob1 = decode(encoded);
 
                 const reader = new FileReader();

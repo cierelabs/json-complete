@@ -81,7 +81,7 @@ if (typeof Blob === 'function') {
             const decoded = decode(encodedFileInArray); // eslint-disable-line
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Cannot generate recognized object type from pointer type "Fi".');
+            t.equal(e.message, 'Cannot decode recognized pointer type "Fi".');
         }
 
         globalThis.File = oldFile;

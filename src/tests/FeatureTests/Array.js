@@ -7,7 +7,7 @@ const decode = jsonComplete.decode;
 
 test('Array: Normal', (t) => {
     t.plan(1);
-    t.deepEqual(decode(encode({ a: [1] })).a, [1]);
+    t.deepEqual(decode(encode({ a: [1, 2, 1] })).a, [1, 2, 1]);
 });
 
 test('Array: Empty', (t) => {

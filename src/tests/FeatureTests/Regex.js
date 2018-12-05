@@ -122,12 +122,12 @@ test('Regex: Encoding Expected', (t) => {
         Re: [
             [
                 [
+                    'St0',
                     'St1',
-                    'St2',
                     'Nu0',
                 ],
                 [
-                    'St0',
+                    'St2',
                     'fa',
                 ],
             ],
@@ -136,9 +136,9 @@ test('Regex: Encoding Expected', (t) => {
             '0',
         ],
         St: [
-            'b',
             '\\s+',
             'g',
+            'b',
         ],
         r: 'Re0',
     });

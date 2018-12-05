@@ -111,13 +111,6 @@ var getPointerKey = function getPointerKey(store, item) {
   return pointerKey ? pointerKey : 'Ob';
 };
 
-var prepExplorableItem = function prepExplorableItem(store, item) {
-  // Type is known type and is a reference type (not simple), it should be explored
-  if (store._types[getPointerKey(store, item)]._build) {
-    store._explore.push(item);
-  }
-};
-
 var encounterItem = function encounterItem(store, item) {
   var pointerKey = getPointerKey(store, item); // Simple type, return pointer (pointer key)
 
@@ -157,17 +150,7 @@ var encounterItem = function encounterItem(store, item) {
 
   if (store._types[pointerKey]._deferredEncode) {
     store._deferred.push(dataItem);
-  } // Prep sub-items to be explored later
-
-
-  dataItem._indices.forEach(function (s) {
-    prepExplorableItem(store, s);
-  });
-
-  dataItem._attachments.forEach(function (s) {
-    prepExplorableItem(store, s[0]);
-    prepExplorableItem(store, s[1]);
-  });
+  }
 
   return dataItem._pointer;
 };
@@ -211,8 +194,17 @@ var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
       _set: function _set(item, dataItem) {
         references.set(item, dataItem);
       },
-      _forEach: function _forEach(callback) {
-        references.forEach(callback);
+      _resumableForEach: function _resumableForEach(callback, resumeFromIndex) {
+        resumeFromIndex = resumeFromIndex || 0;
+        var count = 0;
+        references.forEach(function (dataItem) {
+          if (count >= resumeFromIndex) {
+            callback(dataItem);
+          }
+
+          count += 1;
+        });
+        return count;
       }
     };
   } // In the fallback legacy mode, uses an array instead of a Map
@@ -234,10 +226,14 @@ var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
       items.push(item);
       dataItems.push(dataItem);
     },
-    _forEach: function _forEach(callback) {
-      for (var i = 0; i < dataItems.length; i += 1) {
-        callback(dataItems[i]);
+    _resumableForEach: function _resumableForEach(callback, resumeFromIndex) {
+      var count;
+
+      for (count = resumeFromIndex || 0; count < dataItems.length; count += 1) {
+        callback(dataItems[count]);
       }
+
+      return count;
     }
   };
 };
@@ -396,18 +392,18 @@ var BigIntType = function BigIntType(typeObj) {
 var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
   return {
     _systemName: systemName,
+    _encodeValue: function _encodeValue(store, dataItem) {
+      return [[void 0].concat(propertiesKeys.map(function (property) {
+        return encounterItem(store, dataItem._reference[property]);
+      }))];
+    },
     _deferredEncode: function _deferredEncode(store, dataItem, callback) {
       var reader = new FileReader();
       reader.addEventListener('loadend', function () {
-        dataItem._deferredValuePointer = encounterItem(store, new Uint8Array(reader.result));
+        store._output[dataItem._key][dataItem._index][0][0] = encounterItem(store, new Uint8Array(reader.result));
         callback();
       });
       reader.readAsArrayBuffer(dataItem._reference);
-    },
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [[dataItem._deferredValuePointer].concat(propertiesKeys.map(function (property) {
-        return encounterItem(store, dataItem._reference[property]);
-      }))];
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];
@@ -732,21 +728,6 @@ types = BigIntType(types);
 var types$1 = types;
 
 var prepOutput = function prepOutput(store, root) {
-  // Having found all data structure contents, encode each value into the encoded output
-  store._references._forEach(function (dataItem) {
-    // Encode the actual value
-    store._output[dataItem._key][dataItem._index] = types$1[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
-
-    if (dataItem._attachments.length > 0) {
-      store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
-        // Technically, here we might expect to only request items from the already explored set
-        // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
-        // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
-        return [encounterItem(store, attachment[0]), encounterItem(store, attachment[1])];
-      }));
-    }
-  });
-
   store._output.r = root;
   store._output.v = '1.0.0'; // Convert the output object form to an output array form
 
@@ -761,54 +742,53 @@ var prepOutput = function prepOutput(store, root) {
   }
 };
 
+var encodeAll = function encodeAll(store, resumeFromIndex) {
+  return store._references._resumableForEach(function (dataItem) {
+    // Encode the actual value
+    store._output[dataItem._key][dataItem._index] = types$1[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
+
+    if (dataItem._attachments.length > 0) {
+      store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
+        // Technically, here we might expect to only request items from the already explored set
+        // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
+        // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
+        return [encounterItem(store, attachment[0]), encounterItem(store, attachment[1])];
+      }));
+    }
+  }, resumeFromIndex);
+};
+
 var encode = function encode(value, options) {
   options = options || {};
+  var typeMap = {};
+  var wrappedTypeMap = {};
+  Object.keys(types$1).forEach(function (key) {
+    var systemName = types$1[key]._systemName;
+
+    if (systemName) {
+      typeMap[systemName] = key;
+    }
+
+    if ((systemName || '')[0] === '_') {
+      wrappedTypeMap[systemName.slice(1)] = systemName;
+    }
+  });
   var store = {
     _compat: options.compat,
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
     _types: types$1,
-    _typeMap: Object.keys(types$1).reduce(function (accumulator, key) {
-      var systemName = types$1[key]._systemName;
-
-      if (systemName) {
-        accumulator[systemName] = key;
-      }
-
-      return accumulator;
-    }, {}),
-    _wrappedTypeMap: Object.keys(types$1).reduce(function (accumulator, key) {
-      var systemName = types$1[key]._systemName;
-
-      if ((systemName || '')[0] === '_') {
-        accumulator[systemName.slice(1)] = systemName;
-      }
-
-      return accumulator;
-    }, {}),
+    _typeMap: typeMap,
+    _wrappedTypeMap: wrappedTypeMap,
     _references: genReferenceTracker(options.encodeSymbolKeys),
     // Known References
-    _explore: [],
-    // Exploration queue
     _deferred: [],
     // Deferment List of dataItems to encode later, in callback form, such as blobs and files, which are non-synchronous by design
     _output: {}
   };
-  var rootPointerKey = encounterItem(store, value); // Root value is simple, can skip main encoding steps
-
-  if (types$1[rootPointerKey]) {
-    return prepOutput(store, rootPointerKey);
-  } // TODO: encounterItem can do the same thing, provided steps are taken to handle deferment: so, keep track of the "encountered index" throughout the process and resume it again after the deferred are finished getting data
-  // Explore through the data structure
-
-
-  store._explore.push(value);
-
-  while (store._explore.length) {
-    encounterItem(store, store._explore.shift());
-  }
+  var rootPointerKey = encounterItem(store, value);
+  var resumeIndex = encodeAll(store);
   /* istanbul ignore next */
-
 
   if (store._deferred.length > 0) {
     // Handle Blob or File type encoding
@@ -827,6 +807,7 @@ var encode = function encode(value, options) {
       deferredLength -= 1;
 
       if (deferredLength === 0) {
+        encodeAll(store, resumeIndex);
         return prepOutput(store, rootPointerKey);
       }
     };

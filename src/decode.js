@@ -47,7 +47,7 @@ const explorePointer = (store, pointer) => {
         store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
     } catch (e) {
         // This can happen if the data is malformed, or if the environment does not support the type attempting to be created
-        throw genError(`Cannot generate recognized object type from pointer type "${p._key}".`, 'decode');
+        throw genError(`Cannot decode recognized pointer type "${p._key}".`, 'decode');
     }
 
     if (getSystemName(store._decoded[pointer]._parts) === 'Array') {

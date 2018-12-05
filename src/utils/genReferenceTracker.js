@@ -39,8 +39,18 @@ export default (encodeSymbolKeys) => {
             _set: (item, dataItem) => {
                 references.set(item, dataItem);
             },
-            _forEach: (callback) => {
-                references.forEach(callback);
+            _resumableForEach: (callback, resumeFromIndex) => {
+                resumeFromIndex = resumeFromIndex || 0;
+                let count = 0;
+
+                references.forEach((dataItem) => {
+                    if (count >= resumeFromIndex) {
+                        callback(dataItem);
+                    }
+                    count += 1;
+                });
+
+                return count;
             },
         };
     }
@@ -64,10 +74,14 @@ export default (encodeSymbolKeys) => {
             items.push(item);
             dataItems.push(dataItem);
         },
-        _forEach: (callback) => {
-            for (let i = 0; i < dataItems.length; i += 1) {
-                callback(dataItems[i]);
+        _resumableForEach: (callback, resumeFromIndex) => {
+            let count;
+
+            for (count = resumeFromIndex || 0; count < dataItems.length; count += 1) {
+                callback(dataItems[count]);
             }
+
+            return count;
         },
     };
 };

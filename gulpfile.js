@@ -230,7 +230,7 @@ gulp.task('test', (end) => {
         ['clear-node'],
         ['test-node-js-library', 'test-node-js-test'],
         ['test-node'],
-        ['clear-node'],
+        // ['clear-node'],
         end
     );
 });

@@ -8,6 +8,7 @@ require('/tests/FeatureTests/Blob.js');
 require('/tests/FeatureTests/Boolean.js');
 require('/tests/FeatureTests/Date.js');
 require('/tests/FeatureTests/DeferredTypeAttachedToDeferredType.js');
+require('/tests/FeatureTests/DeferredTypeInsideKeyedCollection.js');
 require('/tests/FeatureTests/Error.js');
 require('/tests/FeatureTests/FallbackReferenceTracker.js');
 require('/tests/FeatureTests/File.js');
@@ -43,9 +44,6 @@ require('/tests/FeatureTests/UnsupportedTypes.js');
 require('/tests/FeatureTests/WeakMap.js');
 require('/tests/FeatureTests/WeakSet.js');
 
-// Currently broken, TODO Fix
-// require('/tests/FeatureTests/DeferredTypeInsideKeyedCollection.js');
-
 
 
 
@@ -53,3 +51,12 @@ require('/tests/FeatureTests/WeakSet.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
+
+// const obj = { a: 1 };
+// const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+
+// encode([source], {
+//     onFinish: (encoded) => {
+//         console.log(JSON.stringify(encoded, null, 4))
+//     },
+// });

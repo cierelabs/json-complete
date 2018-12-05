@@ -171,19 +171,19 @@ test('Error: Encoding Expected', (t) => {
         Er: [
             [
                 [
-                    'St1',
                     'St0',
+                    'St1',
                     'St2',
                 ],
                 [
-                    'St0',
+                    'St1',
                     'fa',
                 ],
             ],
         ],
         St: [
-            'a',
             'Error',
+            'a',
             'stack!!!',
         ],
         r: 'Er0',

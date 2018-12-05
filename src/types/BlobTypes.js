@@ -7,20 +7,20 @@ import extractPointer from '/utils/extractPointer.js';
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
-        _deferredEncode: (store, dataItem, callback) => {
-            const reader = new FileReader();
-            reader.addEventListener('loadend', () => {
-                dataItem._deferredValuePointer = encounterItem(store, new Uint8Array(reader.result));
-                callback();
-            });
-            reader.readAsArrayBuffer(dataItem._reference);
-        },
         _encodeValue: (store, dataItem) => {
             return [
-                [dataItem._deferredValuePointer].concat(propertiesKeys.map((property) => {
+                [void 0].concat(propertiesKeys.map((property) => {
                     return encounterItem(store, dataItem._reference[property]);
                 })),
             ];
+        },
+        _deferredEncode: (store, dataItem, callback) => {
+            const reader = new FileReader();
+            reader.addEventListener('loadend', () => {
+                store._output[dataItem._key][dataItem._index][0][0] = encounterItem(store, new Uint8Array(reader.result));
+                callback();
+            });
+            reader.readAsArrayBuffer(dataItem._reference);
         },
         _generateReference: (store, key, index) => {
             const dataArray = store._encoded[key][index][0];

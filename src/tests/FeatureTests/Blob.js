@@ -76,7 +76,7 @@ if (typeof Blob === 'function') {
             encode([source]);
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Found deferred type, but no onFinish option provided.');
+            t.equal(e.message, 'Deferred type requires onFinish option.');
         }
     });
 
@@ -148,17 +148,17 @@ if (typeof Blob === 'function') {
                         [
                             [
                                 'U10',
-                                'St1',
+                                'St0',
                             ],
                             [
-                                'St0',
+                                'St1',
                                 'fa',
                             ],
                         ],
                     ],
                     St: [
-                        'a',
                         'application/json',
+                        'a',
                     ],
                     U1: [
                         [

@@ -183,10 +183,10 @@ On the other hand, non-built-in Symbols stored in value positions, not key posit
 
 | Compression | ES Modules | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7277 bytes ![](http://progressed.io/bar/100) | 8252 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2901 bytes ![](http://progressed.io/bar/40) | 2909 bytes ![](http://progressed.io/bar/35) |
-| zopfli      | 2852 bytes ![](http://progressed.io/bar/39) | 2854 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2661 bytes ![](http://progressed.io/bar/37) | 2654 bytes ![](http://progressed.io/bar/32) |
+| Minified    | 7158 bytes ![](http://progressed.io/bar/100) | 8128 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2915 bytes ![](http://progressed.io/bar/41) | 2942 bytes ![](http://progressed.io/bar/36) |
+| zopfli      | 2866 bytes ![](http://progressed.io/bar/40) | 2892 bytes ![](http://progressed.io/bar/36) |
+| brotli      | 2681 bytes ![](http://progressed.io/bar/37) | 2689 bytes ![](http://progressed.io/bar/33) |
 
 
 ---
@@ -406,8 +406,9 @@ TODO
 - [x] Add fallback blob support for files when decoding in compat mode
 - [x] Finish features for Edge
 - [x] Write test to make sure that a different blob attached to a blob won't cause missing data
-- [ ] Fix the bug related to storing Blob inside a Keyed Collection (DeferredTypeInsideKeyedCollection.js)
+- [x] Fix the bug related to storing Blob inside a Keyed Collection (DeferredTypeInsideKeyedCollection.js)
 - [x] Change "Safe Mode" to "Compat Mode"
+- [ ] Investigate possible bug related to duplicate primitives (numbers, strings) not being deduplicated in output
 - [ ] What happens, in compat mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [ ] Support IE11
 - [ ] Support IE10

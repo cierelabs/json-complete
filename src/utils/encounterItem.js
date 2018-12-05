@@ -59,13 +59,6 @@ const getPointerKey = (store, item) => {
     return pointerKey ? pointerKey : 'Ob';
 };
 
-const prepExplorableItem = (store, item) => {
-    // Type is known type and is a reference type (not simple), it should be explored
-    if (store._types[getPointerKey(store, item)]._build) {
-        store._explore.push(item);
-    }
-};
-
 export default (store, item) => {
     const pointerKey = getPointerKey(store, item);
 
@@ -110,15 +103,6 @@ export default (store, item) => {
     if (store._types[pointerKey]._deferredEncode) {
         store._deferred.push(dataItem);
     }
-
-    // Prep sub-items to be explored later
-    dataItem._indices.forEach((s) => {
-        prepExplorableItem(store, s);
-    });
-    dataItem._attachments.forEach((s) => {
-        prepExplorableItem(store, s[0]);
-        prepExplorableItem(store, s[1]);
-    });
 
     return dataItem._pointer;
 };

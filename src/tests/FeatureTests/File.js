@@ -147,7 +147,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
             encode([file]);
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Found deferred type, but no onFinish option provided.');
+            t.equal(e.message, 'Deferred type requires onFinish option.');
         }
     });
 
@@ -228,20 +228,20 @@ if (typeof File === 'function' && supportsFileCreation()) {
                         [
                             [
                                 'U10',
+                                'St0',
                                 'St1',
-                                'St2',
                                 'Nu0',
                             ],
                             [
-                                'St0',
+                                'St2',
                                 'fa',
                             ],
                         ],
                     ],
                     St: [
-                        'a',
                         'application/json',
                         'test.json',
+                        'a',
                     ],
                     U1: [
                         [
