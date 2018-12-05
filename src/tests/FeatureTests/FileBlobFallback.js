@@ -6,7 +6,7 @@ const decode = jsonComplete.decode;
 
 const time = 1522558801000;
 
-const encodedFileInArray = [
+const encodedFileInArray = JSON.stringify([
     [
         'Ar',
         [
@@ -62,7 +62,7 @@ const encodedFileInArray = [
         'v',
         '1.0.0'
     ]
-];
+]);
 
 
 if (typeof Blob === 'function') {

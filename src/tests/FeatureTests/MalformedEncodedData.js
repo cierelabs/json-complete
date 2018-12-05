@@ -7,7 +7,7 @@ const decode = jsonComplete.decode;
 test('Malformed Encoded Data: Invalid Regex', (t) => {
     t.plan(1);
 
-    const malformedEncoded = [
+    const malformedEncoded = JSON.stringify([
         [
             'Re',
             [
@@ -41,7 +41,7 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
             'v',
             '1.0.0',
         ],
-    ];
+    ]);
 
     try {
         decode(malformedEncoded);

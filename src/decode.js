@@ -61,7 +61,7 @@ export default (encoded, options) => {
     const store = {
         _compat: options.compat,
         _types: types,
-        _encoded: encoded.reduce((accumulator, e) => {
+        _encoded: JSON.parse(encoded).reduce((accumulator, e) => {
             accumulator[e[0]] = e[1];
             return accumulator;
         }, {}),

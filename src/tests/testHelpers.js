@@ -27,7 +27,7 @@ const isArray = (v) => {
 };
 
 const simplifyEncoded = (encoded) => {
-    return encoded.filter((i) => {
+    return JSON.parse(encoded).filter((i) => {
         return i[0] !== 'v';
     }).reduce((accumulator, e) => {
         accumulator[e[0]] = e[1];

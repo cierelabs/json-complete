@@ -8,12 +8,12 @@ const prepOutput = (store, root) => {
     store._output.v = '1.0.0';
 
     // Convert the output object form to an output array form
-    const output = Object.keys(store._output).map((key) => {
+    const output = JSON.stringify(Object.keys(store._output).map((key) => {
         return [
             key,
             store._output[key],
         ];
-    });
+    }), null, store._space);
 
     if (typeof store._onFinish === 'function') {
         store._onFinish(output);
@@ -65,6 +65,7 @@ export default (value, options) => {
         _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
+        _space: options.space,
         _types: types,
         _typeMap: typeMap,
         _wrappedTypeMap: wrappedTypeMap,

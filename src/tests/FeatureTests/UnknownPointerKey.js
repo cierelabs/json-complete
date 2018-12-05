@@ -6,7 +6,7 @@ const decode = jsonComplete.decode;
 test('Unknown Pointer Key: Inner Data', (t) => {
     t.plan(1);
 
-    const innerData = [
+    const innerData = JSON.stringify([
         ['r', 'Ar0'],
         ['Ar', [
             [
@@ -14,7 +14,7 @@ test('Unknown Pointer Key: Inner Data', (t) => {
             ],
         ]],
         ['--', ['a']],
-    ];
+    ]);
 
     t.equal(decode(innerData, {
         compat: true,
@@ -24,10 +24,10 @@ test('Unknown Pointer Key: Inner Data', (t) => {
 test('Unknown Pointer Key: Root Value', (t) => {
     t.plan(1);
 
-    const valueData = [
+    const valueData = JSON.stringify([
         ['r', '--0'],
         ['--', ['a']],
-    ];
+    ]);
 
     t.equal(decode(valueData, {
         compat: true,
@@ -37,7 +37,7 @@ test('Unknown Pointer Key: Root Value', (t) => {
 test('Unknown Pointer Key: Key Data', (t) => {
     t.plan(2);
 
-    const objectKeyData = [
+    const objectKeyData = JSON.stringify([
         ['r', 'Ob0'],
         ['Ob', [
             [
@@ -46,7 +46,7 @@ test('Unknown Pointer Key: Key Data', (t) => {
         ]],
         ['St', ['1']],
         ['--', ['a']],
-    ];
+    ]);
 
     const decodedObjectKeys = Object.keys(decode(objectKeyData, {
         compat: true,
@@ -59,7 +59,7 @@ test('Unknown Pointer Key: Key Data', (t) => {
 test('Unknown Pointer Key: Non-Compat Mode', (t) => {
     t.plan(1);
 
-    const innerData = [
+    const innerData = JSON.stringify([
         ['r', 'Ar0'],
         ['Ar', [
             [
@@ -67,7 +67,7 @@ test('Unknown Pointer Key: Non-Compat Mode', (t) => {
             ],
         ]],
         ['--', ['a']],
-    ];
+    ]);
 
     try {
         decode(innerData, {
@@ -82,10 +82,10 @@ test('Unknown Pointer Key: Non-Compat Mode', (t) => {
 test('Unknown Pointer Key: Root Value Non-Compat Mode', (t) => {
     t.plan(1);
 
-    const valueData = [
+    const valueData = JSON.stringify([
         ['r', '--0'],
         ['--', ['a']],
-    ];
+    ]);
 
     try {
         decode(valueData, {

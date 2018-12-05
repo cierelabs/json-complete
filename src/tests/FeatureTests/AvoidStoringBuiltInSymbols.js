@@ -45,7 +45,7 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         });
 
-        encoded.forEach((types) => {
+        JSON.parse(encoded).forEach((types) => {
             if (types[0] === 'rg') {
                 const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
                     if (item.length === 2) {
@@ -82,7 +82,7 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         });
 
-        encoded.forEach((types) => {
+        JSON.parse(encoded).forEach((types) => {
             if (types[0] === 'rg') {
                 const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
                     if (item.length === 2) {

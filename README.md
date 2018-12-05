@@ -38,7 +38,7 @@ npm run build
 
 ## Purpose
 
-json-complete was designed to store, transmit, and reconstruct data created through an immutable data state architecture. Because json-complete maintains references, and because the immutable style uses structural sharing, the entire history of an application's business-logic state changes can be compactly encoded and decoded for application debugging purposes. Basically, you can reconstruct anything the user is seeing AND how they got there, effectively time-traveling through their actions.
+json-complete was designed to store, transmit, and reconstruct data created through an immutable data state architecture. Because json-complete maintains references after encoding, and because the immutable style uses structural sharing, the entire history of an application's business-logic state changes can be compactly encoded and decoded for application debugging purposes. Basically, you can reconstruct anything the user is seeing AND how they got there, effectively time-traveling through their actions.
 
 The encoder is largely a pre-process step to make the non-JSON encodable data suitable for encoding as standard JSON. All values, objects, etc are encoded to JSON-legal structure of arrays and strings exclusively, which is then encoded to a standard JSON serialized string.
 
@@ -240,6 +240,43 @@ For some specific examples:
 In an extremely rare edge case, which should be avoided, built-in Symbols can be stored as values on other Objects, since the Symbol is a Reference Type like most other types0. When encoding these values, the Symbol is converted to the String form, which removes the reference to the original built-in Symbol. When decoding them, the Symbol will be unique, but it won't be the same kind of Symbol.
 
 
+#### Microsoft Edge Limitations
+
+Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in the references Map. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native Map.
+
+Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+
+
+#### Internet Explorer 11 Limitations
+
+Not yet supported.
+
+
+#### Internet Explorer 10 Limitations
+
+Not yet supported.
+
+
+#### Internet Explorer 9 Limitations
+
+Not yet supported.
+
+
+#### Internet Explorer 8 Limitations
+
+Not yet supported.
+
+
+#### Internet Explorer 7 Limitations
+
+Not yet supported.
+
+
+#### Internet Explorer 6 Limitations
+
+Not yet supported.
+
+
 ---
 
 
@@ -306,16 +343,20 @@ In an extremely rare edge case, which should be avoided, built-in Symbols can be
 - [x] Investigate possible bug related to duplicate primitives (numbers, strings) not being deduplicated in output (upon further observation, it is not a problem)
 - [ ] What happens, in compat mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [ ] Put examples in readme
+- [ ] Simplify the encoding process from the perspective of the definer by removing the in-line encounterItem steps, pushing those into the encoder
+- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
+- [x] Convert the output to string and allow the decoder to accept a string
+- [x] Update decoding error messages for types not supported in a given environment
+- [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data
 - [ ] Friday planned release
+
+
+## Future Plans
 - [ ] Support IE11
 - [ ] Support IE10
 - [ ] Support IE9
+- [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays
 - [ ] Support IE8 with legacy version
 - [ ] Support IE7 with legacy version
 - [ ] Support IE6 with legacy version
-
-- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
-- [ ] Convert the output to string and allow the decoder to accept a string
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await
-- [x] Update decoding error messages for types not supported in a given environment
-- [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data
