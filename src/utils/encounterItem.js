@@ -1,51 +1,7 @@
 import genError from '/utils/genError.js';
 import getSystemName from '/utils/getSystemName.js';
+import getAttachments from '/utils/getAttachments.js';
 import findItemKey from '/utils/getItemKey.js';
-
-const getAttachments = (v, encodeSymbolKeys) => {
-    const attached = {
-        _indices: [],
-        _attachments: [],
-    };
-
-    // Find all indices
-    const indices = [];
-    const indexObj = {};
-    // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
-    Array.prototype.forEach.call(v, (value, index) => {
-        indexObj[String(index)] = 1;
-        indices.push(index);
-    });
-
-    // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
-    let i = 0;
-
-    // Find all String keys that are not indices
-    // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
-    let keys = Object.keys(v).filter((key) => {
-        return !indexObj[key];
-    });
-
-    if (encodeSymbolKeys) {
-        keys = keys.concat(Object.getOwnPropertySymbols(v).filter((symbol) => {
-            // Ignore built-in Symbols
-            // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-            return Symbol[String(symbol).slice(14, -1)] !== symbol;
-        }));
-    }
-
-    // Create the lists
-    return indices.concat(keys).reduce((accumulator, key) => {
-        if (key === i) {
-            i += 1;
-            accumulator._indices.push(v[key]);
-        }
-        else {
-            accumulator._attachments.push([key, v[key]]);
-        }
-        return accumulator;
-    }, attached);
-};
 
 const getPointerKey = (store, item) => {
     const pointerKey = findItemKey(store, item);
@@ -91,8 +47,8 @@ export default (store, item) => {
 
         // Save the known attachments for the next phase so we do not have to reacquire them
         // Strings and Object-wrapped Strings will include indices for each character in the string, so ignore them
-        _indices: store._types[pointerKey]._ignoreIndices ? [] : attached._indices,
-        _attachments: attached._attachments,
+        _indexed: store._types[pointerKey]._ignoreIndices ? [] : attached._indexed,
+        _keyed: attached._keyed,
     };
 
     // Store the reference uniquely along with location information

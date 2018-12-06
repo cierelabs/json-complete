@@ -1,4 +1,4 @@
-import arrayLikeEncodeValue from '/utils/arrayLikeEncodeValue.js';
+import encounterItem from '/utils/encounterItem.js';
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
 import getSystemName from '/utils/getSystemName.js';
@@ -8,8 +8,11 @@ const genArrayBuffer = (type) => {
         _systemName: getSystemName(new type()),
         _encodeValue: (store, dataItem) => {
             // Might have used Array.from here, but it isn't supported in IE
-            dataItem._indices = Array.prototype.slice.call(new Uint8Array(dataItem._reference));
-            return arrayLikeEncodeValue(store, dataItem);
+            return [
+                Array.prototype.slice.call(new Uint8Array(dataItem._reference)).map((subValue) => {
+                    return encounterItem(store, subValue);
+                }),
+            ];
         },
         _generateReference: (store, key, index) => {
             const encodedValues = store._encoded[key][index][0];

@@ -50,7 +50,7 @@ if (typeof Symbol === 'function') {
         ]);
 
         t.deepEqual(encoded.St, [
-            'Sshared',
+            ' shared',
             'Runshared',
         ]);
     });

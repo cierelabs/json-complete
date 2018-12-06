@@ -2,6 +2,14 @@ import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import encounterItem from '/utils/encounterItem.js';
 import getDecoded from '/utils/getDecoded.js';
 
+const mapKeyedCollection = (collection, callback) => {
+    var arr = [];
+    collection.forEach((value, key) => {
+        arr.push(callback(value, key));
+    });
+    return arr;
+};
+
 export default (typeObj) => {
     // If Set is supported, Map is also supported
     /* istanbul ignore else */
@@ -10,8 +18,8 @@ export default (typeObj) => {
             _systemName: 'Set',
             _encodeValue: (store, dataItem) => {
                 return [
-                    Array.from(dataItem._reference).map((subValue) => {
-                        return encounterItem(store, subValue);
+                    mapKeyedCollection(dataItem._reference, (value) => {
+                        return encounterItem(store, value);
                     }),
                 ];
             },
@@ -31,8 +39,8 @@ export default (typeObj) => {
             _systemName: 'Map',
             _encodeValue: (store, dataItem) => {
                 return [
-                    Array.from(dataItem._reference).map((subValue) => {
-                        return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
+                    mapKeyedCollection(dataItem._reference, (value, key) => {
+                        return [encounterItem(store, key), encounterItem(store, value)];
                     }),
                 ];
             },

@@ -1,10 +1,16 @@
 import arrayLikeBuild from '/utils/arrayLikeBuild.js';
-import arrayLikeEncodeValue from '/utils/arrayLikeEncodeValue.js';
+import encounterItem from '/utils/encounterItem.js';
 
 export default (typeObj) => {
     typeObj.Ar = {
         _systemName: 'Array',
-        _encodeValue: arrayLikeEncodeValue,
+        _encodeValue: (store, dataItem) => {
+            return [
+                dataItem._indexed.map((subValue) => {
+                    return encounterItem(store, subValue);
+                }),
+            ];
+        },
         _generateReference: () => {
             return [];
         },
@@ -13,7 +19,13 @@ export default (typeObj) => {
 
     typeObj.rg = {
         _systemName: 'Arguments',
-        _encodeValue: arrayLikeEncodeValue,
+        _encodeValue: (store, dataItem) => {
+            return [
+                dataItem._indexed.map((subValue) => {
+                    return encounterItem(store, subValue);
+                }),
+            ];
+        },
         _generateReference: (store, key, index) => {
             return (function() {
                 return arguments;

@@ -10,7 +10,7 @@ export default (typeObj) => {
                 const symbolStringKey = Symbol.keyFor(dataItem._reference);
                 const isRegistered = symbolStringKey !== void 0;
 
-                return encounterItem(store, isRegistered ? `R${symbolStringKey}` : `S${String(dataItem._reference).slice(7, -1)}`);
+                return encounterItem(store, isRegistered ? `R${symbolStringKey}` : ` ${String(dataItem._reference).slice(7, -1)}`);
             },
             _generateReference: (store, key, index) => {
                 const decodedString = decodePointer(store, store._encoded[key][index]);

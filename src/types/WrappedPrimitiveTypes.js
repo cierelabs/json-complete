@@ -5,7 +5,7 @@ import getSystemName from '/utils/getSystemName.js';
 
 const genWrappedPrimitive = (type) => {
     return {
-        // The type is determined elsewhere
+        // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
         _systemName: `_${getSystemName(new type(''))}`,
         _encodeValue: (store, dataItem) => {
             return [

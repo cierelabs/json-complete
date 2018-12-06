@@ -57,7 +57,7 @@ if (typeof Symbol === 'function') {
         t.notEqual(decoded.x, source);
     });
 
-    test('Symbol: Encoding Expected', (t) => {
+    test('Symbol: Encoding Expected for Registered Symbol', (t) => {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
@@ -66,6 +66,20 @@ if (typeof Symbol === 'function') {
             ],
             St: [
                 'Ra',
+            ],
+            r: 'Sy0',
+        });
+    });
+
+    test('Symbol: Encoding Expected for Normal Symbol', (t) => {
+        t.plan(1);
+
+        t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol())), {
+            Sy: [
+                'St0',
+            ],
+            St: [
+                ' ',
             ],
             r: 'Sy0',
         });

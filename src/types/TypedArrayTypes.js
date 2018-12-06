@@ -1,11 +1,17 @@
 import arrayLikeBuild from '/utils/arrayLikeBuild.js';
-import arrayLikeEncodeValue from '/utils/arrayLikeEncodeValue.js';
+import encounterItem from '/utils/encounterItem.js';
 import getSystemName from '/utils/getSystemName.js';
 
 const genTypedArray = (type) => {
     return {
         _systemName: getSystemName(new type()),
-        _encodeValue: arrayLikeEncodeValue,
+        _encodeValue: (store, dataItem) => {
+            return [
+                dataItem._indexed.map((subValue) => {
+                    return encounterItem(store, subValue);
+                }),
+            ];
+        },
         _generateReference: (store, key, index) => {
             return new type(store._encoded[key][index][0].length);
         },
