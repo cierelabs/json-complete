@@ -224,10 +224,8 @@ if (typeof Map === 'function') {
             Ma: [
                 [
                     [
-                        [
-                            'fa',
-                            'tr',
-                        ],
+                        'fa',
+                        'tr',
                     ],
                     [
                         'St0',

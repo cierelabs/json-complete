@@ -3,8 +3,8 @@ import attachAttachments from '/utils/attachAttachments.js';
 export default (typeObj) => {
     typeObj.Ob = {
         _systemName: 'Object',
-        _encodeValue: () => {
-            return [];
+        _encodeValue: (reference, attachments) => {
+            return attachments._keyed;
         },
         _generateReference: () => {
             return {};

@@ -1,14 +1,5 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
-import encounterItem from '/utils/encounterItem.js';
 import getDecoded from '/utils/getDecoded.js';
-
-const mapKeyedCollection = (collection, callback) => {
-    var arr = [];
-    collection.forEach((value, key) => {
-        arr.push(callback(value, key));
-    });
-    return arr;
-};
 
 export default (typeObj) => {
     // If Set is supported, Map is also supported
@@ -16,12 +7,13 @@ export default (typeObj) => {
     if (typeof Set === 'function') {
         typeObj.Se = {
             _systemName: 'Set',
-            _encodeValue: (store, dataItem) => {
-                return [
-                    mapKeyedCollection(dataItem._reference, (value) => {
-                        return encounterItem(store, value);
-                    }),
-                ];
+            _encodeValue: (reference, attachments) => {
+                var arr = [];
+                reference.forEach((value) => {
+                    arr.push(value);
+                });
+
+                return [arr].concat(attachments._keyed);
             },
             _generateReference: () => {
                 return new Set();
@@ -37,20 +29,23 @@ export default (typeObj) => {
 
         typeObj.Ma = {
             _systemName: 'Map',
-            _encodeValue: (store, dataItem) => {
-                return [
-                    mapKeyedCollection(dataItem._reference, (value, key) => {
-                        return [encounterItem(store, key), encounterItem(store, value)];
-                    }),
-                ];
+            _deepValue: 1,
+            _encodeValue: (reference, attachments) => {
+                var arr = [];
+                reference.forEach((value, key) => {
+                    arr.push(key);
+                    arr.push(value);
+                });
+
+                return [arr].concat(attachments._keyed);
             },
             _generateReference: () => {
                 return new Map();
             },
             _build: (store, dataItem) => {
-                dataItem._parts[0].forEach((subPointers) => {
-                    dataItem._reference.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
-                });
+                for (let kv = 0; kv < dataItem._parts[0].length; kv += 2) {
+                    dataItem._reference.set(getDecoded(store, dataItem._parts[0][kv]), getDecoded(store, dataItem._parts[0][kv + 1]));
+                }
 
                 attachAttachmentsSkipFirst(store, dataItem);
             },

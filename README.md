@@ -192,10 +192,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7134 bytes ![](http://progressed.io/bar/100) | 8100 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2897 bytes ![](http://progressed.io/bar/41) | 2918 bytes ![](http://progressed.io/bar/36) |
-| zopfli      | 2847 bytes ![](http://progressed.io/bar/40) | 2869 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2667 bytes ![](http://progressed.io/bar/37) | 2679 bytes ![](http://progressed.io/bar/33) |
+| Minified    | 7206 bytes ![](http://progressed.io/bar/100) | 8200 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2912 bytes ![](http://progressed.io/bar/40) | 2933 bytes ![](http://progressed.io/bar/36) |
+| zopfli      | 2857 bytes ![](http://progressed.io/bar/40) | 2878 bytes ![](http://progressed.io/bar/35) |
+| brotli      | 2665 bytes ![](http://progressed.io/bar/37) | 2688 bytes ![](http://progressed.io/bar/33) |
 
 
 ---
@@ -341,9 +341,11 @@ Not yet supported.
 - [x] Fix the bug related to storing Blob inside a Keyed Collection (DeferredTypeInsideKeyedCollection.js)
 - [x] Change "Safe Mode" to "Compat Mode"
 - [x] Investigate possible bug related to duplicate primitives (numbers, strings) not being deduplicated in output (upon further observation, it is not a problem)
+- [x] Simplify the encoding process from the perspective of the definer by removing the in-line encounterItem steps, pushing those into the encoder
+- [ ] Finish rework of type interface API
+- [ ] Pull out duplicate code
 - [ ] What happens, in compat mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [ ] Put examples in readme
-- [ ] Simplify the encoding process from the perspective of the definer by removing the in-line encounterItem steps, pushing those into the encoder
 - [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [x] Convert the output to string and allow the decoder to accept a string
 - [x] Update decoding error messages for types not supported in a given environment

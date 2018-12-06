@@ -1,16 +1,13 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
-import encounterItem from '/utils/encounterItem.js';
 import getSystemName from '/utils/getSystemName.js';
 
 const genWrappedPrimitive = (type) => {
     return {
         // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
         _systemName: `_${getSystemName(new type(''))}`,
-        _encodeValue: (store, dataItem) => {
-            return [
-                encounterItem(store, dataItem._reference.valueOf()),
-            ];
+        _encodeValue: (reference, attachments) => {
+            return [reference.valueOf()].concat(attachments._keyed);
         },
         _generateReference: (store, key, index) => {
             return new type(decodePointer(store, store._encoded[key][index][0]));
@@ -25,9 +22,6 @@ export default (typeObj) => {
     typeObj.NU = genWrappedPrimitive(Number);
 
     typeObj.ST = genWrappedPrimitive(String);
-
-    // String Objects allow index access into the string value, which is already stored, so ignore indices
-    typeObj.ST._ignoreIndices = 1;
 
     return typeObj;
 };

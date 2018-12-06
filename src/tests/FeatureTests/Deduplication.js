@@ -38,18 +38,13 @@ else {
 
 if (typeof Symbol === 'function') {
     test('Deduplication: Symbols', (t) => {
-        t.plan(3);
+        t.plan(2);
 
         const sharedSymbol = Symbol('shared');
         const encoded = testHelpers.simplifyEncoded(encode([sharedSymbol, Symbol.for('unshared'), sharedSymbol]));
 
         t.equal(encoded.Sy.length, 2);
         t.deepEqual(encoded.Sy, [
-            'St0',
-            'St1',
-        ]);
-
-        t.deepEqual(encoded.St, [
             ' shared',
             'Runshared',
         ]);

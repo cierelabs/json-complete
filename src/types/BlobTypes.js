@@ -1,26 +1,24 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
-import encounterItem from '/utils/encounterItem.js';
 import extractPointer from '/utils/extractPointer.js';
 
 /* istanbul ignore next */
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
-        _encodeValue: (store, dataItem) => {
-            return [
-                [void 0].concat(propertiesKeys.map((property) => {
-                    return encounterItem(store, dataItem._reference[property]);
-                })),
-            ];
+        _encodeValue: (reference, attachments) => {
+            // Skip the decoding of the main value for now
+            return [[void 0].concat(propertiesKeys.map((property) => {
+                return reference[property];
+            }))].concat(attachments._keyed);
         },
-        _deferredEncode: (store, dataItem, callback) => {
+        _deferredEncode: (reference, dataArray, encoder, callback) => {
             const reader = new FileReader();
             reader.addEventListener('loadend', () => {
-                store._output[dataItem._key][dataItem._index][0][0] = encounterItem(store, new Uint8Array(reader.result));
+                dataArray[0][0] = encoder(new Uint8Array(reader.result));
                 callback();
             });
-            reader.readAsArrayBuffer(dataItem._reference);
+            reader.readAsArrayBuffer(reference);
         },
         _generateReference: (store, key, index) => {
             const dataArray = store._encoded[key][index][0];

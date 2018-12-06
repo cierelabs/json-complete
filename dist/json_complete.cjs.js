@@ -1,12 +1,5 @@
 'use strict';
 
-var genError = function genError(message, operation, type) {
-  var error = new Error(message);
-  error.operation = operation;
-  error.type = type;
-  return error;
-};
-
 var getSystemName = function getSystemName(v) {
   return Object.prototype.toString.call(v).slice(8, -1);
 };
@@ -56,103 +49,11 @@ var findItemKey = function findItemKey(store, item) {
   return store._typeMap[systemName];
 };
 
-var getAttachments = function getAttachments(v, encodeSymbolKeys) {
-  var attached = {
-    _indices: [],
-    _attachments: []
-  }; // Find all indices
-
-  var indices = [];
-  var indexObj = {}; // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
-
-  Array.prototype.forEach.call(v, function (value, index) {
-    indexObj[String(index)] = 1;
-    indices.push(index);
-  }); // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
-
-  var i = 0; // Find all String keys that are not indices
-  // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
-
-  var keys = Object.keys(v).filter(function (key) {
-    return !indexObj[key];
-  });
-
-  if (encodeSymbolKeys) {
-    keys = keys.concat(Object.getOwnPropertySymbols(v).filter(function (symbol) {
-      // Ignore built-in Symbols
-      // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
-      return Symbol[String(symbol).slice(14, -1)] !== symbol;
-    }));
-  } // Create the lists
-
-
-  return indices.concat(keys).reduce(function (accumulator, key) {
-    if (key === i) {
-      i += 1;
-
-      accumulator._indices.push(v[key]);
-    } else {
-      accumulator._attachments.push([key, v[key]]);
-    }
-
-    return accumulator;
-  }, attached);
-};
-
-var getPointerKey = function getPointerKey(store, item) {
-  var pointerKey = findItemKey(store, item);
-
-  if (!pointerKey && !store._compat) {
-    var type = getSystemName(item);
-    throw genError("Cannot encode unsupported type \"" + type + "\".", 'encode', type);
-  } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
-
-
-  return pointerKey ? pointerKey : 'Ob';
-};
-
-var encounterItem = function encounterItem(store, item) {
-  var pointerKey = getPointerKey(store, item); // Simple type, return pointer (pointer key)
-
-  if (!store._types[pointerKey]._build) {
-    return pointerKey;
-  } // Already encountered, return pointer
-
-
-  var existingDataItem = store._references._get(item, pointerKey);
-
-  if (existingDataItem !== void 0) {
-    return existingDataItem._pointer;
-  } // Ensure location exists
-
-
-  store._output[pointerKey] = store._output[pointerKey] || []; // Add temp value to update the location
-
-  store._output[pointerKey].push(void 0);
-
-  var pointerIndex = store._output[pointerKey].length - 1;
-  var attached = getAttachments(item, store._encodeSymbolKeys);
-  var dataItem = {
-    _key: pointerKey,
-    _index: pointerIndex,
-    _pointer: pointerKey + pointerIndex,
-    _reference: item,
-    // Save the known attachments for the next phase so we do not have to reacquire them
-    // Strings and Object-wrapped Strings will include indices for each character in the string, so ignore them
-    _indices: store._types[pointerKey]._ignoreIndices ? [] : attached._indices,
-    _attachments: attached._attachments
-  }; // Store the reference uniquely along with location information
-
-  store._references._set(item, dataItem); // Some values can only be obtained asynchronously, so add them to a list of items to check
-
-  /* istanbul ignore next */
-
-
-  if (store._types[pointerKey]._deferredEncode) {
-    store._deferred.push(dataItem);
-  }
-
-  return dataItem._pointer;
+var genError = function genError(message, operation, type) {
+  var error = new Error(message);
+  error.operation = operation;
+  error.type = type;
+  return error;
 };
 
 var canUseNormalMap = function canUseNormalMap(encodeSymbolKeys) {
@@ -241,10 +142,47 @@ var genReferenceTracker = function genReferenceTracker(encodeSymbolKeys) {
   };
 };
 
-var arrayLikeEncodeValue = function arrayLikeEncodeValue(store, dataItem) {
-  return [dataItem._indices.map(function (subValue) {
-    return encounterItem(store, subValue);
-  })];
+var getAttachments = function getAttachments(item, encodeSymbolKeys) {
+  var attached = {
+    _indexed: [],
+    _keyed: []
+  }; // Find all indices
+
+  var indices = [];
+  var indexObj = {}; // Objects not based on Arrays, like Objects and Sets, will not find any indices here because we are using the Array.prototype.forEach
+
+  Array.prototype.forEach.call(item, function (value, index) {
+    indexObj[String(index)] = 1;
+    indices.push(index);
+  }); // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
+
+  var i = 0; // Find all String keys that are not indices
+  // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
+
+  var keys = Object.keys(item).filter(function (key) {
+    return !indexObj[key];
+  });
+
+  if (encodeSymbolKeys) {
+    keys = keys.concat(Object.getOwnPropertySymbols(item).filter(function (symbol) {
+      // Ignore built-in Symbols
+      // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
+      return Symbol[String(symbol).slice(14, -1)] !== symbol;
+    }));
+  } // Create the lists
+
+
+  return indices.concat(keys).reduce(function (accumulator, key) {
+    if (key === i) {
+      i += 1;
+
+      accumulator._indexed.push(item[key]);
+    } else {
+      accumulator._keyed.push([key, item[key]]);
+    }
+
+    return accumulator;
+  }, attached);
 };
 
 var extractPointer = function extractPointer(pointer) {
@@ -295,10 +233,8 @@ var decodePointer = function decodePointer(store, pointer) {
 var genArrayBuffer = function genArrayBuffer(type) {
   return {
     _systemName: getSystemName(new type()),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      // Might have used Array.from here, but it isn't supported in IE
-      dataItem._indices = Array.prototype.slice.call(new Uint8Array(dataItem._reference));
-      return arrayLikeEncodeValue(store, dataItem);
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [Array.prototype.slice.call(new Uint8Array(reference))].concat(attachments._keyed);
     },
     _generateReference: function _generateReference(store, key, index) {
       var encodedValues = store._encoded[key][index][0];
@@ -341,7 +277,9 @@ var arrayLikeBuild = function arrayLikeBuild(store, dataItem) {
 var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
   typeObj.Ar = {
     _systemName: 'Array',
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [attachments._indexed].concat(attachments._keyed);
+    },
     _generateReference: function _generateReference() {
       return [];
     },
@@ -349,7 +287,9 @@ var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
   };
   typeObj.rg = {
     _systemName: 'Arguments',
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [attachments._indexed].concat(attachments._keyed);
+    },
     _generateReference: function _generateReference(store, key, index) {
       return function () {
         return arguments;
@@ -363,8 +303,8 @@ var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
 var genPrimitive = function genPrimitive(type) {
   return {
     _systemName: getSystemName(type('')),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return String(dataItem._reference);
+    _encodeValue: function _encodeValue(reference) {
+      return String(reference);
     },
     _generateReference: function _generateReference(store, key, index) {
       return type(store._encoded[key][index]);
@@ -374,9 +314,7 @@ var genPrimitive = function genPrimitive(type) {
 };
 
 var BasePrimitiveTypes = function BasePrimitiveTypes(typeObj) {
-  typeObj.St = genPrimitive(String); // Strings allow index access into the string value, which is already stored, so ignore indices
-
-  typeObj.St._ignoreIndices = 1;
+  typeObj.St = genPrimitive(String);
   typeObj.Nu = genPrimitive(Number);
   return typeObj;
 };
@@ -395,18 +333,19 @@ var BigIntType = function BigIntType(typeObj) {
 var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
   return {
     _systemName: systemName,
-    _encodeValue: function _encodeValue(store, dataItem) {
+    _encodeValue: function _encodeValue(reference, attachments) {
+      // Skip the decoding of the main value for now
       return [[void 0].concat(propertiesKeys.map(function (property) {
-        return encounterItem(store, dataItem._reference[property]);
-      }))];
+        return reference[property];
+      }))].concat(attachments._keyed);
     },
-    _deferredEncode: function _deferredEncode(store, dataItem, callback) {
+    _deferredEncode: function _deferredEncode(reference, dataArray, encoder, callback) {
       var reader = new FileReader();
       reader.addEventListener('loadend', function () {
-        store._output[dataItem._key][dataItem._index][0][0] = encounterItem(store, new Uint8Array(reader.result));
+        dataArray[0][0] = encoder(new Uint8Array(reader.result));
         callback();
       });
-      reader.readAsArrayBuffer(dataItem._reference);
+      reader.readAsArrayBuffer(reference);
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];
@@ -465,8 +404,8 @@ var BlobTypes = function BlobTypes(typeObj) {
 var DateType = function DateType(typeObj) {
   typeObj.Da = {
     _systemName: 'Date',
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [encounterItem(store, dataItem._reference.valueOf())];
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [reference.valueOf()].concat(attachments._keyed);
     },
     _generateReference: function _generateReference(store, key, index) {
       return new Date(decodePointer(store, store._encoded[key][index][0]));
@@ -488,8 +427,8 @@ var standardErrors = {
 var ErrorType = function ErrorType(typeObj) {
   typeObj.Er = {
     _systemName: 'Error',
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [[encounterItem(store, standardErrors[dataItem._reference.name] ? dataItem._reference.name : 'Error'), encounterItem(store, dataItem._reference.message), encounterItem(store, dataItem._reference.stack)]];
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [[standardErrors[reference.name] ? reference.name : 'Error', reference.message, reference.stack]].concat(attachments._keyed);
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];
@@ -509,10 +448,12 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
   if (typeof Set === 'function') {
     typeObj.Se = {
       _systemName: 'Set',
-      _encodeValue: function _encodeValue(store, dataItem) {
-        return [Array.from(dataItem._reference).map(function (subValue) {
-          return encounterItem(store, subValue);
-        })];
+      _encodeValue: function _encodeValue(reference, attachments) {
+        var arr = [];
+        reference.forEach(function (value) {
+          arr.push(value);
+        });
+        return [arr].concat(attachments._keyed);
       },
       _generateReference: function _generateReference() {
         return new Set();
@@ -527,18 +468,22 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
     };
     typeObj.Ma = {
       _systemName: 'Map',
-      _encodeValue: function _encodeValue(store, dataItem) {
-        return [Array.from(dataItem._reference).map(function (subValue) {
-          return [encounterItem(store, subValue[0]), encounterItem(store, subValue[1])];
-        })];
+      _deepValue: 1,
+      _encodeValue: function _encodeValue(reference, attachments) {
+        var arr = [];
+        reference.forEach(function (value, key) {
+          arr.push(key);
+          arr.push(value);
+        });
+        return [arr].concat(attachments._keyed);
       },
       _generateReference: function _generateReference() {
         return new Map();
       },
       _build: function _build(store, dataItem) {
-        dataItem._parts[0].forEach(function (subPointers) {
-          dataItem._reference.set(getDecoded(store, subPointers[0]), getDecoded(store, subPointers[1]));
-        });
+        for (var kv = 0; kv < dataItem._parts[0].length; kv += 2) {
+          dataItem._reference.set(getDecoded(store, dataItem._parts[0][kv]), getDecoded(store, dataItem._parts[0][kv + 1]));
+        }
 
         attachAttachmentsSkipFirst(store, dataItem);
       }
@@ -551,8 +496,8 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
 var ObjectType = function ObjectType(typeObj) {
   typeObj.Ob = {
     _systemName: 'Object',
-    _encodeValue: function _encodeValue() {
-      return [];
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return attachments._keyed;
     },
     _generateReference: function _generateReference() {
       return {};
@@ -577,9 +522,8 @@ var getFlags = function getFlags(reference) {
 var RegExpType = function RegExpType(typeObj) {
   typeObj.Re = {
     _systemName: 'RegExp',
-    _encodeValue: function _encodeValue(store, dataItem) {
-      var reference = dataItem._reference;
-      return [[encounterItem(store, reference.source), encounterItem(store, getFlags(reference)), encounterItem(store, reference.lastIndex)]];
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [[reference.source, getFlags(reference), reference.lastIndex]].concat(attachments._keyed);
     },
     _generateReference: function _generateReference(store, key, index) {
       var dataArray = store._encoded[key][index][0];
@@ -625,13 +569,13 @@ var SymbolType = function SymbolType(typeObj) {
   if (typeof Symbol === 'function') {
     typeObj.Sy = {
       _systemName: 'Symbol',
-      _encodeValue: function _encodeValue(store, dataItem) {
-        var symbolStringKey = Symbol.keyFor(dataItem._reference);
+      _encodeValue: function _encodeValue(reference) {
+        var symbolStringKey = Symbol.keyFor(reference);
         var isRegistered = symbolStringKey !== void 0;
-        return encounterItem(store, isRegistered ? "R" + symbolStringKey : "S" + String(dataItem._reference).slice(7, -1));
+        return isRegistered ? "R" + symbolStringKey : " " + String(reference).slice(7, -1);
       },
       _generateReference: function _generateReference(store, key, index) {
-        var decodedString = decodePointer(store, store._encoded[key][index]);
+        var decodedString = store._encoded[key][index];
         return decodedString[0] === 'R' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
       },
       _build: function _build() {} // Symbols do not allow attachments, no-op
@@ -645,7 +589,9 @@ var SymbolType = function SymbolType(typeObj) {
 var genTypedArray = function genTypedArray(type) {
   return {
     _systemName: getSystemName(new type()),
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [attachments._indexed].concat(attachments._keyed);
+    },
     _generateReference: function _generateReference(store, key, index) {
       return new type(store._encoded[key][index][0].length);
     },
@@ -688,10 +634,10 @@ var TypedArrayTypes = function TypedArrayTypes(typeObj) {
 
 var genWrappedPrimitive = function genWrappedPrimitive(type) {
   return {
-    // The type is determined elsewhere
+    // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
     _systemName: "_" + getSystemName(new type('')),
-    _encodeValue: function _encodeValue(store, dataItem) {
-      return [encounterItem(store, dataItem._reference.valueOf())];
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return [reference.valueOf()].concat(attachments._keyed);
     },
     _generateReference: function _generateReference(store, key, index) {
       return new type(decodePointer(store, store._encoded[key][index][0]));
@@ -703,9 +649,7 @@ var genWrappedPrimitive = function genWrappedPrimitive(type) {
 var WrappedPrimitiveTypes = function WrappedPrimitiveTypes(typeObj) {
   typeObj.Bo = genWrappedPrimitive(Boolean);
   typeObj.NU = genWrappedPrimitive(Number);
-  typeObj.ST = genWrappedPrimitive(String); // String Objects allow index access into the string value, which is already stored, so ignore indices
-
-  typeObj.ST._ignoreIndices = 1;
+  typeObj.ST = genWrappedPrimitive(String);
   return typeObj;
 };
 
@@ -727,35 +671,93 @@ types = BlobTypes(types);
 types = BigIntType(types);
 var types$1 = types;
 
+var getPointerKey = function getPointerKey(store, item) {
+  var pointerKey = findItemKey(store, item);
+
+  if (!pointerKey && !store._compat) {
+    var type = getSystemName(item);
+    throw genError("Cannot encode unsupported type \"" + type + "\".", 'encode', type);
+  } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+
+
+  return pointerKey ? pointerKey : 'Ob';
+};
+
+var encounterItem = function encounterItem(store, item) {
+  var pointerKey = getPointerKey(store, item); // Simple type, return pointer (pointer key)
+
+  if (!store._types[pointerKey]._build) {
+    return pointerKey;
+  } // Already encountered, return pointer
+
+
+  var existingDataItem = store._references._get(item, pointerKey);
+
+  if (existingDataItem !== void 0) {
+    return existingDataItem._pointer;
+  } // Ensure location exists
+
+
+  store._output[pointerKey] = store._output[pointerKey] || []; // Add temp value to update the location
+
+  store._output[pointerKey].push(0);
+
+  var pointerIndex = store._output[pointerKey].length - 1;
+  var dataItem = {
+    _key: pointerKey,
+    _index: pointerIndex,
+    _pointer: pointerKey + pointerIndex,
+    _reference: item
+  }; // Store the reference uniquely along with location information
+
+  store._references._set(item, dataItem); // Some values can only be obtained asynchronously, so add them to a list of items to check
+
+  /* istanbul ignore next */
+
+
+  if (store._types[pointerKey]._deferredEncode) {
+    store._deferred.push(dataItem);
+  }
+
+  return dataItem._pointer;
+};
+
+var encodeAll = function encodeAll(store, resumeFromIndex) {
+  return store._references._resumableForEach(function (dataItem) {
+    var encodedForm = types$1[dataItem._key]._encodeValue(dataItem._reference, getAttachments(dataItem._reference, store._encodeSymbolKeys)); // All types that encode directly to Strings (String, Number, BigInt, and Symbol) do not have attachments
+
+
+    if (getSystemName(encodedForm) !== 'String') {
+      // Encounter all data in the encoded form to get the appropriate Pointers and
+      encodedForm = encodedForm.map(function (part) {
+        if (getSystemName(part) === 'Array') {
+          return part.map(function (subPart) {
+            return encounterItem(store, subPart);
+          });
+        } // Wrapped Primitive Types have a single value for the first item, rather than an Array
+
+
+        return encounterItem(store, part);
+      });
+    }
+
+    store._output[dataItem._key][dataItem._index] = encodedForm;
+  }, resumeFromIndex);
+};
+
 var prepOutput = function prepOutput(store, root) {
   store._output.r = root;
   store._output.v = '1.0.0'; // Convert the output object form to an output array form
 
-  var output = Object.keys(store._output).map(function (key) {
+  var output = JSON.stringify(Object.keys(store._output).map(function (key) {
     return [key, store._output[key]];
-  });
+  }), null, store._space);
 
   if (typeof store._onFinish === 'function') {
     store._onFinish(output);
   } else {
     return output;
   }
-};
-
-var encodeAll = function encodeAll(store, resumeFromIndex) {
-  return store._references._resumableForEach(function (dataItem) {
-    // Encode the actual value
-    store._output[dataItem._key][dataItem._index] = types$1[dataItem._key]._encodeValue(store, dataItem); // Encode any values attached to the value
-
-    if (dataItem._attachments.length > 0) {
-      store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._attachments.map(function (attachment) {
-        // Technically, here we might expect to only request items from the already explored set
-        // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
-        // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
-        return [encounterItem(store, attachment[0]), encounterItem(store, attachment[1])];
-      }));
-    }
-  }, resumeFromIndex);
 };
 
 var encode = function encode(value, options) {
@@ -777,6 +779,7 @@ var encode = function encode(value, options) {
     _compat: options.compat,
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
+    _space: options.space,
     _types: types$1,
     _typeMap: typeMap,
     _wrappedTypeMap: wrappedTypeMap,
@@ -814,7 +817,9 @@ var encode = function encode(value, options) {
     };
 
     store._deferred.forEach(function (dataItem) {
-      types$1[dataItem._key]._deferredEncode(store, dataItem, onCallback);
+      types$1[dataItem._key]._deferredEncode(dataItem._reference, store._output[dataItem._key][dataItem._index], function (data) {
+        return encounterItem(store, data);
+      }, onCallback);
     });
 
     return;
@@ -879,7 +884,7 @@ var decode = function decode(encoded, options) {
   var store = {
     _compat: options.compat,
     _types: types$1,
-    _encoded: encoded.reduce(function (accumulator, e) {
+    _encoded: JSON.parse(encoded).reduce(function (accumulator, e) {
       accumulator[e[0]] = e[1];
       return accumulator;
     }, {}),

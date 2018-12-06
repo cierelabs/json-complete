@@ -62,9 +62,6 @@ if (typeof Symbol === 'function') {
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
             Sy: [
-                'St0',
-            ],
-            St: [
                 'Ra',
             ],
             r: 'Sy0',
@@ -76,9 +73,6 @@ if (typeof Symbol === 'function') {
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol())), {
             Sy: [
-                'St0',
-            ],
-            St: [
                 ' ',
             ],
             r: 'Sy0',

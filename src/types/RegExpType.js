@@ -1,6 +1,5 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
-import encounterItem from '/utils/encounterItem.js';
 
 const getFlags = (reference) => {
     /* istanbul ignore if */
@@ -15,15 +14,12 @@ const getFlags = (reference) => {
 export default (typeObj) => {
     typeObj.Re = {
         _systemName: 'RegExp',
-        _encodeValue: (store, dataItem) => {
-            const reference = dataItem._reference;
-            return [
-                [
-                    encounterItem(store, reference.source),
-                    encounterItem(store, getFlags(reference)),
-                    encounterItem(store, reference.lastIndex),
-                ],
-            ];
+        _encodeValue: (reference, attachments) => {
+            return [[
+                reference.source,
+                getFlags(reference),
+                reference.lastIndex,
+            ]].concat(attachments._keyed);
         },
         _generateReference: (store, key, index) => {
             const dataArray = store._encoded[key][index][0];

@@ -52,13 +52,10 @@ require('/tests/FeatureTests/WeakSet.js');
 // const jsonComplete = require('/main.js');
 
 // const encode = jsonComplete.encode;
-// const decode = jsonComplete.decode;
+// // const decode = jsonComplete.decode;
 
-// const obj = { a: 1 };
-// const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+// const source = ['test'];
 
-// encode([source], {
-//     onFinish: (encoded) => {
-//         console.log(JSON.stringify(encoded, null, 4))
-//     },
-// });
+// console.log(encode(source, {
+//     space: 4,
+// }));

@@ -1,6 +1,5 @@
 import attachAttachmentsSkipFirst from '/utils/attachAttachmentsSkipFirst.js';
 import decodePointer from '/utils/decodePointer.js';
-import encounterItem from '/utils/encounterItem.js';
 
 const standardErrors = {
     'EvalError': EvalError,
@@ -14,14 +13,12 @@ const standardErrors = {
 export default (typeObj) => {
     typeObj.Er = {
         _systemName: 'Error',
-        _encodeValue: (store, dataItem) => {
-            return [
-                [
-                    encounterItem(store, standardErrors[dataItem._reference.name] ? dataItem._reference.name : 'Error'),
-                    encounterItem(store, dataItem._reference.message),
-                    encounterItem(store, dataItem._reference.stack),
-                ],
-            ];
+        _encodeValue: (reference, attachments) => {
+            return [[
+                standardErrors[reference.name] ? reference.name : 'Error',
+                reference.message,
+                reference.stack,
+            ]].concat(attachments._keyed);
         },
         _generateReference: (store, key, index) => {
             const dataArray = store._encoded[key][index][0];

@@ -1,7 +1,85 @@
-import encounterItem from '/utils/encounterItem.js';
+import findItemKey from '/utils/getItemKey.js';
 import genError from '/utils/genError.js';
 import genReferenceTracker from '/utils/genReferenceTracker.js';
+import getAttachments from '/utils/getAttachments.js';
+import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
+
+const getPointerKey = (store, item) => {
+    const pointerKey = findItemKey(store, item);
+
+    if (!pointerKey && !store._compat) {
+        const type = getSystemName(item);
+        throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
+    }
+
+    // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    return pointerKey ? pointerKey : 'Ob';
+};
+
+const encounterItem = (store, item) => {
+    const pointerKey = getPointerKey(store, item);
+
+    // Simple type, return pointer (pointer key)
+    if (!store._types[pointerKey]._build) {
+        return pointerKey;
+    }
+
+    // Already encountered, return pointer
+    const existingDataItem = store._references._get(item, pointerKey);
+    if (existingDataItem !== void 0) {
+        return existingDataItem._pointer;
+    }
+
+    // Ensure location exists
+    store._output[pointerKey] = store._output[pointerKey] || [];
+
+    // Add temp value to update the location
+    store._output[pointerKey].push(0);
+
+    const pointerIndex = store._output[pointerKey].length - 1;
+
+    const dataItem = {
+        _key: pointerKey,
+        _index: pointerIndex,
+        _pointer: pointerKey + pointerIndex,
+        _reference: item,
+    };
+
+    // Store the reference uniquely along with location information
+    store._references._set(item, dataItem);
+
+    // Some values can only be obtained asynchronously, so add them to a list of items to check
+    /* istanbul ignore next */
+    if (store._types[pointerKey]._deferredEncode) {
+        store._deferred.push(dataItem);
+    }
+
+    return dataItem._pointer;
+};
+
+const encodeAll = (store, resumeFromIndex) => {
+    return store._references._resumableForEach((dataItem) => {
+        let encodedForm = types[dataItem._key]._encodeValue(dataItem._reference, getAttachments(dataItem._reference, store._encodeSymbolKeys));
+
+        // All types that encode directly to Strings (String, Number, BigInt, and Symbol) do not have attachments
+        if (getSystemName(encodedForm) !== 'String') {
+            // Encounter all data in the encoded form to get the appropriate Pointers and
+            encodedForm = encodedForm.map((part) => {
+                if (getSystemName(part) === 'Array') {
+                    return part.map((subPart) => {
+                        return encounterItem(store, subPart);
+                    });
+                }
+
+                // Wrapped Primitive Types have a single value for the first item, rather than an Array
+                return encounterItem(store, part);
+            });
+        }
+
+        store._output[dataItem._key][dataItem._index] = encodedForm;
+    }, resumeFromIndex);
+};
 
 const prepOutput = (store, root) => {
     store._output.r = root;
@@ -21,26 +99,6 @@ const prepOutput = (store, root) => {
     else {
         return output;
     }
-};
-
-const encodeAll = (store, resumeFromIndex) => {
-    return store._references._resumableForEach((dataItem) => {
-        // Encode the actual value
-        store._output[dataItem._key][dataItem._index] = types[dataItem._key]._encodeValue(store, dataItem);
-
-        // Encode any values attached to the value
-        if (dataItem._keyed.length > 0) {
-            store._output[dataItem._key][dataItem._index] = store._output[dataItem._key][dataItem._index].concat(dataItem._keyed.map((attachment) => {
-                // Technically, here we might expect to only request items from the already explored set
-                // However, some types, particularly non-attachment containers, like Set and Map, can contain additional values not explored
-                // By encountering attachments after running the encodeValue function, additional, hidden values in the container can be added to the reference set
-                return [
-                    encounterItem(store, attachment[0]),
-                    encounterItem(store, attachment[1]),
-                ];
-            }));
-        }
-    }, resumeFromIndex);
 };
 
 export default (value, options) => {
@@ -102,7 +160,9 @@ export default (value, options) => {
         };
 
         store._deferred.forEach((dataItem) => {
-            types[dataItem._key]._deferredEncode(store, dataItem, onCallback);
+            types[dataItem._key]._deferredEncode(dataItem._reference, store._output[dataItem._key][dataItem._index], (data) => {
+                return encounterItem(store, data);
+            }, onCallback);
         });
 
         return;
