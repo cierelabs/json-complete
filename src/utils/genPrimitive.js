@@ -6,8 +6,8 @@ export default (type) => {
         _encodeValue: (reference) => {
             return String(reference);
         },
-        _generateReference: (store, key, index) => {
-            return type(store._encoded[key][index]);
+        _generateReference: (store, dataItems) => {
+            return type(dataItems);
         },
         _build: () => {},
     };

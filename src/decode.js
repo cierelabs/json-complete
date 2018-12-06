@@ -44,7 +44,7 @@ const explorePointer = (store, pointer) => {
     };
 
     try {
-        store._decoded[pointer]._reference = types[p._key]._generateReference(store, p._key, p._index);
+        store._decoded[pointer]._reference = types[p._key]._generateReference(store, store._encoded[p._key][p._index]);
     } catch (e) {
         // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
         throw genError(`Cannot decode recognized pointer type "${p._key}".`, 'decode');

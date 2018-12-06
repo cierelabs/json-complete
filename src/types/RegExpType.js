@@ -21,8 +21,8 @@ export default (typeObj) => {
                 reference.lastIndex,
             ]].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
-            const dataArray = store._encoded[key][index][0];
+        _generateReference: (store, dataItems) => {
+            const dataArray = dataItems[0];
             const value = new RegExp(decodePointer(store, dataArray[0]), decodePointer(store, dataArray[1]));
             value.lastIndex = decodePointer(store, dataArray[2]);
             return value;

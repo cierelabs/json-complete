@@ -20,8 +20,8 @@ export default (typeObj) => {
                 reference.stack,
             ]].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
-            const dataArray = store._encoded[key][index][0];
+        _generateReference: (store, dataItems) => {
+            const dataArray = dataItems[0];
 
             const value = new (standardErrors[decodePointer(store, dataArray[0])] || Error)(decodePointer(store, dataArray[1]));
             value.stack = decodePointer(store, dataArray[2]);

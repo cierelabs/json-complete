@@ -7,8 +7,8 @@ const genTypedArray = (type) => {
         _encodeValue: (reference, attachments) => {
             return [attachments._indexed].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
-            return new type(store._encoded[key][index][0].length);
+        _generateReference: (store, dataItems) => {
+            return new type(dataItems[0].length);
         },
         _build: arrayLikeBuild,
     };

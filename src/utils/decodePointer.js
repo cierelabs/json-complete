@@ -8,5 +8,5 @@ export default (store, pointer) => {
 
     const p = extractPointer(pointer);
 
-    return store._types[p._key]._generateReference(store, p._key, p._index);
+    return store._types[p._key]._generateReference(store, store._encoded[p._key][p._index]);
 };

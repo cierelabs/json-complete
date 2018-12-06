@@ -20,13 +20,12 @@ const genBlobLike = (systemName, propertiesKeys, create) => {
             });
             reader.readAsArrayBuffer(reference);
         },
-        _generateReference: (store, key, index) => {
-            const dataArray = store._encoded[key][index][0];
-            const p = extractPointer(dataArray[0]);
+        _generateReference: (store, dataItems) => {
+            const p = extractPointer(dataItems[0][0]);
 
             return create(store, [new Uint8Array(store._encoded[p._key][p._index][0].map((pointer) => {
                 return decodePointer(store, pointer);
-            }))], dataArray);
+            }))], dataItems[0]);
         },
         _build: attachAttachmentsSkipFirst,
     };

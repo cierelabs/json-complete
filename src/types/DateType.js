@@ -7,8 +7,8 @@ export default (typeObj) => {
         _encodeValue: (reference, attachments) => {
             return [reference.valueOf()].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
-            return new Date(decodePointer(store, store._encoded[key][index][0]));
+        _generateReference: (store, dataItems) => {
+            return new Date(decodePointer(store, dataItems[0]));
         },
         _build: attachAttachmentsSkipFirst,
     };

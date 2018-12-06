@@ -17,10 +17,10 @@ export default (typeObj) => {
         _encodeValue: (reference, attachments) => {
             return [attachments._indexed].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
+        _generateReference: (store, dataItems) => {
             return (function() {
                 return arguments;
-            }).apply(null, Array(store._encoded[key][index][0].length));
+            }).apply(null, Array(dataItems[0].length));
         },
         _build: arrayLikeBuild,
     };

@@ -8,8 +8,8 @@ const genArrayBuffer = (type) => {
         _encodeValue: (reference, attachments) => {
             return [Array.prototype.slice.call(new Uint8Array(reference))].concat(attachments._keyed);
         },
-        _generateReference: (store, key, index) => {
-            const encodedValues = store._encoded[key][index][0];
+        _generateReference: (store, dataItems) => {
+            const encodedValues = dataItems[0];
             const buffer = new type(encodedValues.length);
             const view = new Uint8Array(buffer);
             encodedValues.forEach((pointer, index) => {
