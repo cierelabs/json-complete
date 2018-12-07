@@ -172,7 +172,7 @@ test('Error: Encoding Expected', (t) => {
     // Remove extra properties a given browser might have added (namely, Safari)
     delete encoded.Nu;
     encoded.St = encoded.St.slice(0, 3);
-    encoded.Er[0] = encoded.Er[0].slice(0, 2);
+    encoded.Er[0] = encoded.Er[0].slice(0, 3);
 
     t.deepEqual(encoded, {
         Er: [
@@ -184,6 +184,8 @@ test('Error: Encoding Expected', (t) => {
                 ],
                 [
                     'St1',
+                ],
+                [
                     'fa',
                 ],
             ],

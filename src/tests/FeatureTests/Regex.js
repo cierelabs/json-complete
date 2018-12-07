@@ -128,6 +128,8 @@ test('Regex: Encoding Expected', (t) => {
                 ],
                 [
                     'St2',
+                ],
+                [
                     'fa',
                 ],
             ],

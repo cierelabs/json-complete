@@ -103,7 +103,9 @@ if (typeof Uint8Array === 'function') {
                     ],
                     [
                         'St0',
-                        'fa'
+                    ],
+                    [
+                        'fa',
                     ],
                 ],
             ],

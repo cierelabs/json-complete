@@ -152,6 +152,8 @@ if (typeof Blob === 'function') {
                             ],
                             [
                                 'St1',
+                            ],
+                            [
                                 'fa',
                             ],
                         ],

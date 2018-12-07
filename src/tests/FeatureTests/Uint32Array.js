@@ -103,7 +103,9 @@ if (typeof Uint32Array === 'function') {
                     ],
                     [
                         'St0',
-                        'fa'
+                    ],
+                    [
+                        'fa',
                     ],
                 ],
             ],

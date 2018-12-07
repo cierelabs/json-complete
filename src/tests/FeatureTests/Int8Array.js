@@ -105,7 +105,9 @@ if (typeof Int8Array === 'function') {
                     ],
                     [
                         'St0',
-                        'fa'
+                    ],
+                    [
+                        'fa',
                     ],
                 ],
             ],

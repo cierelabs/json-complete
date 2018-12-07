@@ -183,6 +183,8 @@ test('Array: Encoding Expected', (t) => {
                 ],
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ]
             ],

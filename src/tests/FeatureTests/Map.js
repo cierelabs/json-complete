@@ -225,10 +225,14 @@ if (typeof Map === 'function') {
                 [
                     [
                         'fa',
+                    ],
+                    [
                         'tr',
                     ],
                     [
                         'St0',
+                    ],
+                    [
                         'fa',
                     ],
                 ],

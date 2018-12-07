@@ -103,7 +103,9 @@ if (typeof Float32Array === 'function') {
                     ],
                     [
                         'St0',
-                        'fa'
+                    ],
+                    [
+                        'fa',
                     ],
                 ],
             ],

@@ -103,7 +103,9 @@ if (typeof Uint8ClampedArray === 'function') {
                     ],
                     [
                         'St0',
-                        'fa'
+                    ],
+                    [
+                        'fa',
                     ],
                 ],
             ],

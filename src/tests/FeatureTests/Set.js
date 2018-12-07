@@ -154,6 +154,8 @@ if (typeof Set === 'function') {
                     ],
                     [
                         'St0',
+                    ],
+                    [
                         'fa',
                     ],
                 ],

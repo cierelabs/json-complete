@@ -234,6 +234,8 @@ if (typeof File === 'function' && supportsFileCreation()) {
                             ],
                             [
                                 'St2',
+                            ],
+                            [
                                 'fa',
                             ],
                         ],

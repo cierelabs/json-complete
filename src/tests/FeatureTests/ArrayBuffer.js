@@ -123,6 +123,8 @@ if (typeof ArrayBuffer === 'function') {
                     ],
                     [
                         'St0',
+                    ],
+                    [
                         'fa',
                     ]
                 ],

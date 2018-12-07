@@ -11,7 +11,7 @@ const genArgs = function() {
 
 if (typeof Symbol === 'function') {
     test('Avoid Storing Built-In Symbols: Ensure that we are not encoding Symbol-defined Symbols attached to Objects', (t) => {
-        t.plan(7);
+        t.plan(8);
 
         const values = [
             [
@@ -47,14 +47,8 @@ if (typeof Symbol === 'function') {
 
         JSON.parse(encoded).forEach((types) => {
             if (types[0] === 'rg') {
-                const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
-                    if (item.length === 2) {
-                        accumulator += 1;
-                    }
-                    return accumulator;
-                }, 0);
-
-                t.equal(encodedSymbolCount, 5);
+                t.equal(types[1][0][1].length, 5);
+                t.equal(types[1][0][2].length, 5);
             }
         });
 
@@ -73,7 +67,7 @@ if (typeof Symbol === 'function') {
     });
 
     test('Avoid Storing Built-In Symbols: Encoding a Symbol that has the same identifier is still encoded, without affecting the built-in attached Symbol', (t) => {
-        t.plan(7);
+        t.plan(8);
 
         const args = genArgs();
         args[Symbol('Symbol.iterator')] = 'overriding';
@@ -84,14 +78,8 @@ if (typeof Symbol === 'function') {
 
         JSON.parse(encoded).forEach((types) => {
             if (types[0] === 'rg') {
-                const encodedSymbolCount = types[1][0].reduce((accumulator, item) => {
-                    if (item.length === 2) {
-                        accumulator += 1;
-                    }
-                    return accumulator;
-                }, 0);
-
-                t.equal(encodedSymbolCount, 1);
+                t.equal(types[1][0][1].length, 1);
+                t.equal(types[1][0][2].length, 1);
             }
         });
 

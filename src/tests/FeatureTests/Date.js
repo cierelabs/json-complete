@@ -78,6 +78,8 @@ test('Date: Encoding Expected', (t) => {
                 'Nu0',
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ],
             ],

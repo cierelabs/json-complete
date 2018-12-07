@@ -63,7 +63,7 @@ test('Deduplication: Objects', (t) => {
     const encoded = testHelpers.simplifyEncoded(encode([sharedObj, {}, sharedObj]));
 
     t.equal(encoded.Ob.length, 2);
-    t.deepEqual(encoded.Ob, [[['St0', 'Nu0']], []]);
+    t.deepEqual(encoded.Ob, [[['St0'], ['Nu0']], []]);
 });
 
 test('Deduplication: Array', (t) => {

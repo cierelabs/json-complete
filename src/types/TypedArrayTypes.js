@@ -1,16 +1,36 @@
-import arrayLikeBuild from '/utils/arrayLikeBuild.js';
+import getDecoded from '/utils/getDecoded.js';
 import getSystemName from '/utils/getSystemName.js';
 
 const genTypedArray = (type) => {
     return {
         _systemName: getSystemName(new type()),
         _encodeValue: (reference, attachments) => {
-            return [attachments._indexed].concat(attachments._keyed);
+            let arr = [attachments._indexed];
+
+            if (attachments._keyed.length > 0) {
+                arr = arr.concat([attachments._keyed.map((value) => {
+                    return value[0];
+                })], [attachments._keyed.map((value) => {
+                    return value[1];
+                })]);
+            }
+
+            return arr;
         },
         _generateReference: (store, dataItems) => {
             return new type(dataItems[0].length);
         },
-        _build: arrayLikeBuild,
+        _build: (store, dataItem) => {
+            dataItem._parts[0].forEach((pointer, index) => {
+                dataItem._reference[index] = getDecoded(store, pointer);
+            });
+
+            if (dataItem._parts[1]) {
+                for (let i = 0; i < dataItem._parts[1].length; i += 1) {
+                    dataItem._reference[getDecoded(store, dataItem._parts[1][i])] = getDecoded(store, dataItem._parts[2][i]);
+                }
+            }
+        },
     };
 };
 

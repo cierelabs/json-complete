@@ -144,6 +144,8 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
                 'Nu0',
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ],
             ],

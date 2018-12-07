@@ -99,6 +99,8 @@ test('Object-Wrapped String: Encoding Expected', (t) => {
                 'St0',
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ],
             ],

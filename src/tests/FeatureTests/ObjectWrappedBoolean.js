@@ -99,6 +99,8 @@ test('Object-Wrapped Boolean: Encoding Expected', (t) => {
                 'tr',
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ],
             ],

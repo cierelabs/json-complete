@@ -122,6 +122,8 @@ test('Unsupported Types: Encoding Expected', (t) => {
             [
                 [
                     'St0',
+                ],
+                [
                     'fa',
                 ],
             ],

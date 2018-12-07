@@ -140,6 +140,8 @@ if (typeof SharedArrayBuffer === 'function') {
                     ],
                     [
                         'St0',
+                    ],
+                    [
                         'fa',
                     ]
                 ],

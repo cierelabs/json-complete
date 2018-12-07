@@ -111,6 +111,8 @@ test('Object: Encoding Expected', (t) => {
             [
                 [
                     'St0',
+                ],
+                [
                     'tr',
                 ],
             ],

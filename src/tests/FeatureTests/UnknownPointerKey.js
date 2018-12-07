@@ -41,7 +41,8 @@ test('Unknown Pointer Key: Key Data', (t) => {
         ['r', 'Ob0'],
         ['Ob', [
             [
-                ['--0', 'St0'],
+                ['--0'],
+                ['St0'],
             ],
         ]],
         ['St', ['1']],
