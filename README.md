@@ -192,10 +192,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7206 bytes ![](http://progressed.io/bar/100) | 8200 bytes ![](http://progressed.io/bar/100) |
-| gzip        | 2912 bytes ![](http://progressed.io/bar/40) | 2933 bytes ![](http://progressed.io/bar/36) |
-| zopfli      | 2857 bytes ![](http://progressed.io/bar/40) | 2878 bytes ![](http://progressed.io/bar/35) |
-| brotli      | 2665 bytes ![](http://progressed.io/bar/37) | 2688 bytes ![](http://progressed.io/bar/33) |
+| Minified    | 7141 bytes ![](http://progressed.io/bar/100) | 8125 bytes ![](http://progressed.io/bar/100) |
+| gzip        | 2941 bytes ![](http://progressed.io/bar/41) | 2954 bytes ![](http://progressed.io/bar/36) |
+| zopfli      | 2884 bytes ![](http://progressed.io/bar/40) | 2901 bytes ![](http://progressed.io/bar/36) |
+| brotli      | 2692 bytes ![](http://progressed.io/bar/38) | 2711 bytes ![](http://progressed.io/bar/33) |
 
 
 ---
@@ -342,18 +342,18 @@ Not yet supported.
 - [x] Change "Safe Mode" to "Compat Mode"
 - [x] Investigate possible bug related to duplicate primitives (numbers, strings) not being deduplicated in output (upon further observation, it is not a problem)
 - [x] Simplify the encoding process from the perspective of the definer by removing the in-line encounterItem steps, pushing those into the encoder
-- [ ] Finish rework of type interface API
-- [ ] Pull out duplicate code
+- [x] Finish rework of type interface API
+- [x] Pull out duplicate code
 - [ ] What happens, in compat mode, when decoding an a Symbol key in an environment that doesn't support Symbols?
 - [ ] Put examples in readme
-- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [x] Convert the output to string and allow the decoder to accept a string
 - [x] Update decoding error messages for types not supported in a given environment
-- [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data
 - [ ] Friday planned release
 
 
 ## Future Plans
+- [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data
+- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols
 - [ ] Support IE11
 - [ ] Support IE10
 - [ ] Support IE9

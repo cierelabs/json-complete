@@ -1,4 +1,7 @@
+import attachKeys from '/utils/attachKeys.js';
+import attachKeysStandard from '/utils/attachKeysStandard.js';
 import getDecoded from '/utils/getDecoded.js';
+import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
 export default (typeObj) => {
     // If Set is supported, Map is also supported
@@ -12,17 +15,7 @@ export default (typeObj) => {
                     data.push(value);
                 });
 
-                let arr = [data];
-
-                if (attachments._keyed.length > 0) {
-                    arr = arr.concat([attachments._keyed.map((value) => {
-                        return value[0];
-                    })], [attachments._keyed.map((value) => {
-                        return value[1];
-                    })]);
-                }
-
-                return arr;
+                return encodeWithAttachments([data], attachments);
             },
             _generateReference: () => {
                 return new Set();
@@ -32,11 +25,7 @@ export default (typeObj) => {
                     dataItem._reference.add(getDecoded(store, pointer));
                 });
 
-                if (dataItem._parts[1]) {
-                    for (let i = 0; i < dataItem._parts[1].length; i += 1) {
-                        dataItem._reference[getDecoded(store, dataItem._parts[1][i])] = getDecoded(store, dataItem._parts[2][i]);
-                    }
-                }
+                attachKeysStandard(store, dataItem);
             },
         };
 
@@ -51,17 +40,7 @@ export default (typeObj) => {
                     values.push(value);
                 });
 
-                let arr = [keys, values];
-
-                if (attachments._keyed.length > 0) {
-                    arr = arr.concat([attachments._keyed.map((value) => {
-                        return value[0];
-                    })], [attachments._keyed.map((value) => {
-                        return value[1];
-                    })]);
-                }
-
-                return arr;
+                return encodeWithAttachments([keys, values], attachments);
             },
             _generateReference: () => {
                 return new Map();
@@ -71,11 +50,7 @@ export default (typeObj) => {
                     dataItem._reference.set(getDecoded(store, dataItem._parts[0][i]), getDecoded(store, dataItem._parts[1][i]));
                 }
 
-                if (dataItem._parts[2]) {
-                    for (let i = 0; i < dataItem._parts[2].length; i += 1) {
-                        dataItem._reference[getDecoded(store, dataItem._parts[2][i])] = getDecoded(store, dataItem._parts[3][i]);
-                    }
-                }
+                attachKeys(store, dataItem, 2, 3);
             },
         };
     }

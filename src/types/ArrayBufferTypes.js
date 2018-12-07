@@ -1,22 +1,13 @@
-import getDecoded from '/utils/getDecoded.js';
+import arrayLikeBuild from '/utils/arrayLikeBuild.js';
 import decodePointer from '/utils/decodePointer.js';
+import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 import getSystemName from '/utils/getSystemName.js';
 
 const genArrayBuffer = (type) => {
     return {
         _systemName: getSystemName(new type()),
         _encodeValue: (reference, attachments) => {
-            let arr = [Array.prototype.slice.call(new Uint8Array(reference))];
-
-            if (attachments._keyed.length > 0) {
-                arr = arr.concat([attachments._keyed.map((value) => {
-                    return value[0];
-                })], [attachments._keyed.map((value) => {
-                    return value[1];
-                })]);
-            }
-
-            return arr;
+            return encodeWithAttachments([Array.prototype.slice.call(new Uint8Array(reference))], attachments);
         },
         _generateReference: (store, dataItems) => {
             const encodedValues = dataItems[0];
@@ -27,17 +18,7 @@ const genArrayBuffer = (type) => {
             });
             return buffer;
         },
-        _build: (store, dataItem) => {
-            dataItem._parts[0].forEach((pointer, index) => {
-                dataItem._reference[index] = getDecoded(store, pointer);
-            });
-
-            if (dataItem._parts[1]) {
-                for (let i = 0; i < dataItem._parts[1].length; i += 1) {
-                    dataItem._reference[getDecoded(store, dataItem._parts[1][i])] = getDecoded(store, dataItem._parts[2][i]);
-                }
-            }
-        },
+        _build: arrayLikeBuild,
     };
 };
 

@@ -1,5 +1,6 @@
-import getDecoded from '/utils/getDecoded.js';
+import attachKeysStandard from '/utils/attachKeysStandard.js';
 import decodePointer from '/utils/decodePointer.js';
+import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 import extractPointer from '/utils/extractPointer.js';
 
 /* istanbul ignore next */
@@ -8,19 +9,9 @@ const genBlobLike = (systemName, propertiesKeys, create) => {
         _systemName: systemName,
         _encodeValue: (reference, attachments) => {
             // Skip the decoding of the main value for now
-            let arr = [[void 0].concat(propertiesKeys.map((property) => {
+            return encodeWithAttachments([[void 0].concat(propertiesKeys.map((property) => {
                 return reference[property];
-            }))];
-
-            if (attachments._keyed.length > 0) {
-                arr = arr.concat([attachments._keyed.map((value) => {
-                    return value[0];
-                })], [attachments._keyed.map((value) => {
-                    return value[1];
-                })]);
-            }
-
-            return arr;
+            }))], attachments);
         },
         _deferredEncode: (reference, dataArray, encoder, callback) => {
             const reader = new FileReader();
@@ -37,13 +28,7 @@ const genBlobLike = (systemName, propertiesKeys, create) => {
                 return decodePointer(store, pointer);
             }))], dataItems[0]);
         },
-        _build: (store, dataItem) => {
-            if (dataItem._parts[1]) {
-                for (let i = 0; i < dataItem._parts[1].length; i += 1) {
-                    dataItem._reference[getDecoded(store, dataItem._parts[1][i])] = getDecoded(store, dataItem._parts[2][i]);
-                }
-            }
-        },
+        _build: attachKeysStandard,
     };
 };
 

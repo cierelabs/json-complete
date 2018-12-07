@@ -1,9 +1,4 @@
 export default (item, encodeSymbolKeys) => {
-    const attached = {
-        _indexed: [],
-        _keyed: [],
-    };
-
     // Find all indices
     const indices = [];
     const indexObj = {};
@@ -12,9 +7,6 @@ export default (item, encodeSymbolKeys) => {
         indexObj[String(index)] = 1;
         indices.push(index);
     });
-
-    // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
-    let i = 0;
 
     // Find all String keys that are not indices
     // For Arrays, TypedArrays, and Object-Wrapped Strings, the keys list will include indices as strings, so account for that by checking the indexObj
@@ -30,15 +22,23 @@ export default (item, encodeSymbolKeys) => {
         }));
     }
 
+    // Have to use external index iterator because we want the counting to stop once the first index incongruity occurs
+    let i = 0;
+
     // Create the lists
     return indices.concat(keys).reduce((accumulator, key) => {
         if (key === i) {
             i += 1;
-            accumulator._indexed.push(item[key]);
+            accumulator._indices.push(item[key]);
         }
         else {
-            accumulator._keyed.push([key, item[key]]);
+            accumulator._keys.push(key);
+            accumulator._values.push(item[key]);
         }
         return accumulator;
-    }, attached);
+    }, {
+        _indices: [],
+        _keys: [],
+        _values: [],
+    });
 };

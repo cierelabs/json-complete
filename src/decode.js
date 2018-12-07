@@ -3,13 +3,10 @@ import genError from '/utils/genError.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
 
-// Recursively look at the reference set for exploration values
-// This handles both pair arrays and individual values
-// This recursion is fine because it has a maximum depth of around 3
 const exploreParts = (store, parts) => {
     if (getSystemName(parts) === 'Array') {
         parts.forEach((part) => {
-            exploreParts(store, part);
+            store._explore.push(part);
         });
     }
     else {
