@@ -136,7 +136,7 @@ test('Arguments: Self-Containment', (t) => {
     t.equal(decoded.me, decoded);
 });
 
-test('Arguments: Referencial Integrity', (t) => {
+test('Arguments: Referential Integrity', (t) => {
     t.plan(2);
 
     const args = genArgs();

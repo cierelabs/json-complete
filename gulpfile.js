@@ -230,7 +230,7 @@ gulp.task('test', (end) => {
         ['clear-node'],
         ['test-node-js-library', 'test-node-js-test'],
         ['test-node'],
-        // ['clear-node'],
+        ['clear-node'],
         end
     );
 });
@@ -309,10 +309,6 @@ gulp.task('compress-brotli', () => {
 });
 
 gulp.task('compress-calculate', (end) => {
-    const percentOf = (base, compressed) => {
-        return Math.round(compressed / base * 100);
-    };
-
     const onEnd = (manifest) => {
         const extensionToCompression = {
             js: 'base',
@@ -339,10 +335,10 @@ gulp.task('compress-calculate', (end) => {
         const table = `
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | ${esmBaseSize} bytes ![](http://progressed.io/bar/100) | ${cjsBaseSize} bytes ![](http://progressed.io/bar/100) |
-| gzip        | ${types.esm.gzip} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.gzip)}) | ${types.cjs.gzip} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.gzip)}) |
-| zopfli      | ${types.esm.zopfli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.zopfli)}) | ${types.cjs.zopfli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.zopfli)}) |
-| brotli      | ${types.esm.brotli} bytes ![](http://progressed.io/bar/${percentOf(esmBaseSize, types.esm.brotli)}) | ${types.cjs.brotli} bytes ![](http://progressed.io/bar/${percentOf(cjsBaseSize, types.cjs.brotli)}) |
+| Minified    | ${esmBaseSize} bytes | ${cjsBaseSize} bytes |
+| gzip        | ${types.esm.gzip} bytes | ${types.cjs.gzip} bytes |
+| zopfli      | ${types.esm.zopfli} bytes | ${types.cjs.zopfli} bytes |
+| brotli      | ${types.esm.brotli} bytes | ${types.cjs.brotli} bytes |
 `;
 
         console.log(table); // eslint-disable-line no-console

@@ -1,4 +1,4 @@
-import attachKeysStandard from '/utils/attachKeysStandard.js';
+import attachKeys from '/utils/attachKeys.js';
 import decodePointer from '/utils/decodePointer.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 import extractPointer from '/utils/extractPointer.js';
@@ -24,11 +24,17 @@ const genBlobLike = (systemName, propertiesKeys, create) => {
         _generateReference: (store, dataItems) => {
             const p = extractPointer(dataItems[0][0]);
 
-            return create(store, [new Uint8Array(store._encoded[p._key][p._index][0].map((pointer) => {
+            // If we are decoding a Deferred Type that wasn't properly deferred, then the Uint8Array would never have gotten encoded
+            // This will result in an empty Blob or File
+            const dataArray = p._key === 'un' ? [] : store._encoded[p._key][p._index][0];
+
+            return create(store, [new Uint8Array(dataArray.map((pointer) => {
                 return decodePointer(store, pointer);
             }))], dataItems[0]);
         },
-        _build: attachKeysStandard,
+        _build: (store, dataItem) => {
+            attachKeys(store, dataItem, 1, 2);
+        },
     };
 };
 

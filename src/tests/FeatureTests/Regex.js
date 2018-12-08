@@ -98,7 +98,7 @@ test('Regex: Self-Containment', (t) => {
     t.equal(decodedRegex.me, decodedRegex);
 });
 
-test('Regex: Referencial Integrity', (t) => {
+test('Regex: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = /\s+/g;

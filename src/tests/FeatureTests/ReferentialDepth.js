@@ -5,7 +5,7 @@ const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
 if (typeof Set === 'function' && typeof Map === 'function') {
-    test('Referencial Depth: Deep Reference Mixing Stress Test', (t) => {
+    test('Referential Depth: Deep Reference Mixing Stress Test', (t) => {
         t.plan(2);
 
         const deepValue = [
@@ -53,10 +53,10 @@ if (typeof Set === 'function' && typeof Map === 'function') {
     });
 }
 else {
-    console.warn('"Referencial Depth: Deep Reference Mixing Stress Test" was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.warn('"Referential Depth: Deep Reference Mixing Stress Test" was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
-test('Referencial Depth: Extreme Array Depth Stress Test', (t) => {
+test('Referential Depth: Extreme Array Depth Stress Test', (t) => {
     t.plan(1);
 
     const box = {
@@ -86,7 +86,7 @@ test('Referencial Depth: Extreme Array Depth Stress Test', (t) => {
 });
 
 if (typeof Set === 'function') {
-    test('Referencial Depth: Extreme Set Depth Stress Test', (t) => {
+    test('Referential Depth: Extreme Set Depth Stress Test', (t) => {
         t.plan(1);
 
         let setRef = new Set();
@@ -113,7 +113,7 @@ if (typeof Set === 'function') {
 }
 
 if (typeof Map === 'function') {
-    test('Referencial Depth: Extreme Map Depth Stress Test', (t) => {
+    test('Referential Depth: Extreme Map Depth Stress Test', (t) => {
         t.plan(1);
 
         let mapRef = new Map();

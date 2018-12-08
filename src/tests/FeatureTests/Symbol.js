@@ -43,7 +43,7 @@ if (typeof Symbol === 'function') {
         t.equal(decode(encode(Symbol.for('x'))), Symbol.for('x'));
     });
 
-    test('Symbol: Referencial Integrity', (t) => {
+    test('Symbol: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = Symbol();

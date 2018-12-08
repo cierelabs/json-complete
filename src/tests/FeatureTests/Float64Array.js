@@ -74,7 +74,7 @@ if (typeof Float32Array === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('Float64Array: Referencial Integrity', (t) => {
+    test('Float64Array: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Float64Array(1);

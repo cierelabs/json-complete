@@ -1,15 +1,21 @@
-import arrayLikeBuild from '/utils/arrayLikeBuild.js';
-import arrayLikeEncodeValue from '/utils/arrayLikeEncodeValue.js';
+import attachIndices from '/utils/attachIndices.js';
+import attachKeys from '/utils/attachKeys.js';
+import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 import getSystemName from '/utils/getSystemName.js';
 
 const genTypedArray = (type) => {
     return {
         _systemName: getSystemName(new type()),
-        _encodeValue: arrayLikeEncodeValue,
+        _encodeValue: (reference, attachments) => {
+            return encodeWithAttachments([attachments._indices], attachments);
+        },
         _generateReference: (store, dataItems) => {
             return new type(dataItems[0].length);
         },
-        _build: arrayLikeBuild,
+        _build: (store, dataItem) => {
+            attachIndices(store, dataItem);
+            attachKeys(store, dataItem, 1, 2);
+        },
     };
 };
 

@@ -74,7 +74,7 @@ if (typeof Uint8ClampedArray === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('Uint8ClampedArray: Referencial Integrity', (t) => {
+    test('Uint8ClampedArray: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Uint8ClampedArray(1);

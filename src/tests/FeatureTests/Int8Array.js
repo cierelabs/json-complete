@@ -76,7 +76,7 @@ if (typeof Int8Array === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('Int8Array: Referencial Integrity', (t) => {
+    test('Int8Array: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Int8Array(1);

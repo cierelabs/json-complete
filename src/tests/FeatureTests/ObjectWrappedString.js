@@ -73,7 +73,7 @@ test('Object-Wrapped String: Self-Containment', (t) => {
     t.equal(decodedStringObj.me, decodedStringObj);
 });
 
-test('Object-Wrapped String: Referencial Integrity', (t) => {
+test('Object-Wrapped String: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = new String('test');
@@ -96,7 +96,9 @@ test('Object-Wrapped String: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
         ST: [
             [
-                'St0',
+                [
+                    'St0',
+                ],
                 [
                     'St0',
                 ],

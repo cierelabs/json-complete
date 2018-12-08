@@ -95,7 +95,7 @@ if (typeof ArrayBuffer === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('ArrayBuffer: Referencial Integrity', (t) => {
+    test('ArrayBuffer: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Uint8Array(1).buffer;

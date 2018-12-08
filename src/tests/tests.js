@@ -7,6 +7,7 @@ require('/tests/FeatureTests/BigInt.js');
 require('/tests/FeatureTests/Blob.js');
 require('/tests/FeatureTests/Boolean.js');
 require('/tests/FeatureTests/Date.js');
+require('/tests/FeatureTests/DecodingSymbolKeyWhenSymbolsNotSupported.js');
 require('/tests/FeatureTests/Deduplication.js');
 require('/tests/FeatureTests/DeferredTypeAttachedToDeferredType.js');
 require('/tests/FeatureTests/DeferredTypeInsideKeyedCollection.js');
@@ -29,7 +30,7 @@ require('/tests/FeatureTests/ObjectWrappedBoolean.js');
 require('/tests/FeatureTests/ObjectWrappedNumber.js');
 require('/tests/FeatureTests/ObjectWrappedString.js');
 require('/tests/FeatureTests/OptionEncodeSymbolKeys.js');
-require('/tests/FeatureTests/ReferencialDepth.js');
+require('/tests/FeatureTests/ReferentialDepth.js');
 require('/tests/FeatureTests/Regex.js');
 require('/tests/FeatureTests/Set.js');
 require('/tests/FeatureTests/SharedArrayBuffer.js');
@@ -47,23 +48,7 @@ require('/tests/FeatureTests/WeakMap.js');
 require('/tests/FeatureTests/WeakSet.js');
 
 
-
-
 // const jsonComplete = require('/main.js');
 
 // const encode = jsonComplete.encode;
 // const decode = jsonComplete.decode;
-
-// const source = ['test', 'test2', 'test'];
-// source.a = 'test';
-// source.b = 'test2';
-// source.c = 'test';
-// source.d = 'test2';
-
-// const encoded = encode(source, {
-//     space: 4,
-// });
-
-// console.log(encoded);
-
-// console.log(decode(encoded));

@@ -51,7 +51,7 @@ test('Date: Self-Containment', (t) => {
     t.equal(decodedDate.me, decodedDate);
 });
 
-test('Date: Referencial Integrity', (t) => {
+test('Date: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = new Date('2018-04-01');
@@ -75,7 +75,9 @@ test('Date: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
         Da: [
             [
-                'Nu0',
+                [
+                    'Nu0',
+                ],
                 [
                     'St0',
                 ],

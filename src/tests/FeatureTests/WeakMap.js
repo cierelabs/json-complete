@@ -54,7 +54,7 @@ if (typeof WeakMap === 'function') {
         t.equal(decodedWeakMap.me, decodedWeakMap);
     });
 
-    test('WeakMap: Referencial Integrity', (t) => {
+    test('WeakMap: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new WeakMap([[{ a: 1 }, { b: 2 }]]);

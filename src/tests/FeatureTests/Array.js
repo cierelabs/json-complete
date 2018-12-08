@@ -155,7 +155,7 @@ test('Array: Self-Containment', (t) => {
     t.equal(decodedArray.me, decodedArray);
 });
 
-test('Array: Referencial Integrity', (t) => {
+test('Array: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = [];

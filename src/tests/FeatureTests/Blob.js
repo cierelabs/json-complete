@@ -116,7 +116,7 @@ if (typeof Blob === 'function') {
         });
     });
 
-    test('Blob: Referencial Integrity', (t) => {
+    test('Blob: Referential Integrity', (t) => {
         t.plan(2);
 
         const obj = { a: 1 };

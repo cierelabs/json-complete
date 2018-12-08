@@ -1,4 +1,5 @@
-import arrayLikeBuild from '/utils/arrayLikeBuild.js';
+import attachIndices from '/utils/attachIndices.js';
+import attachKeys from '/utils/attachKeys.js';
 import decodePointer from '/utils/decodePointer.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 import getSystemName from '/utils/getSystemName.js';
@@ -18,7 +19,10 @@ const genArrayBuffer = (type) => {
             });
             return buffer;
         },
-        _build: arrayLikeBuild,
+        _build: (store, dataItem) => {
+            attachIndices(store, dataItem);
+            attachKeys(store, dataItem, 1, 2);
+        },
     };
 };
 

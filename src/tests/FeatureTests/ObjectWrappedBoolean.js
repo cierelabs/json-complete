@@ -73,7 +73,7 @@ test('Object-Wrapped Boolean: Self-Containment', (t) => {
     t.equal(decodedBooleanObj.me, decodedBooleanObj);
 });
 
-test('Object-Wrapped Boolean: Referencial Integrity', (t) => {
+test('Object-Wrapped Boolean: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = new Boolean(true);
@@ -96,7 +96,9 @@ test('Object-Wrapped Boolean: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
         Bo: [
             [
-                'tr',
+                [
+                    'tr',
+                ],
                 [
                     'St0',
                 ],

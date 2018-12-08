@@ -1,22 +1,23 @@
 {
     "name": "json-complete",
     "version": "1.0.0",
-    "description": "An encoder that can turn any standard JavaScript data object or value into a form that can be serialized by JSON, and do the reverse with a decoder. This includes preserving referential integrity and deduplication of data in the encoded output.",
+    "description": "A library that can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again.",
     "scripts": {
         "test": "./node_modules/gulp/bin/gulp.js test",
         "test-browser": "./node_modules/gulp/bin/gulp.js test-browser",
         "lint": "node ./node_modules/eslint/bin/eslint.js ./src",
-        "build": "./node_modules/gulp/bin/gulp.js prod"
+        "prod": "./node_modules/gulp/bin/gulp.js prod",
+        "compression-report": "./node_modules/gulp/bin/gulp.js compression-report"
     },
     "author": "Dwight House",
-    "license": "MIT",
+    "license": "BSL-1.0",
     "repository": {
         "type": "git",
         "url": "ssh://git@stash.cierecloud.com:7999/cier/json-complete.git"
     },
-    "main": "./dist/main.cjs.min.js",
-    "module": "./dist/main.esm.min.js",
-    "esnext": "./dist/main.esm.min.js",
+    "main": "./dist/json_complete.cjs.min.js",
+    "module": "./dist/json_complete.esm.min.js",
+    "esnext": "./dist/json_complete.esm.min.js",
     "devDependencies": {
         "@babel/core": "7.1.6",
         "@babel/preset-env": "7.1.6",

@@ -109,7 +109,7 @@ if (typeof SharedArrayBuffer === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('SharedArrayBuffer: Referencial Integrity', (t) => {
+    test('SharedArrayBuffer: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new SharedArrayBuffer(2);

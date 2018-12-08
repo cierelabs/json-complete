@@ -1,5 +1,4 @@
 import findItemKey from '/utils/getItemKey.js';
-import genError from '/utils/genError.js';
 import genReferenceTracker from '/utils/genReferenceTracker.js';
 import getAttachments from '/utils/getAttachments.js';
 import getSystemName from '/utils/getSystemName.js';
@@ -10,10 +9,10 @@ const getPointerKey = (store, item) => {
 
     if (!pointerKey && !store._compat) {
         const type = getSystemName(item);
-        throw genError(`Cannot encode unsupported type "${type}".`, 'encode', type);
+        throw new Error(`Cannot encode unsupported type "${type}".`);
     }
 
-    // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referential integrity, but can still handle attachments
     return pointerKey ? pointerKey : 'Ob';
 };
 
@@ -66,14 +65,9 @@ const encodeAll = (store, resumeFromIndex) => {
         if (getSystemName(encodedForm) !== 'String') {
             // Encounter all data in the encoded form to get the appropriate Pointers and
             encodedForm = encodedForm.map((part) => {
-                if (getSystemName(part) === 'Array') {
-                    return part.map((subPart) => {
-                        return encounterItem(store, subPart);
-                    });
-                }
-
-                // Wrapped Primitive Types have a single value for the first item, rather than an Array
-                return encounterItem(store, part);
+                return part.map((subPart) => {
+                    return encounterItem(store, subPart);
+                });
             });
         }
 
@@ -91,7 +85,7 @@ const prepOutput = (store, root) => {
             key,
             store._output[key],
         ];
-    }), null, store._space);
+    }));
 
     if (typeof store._onFinish === 'function') {
         store._onFinish(output);
@@ -123,7 +117,6 @@ export default (value, options) => {
         _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
-        _space: options.space,
         _types: types,
         _typeMap: typeMap,
         _wrappedTypeMap: wrappedTypeMap,
@@ -146,7 +139,7 @@ export default (value, options) => {
                 return prepOutput(store, rootPointerKey);
             }
 
-            throw genError('Deferred Types require onFinish option.', 'encode');
+            throw new Error('Deferred Types require onFinish option.');
         }
 
         let deferredLength = store._deferred.length;

@@ -49,13 +49,6 @@ var findItemKey = function findItemKey(store, item) {
   return store._typeMap[systemName];
 };
 
-var genError = function genError(message, operation, type) {
-  var error = new Error(message);
-  error.operation = operation;
-  error.type = type;
-  return error;
-};
-
 var canUseNormalMap = function canUseNormalMap(encodeSymbolKeys) {
   // Map not supported at all or is some kind of polyfill, ignore
   if (typeof Map !== 'function' || getSystemName(new Map()) !== 'Map') {
@@ -212,25 +205,23 @@ var getDecoded = function getDecoded(store, pointer) {
   return pointer;
 };
 
-var attachKeys = function attachKeys(store, dataItem, keyIndex, valueIndex) {
-  for (var i = 0; i < (dataItem._parts[keyIndex] || []).length; i += 1) {
-    dataItem._reference[getDecoded(store, dataItem._parts[keyIndex][i])] = getDecoded(store, dataItem._parts[valueIndex][i]);
-  }
-};
-
-var attachKeysStandard = function attachKeysStandard(store, dataItem) {
-  attachKeys(store, dataItem, 1, 2);
-};
-
 var attachIndices = function attachIndices(store, dataItem) {
   for (var i = 0; i < dataItem._parts[0].length; i += 1) {
     dataItem._reference[i] = getDecoded(store, dataItem._parts[0][i]);
   }
 };
 
-var arrayLikeBuild = function arrayLikeBuild(store, dataItem) {
-  attachIndices(store, dataItem);
-  attachKeysStandard(store, dataItem);
+var attachKeys = function attachKeys(store, dataItem, keyIndex, valueIndex) {
+  for (var i = 0; i < (dataItem._parts[keyIndex] || []).length; i += 1) {
+    // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
+    var key = dataItem._parts[keyIndex][i];
+
+    if (key.slice(0, 2) === 'Sy' && typeof Symbol !== 'function' && store._compat) {
+      return;
+    }
+
+    dataItem._reference[getDecoded(store, key)] = getDecoded(store, dataItem._parts[valueIndex][i]);
+  }
 }; // This is the function for getting pointer values in the generateReference functions
 
 
@@ -262,7 +253,10 @@ var genArrayBuffer = function genArrayBuffer(type) {
       });
       return buffer;
     },
-    _build: arrayLikeBuild
+    _build: function _build(store, dataItem) {
+      attachIndices(store, dataItem);
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
 };
 
@@ -283,28 +277,34 @@ var ArrayBufferTypes = function ArrayBufferTypes(typeObj) {
   return typeObj;
 };
 
-var arrayLikeEncodeValue = function arrayLikeEncodeValue(reference, attachments) {
-  return encodeWithAttachments([attachments._indices], attachments);
-};
-
 var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
   typeObj.Ar = {
     _systemName: 'Array',
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return encodeWithAttachments([attachments._indices], attachments);
+    },
     _generateReference: function _generateReference() {
       return [];
     },
-    _build: arrayLikeBuild
+    _build: function _build(store, dataItem) {
+      attachIndices(store, dataItem);
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
   typeObj.rg = {
     _systemName: 'Arguments',
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return encodeWithAttachments([attachments._indices], attachments);
+    },
     _generateReference: function _generateReference(store, dataItems) {
       return function () {
         return arguments;
       }.apply(null, Array(dataItems[0].length));
     },
-    _build: arrayLikeBuild
+    _build: function _build(store, dataItem) {
+      attachIndices(store, dataItem);
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
   return typeObj;
 };
@@ -357,12 +357,17 @@ var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
       reader.readAsArrayBuffer(reference);
     },
     _generateReference: function _generateReference(store, dataItems) {
-      var p = extractPointer(dataItems[0][0]);
-      return create(store, [new Uint8Array(store._encoded[p._key][p._index][0].map(function (pointer) {
+      var p = extractPointer(dataItems[0][0]); // If we are decoding a Deferred Type that wasn't properly deferred, then the Uint8Array would never have gotten encoded
+      // This will result in an empty Blob or File
+
+      var dataArray = p._key === 'un' ? [] : store._encoded[p._key][p._index][0];
+      return create(store, [new Uint8Array(dataArray.map(function (pointer) {
         return decodePointer(store, pointer);
       }))], dataItems[0]);
     },
-    _build: attachKeysStandard
+    _build: function _build(store, dataItem) {
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
 };
 
@@ -413,12 +418,14 @@ var DateType = function DateType(typeObj) {
   typeObj.Da = {
     _systemName: 'Date',
     _encodeValue: function _encodeValue(reference, attachments) {
-      return encodeWithAttachments([reference.valueOf()], attachments);
+      return encodeWithAttachments([[reference.valueOf()]], attachments);
     },
     _generateReference: function _generateReference(store, dataItems) {
-      return new Date(decodePointer(store, dataItems[0]));
+      return new Date(decodePointer(store, dataItems[0][0]));
     },
-    _build: attachKeysStandard
+    _build: function _build(store, dataItem) {
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
   return typeObj;
 };
@@ -444,7 +451,9 @@ var ErrorType = function ErrorType(typeObj) {
       value.stack = decodePointer(store, dataArray[2]);
       return value;
     },
-    _build: attachKeysStandard
+    _build: function _build(store, dataItem) {
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
   return typeObj;
 };
@@ -471,7 +480,7 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
           dataItem._reference.add(getDecoded(store, pointer));
         });
 
-        attachKeysStandard(store, dataItem);
+        attachKeys(store, dataItem, 1, 2);
       }
     };
     typeObj.Ma = {
@@ -540,7 +549,9 @@ var RegExpType = function RegExpType(typeObj) {
       value.lastIndex = decodePointer(store, dataArray[2]);
       return value;
     },
-    _build: attachKeysStandard
+    _build: function _build(store, dataItem) {
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
   return typeObj;
 };
@@ -597,11 +608,16 @@ var SymbolType = function SymbolType(typeObj) {
 var genTypedArray = function genTypedArray(type) {
   return {
     _systemName: getSystemName(new type()),
-    _encodeValue: arrayLikeEncodeValue,
+    _encodeValue: function _encodeValue(reference, attachments) {
+      return encodeWithAttachments([attachments._indices], attachments);
+    },
     _generateReference: function _generateReference(store, dataItems) {
       return new type(dataItems[0].length);
     },
-    _build: arrayLikeBuild
+    _build: function _build(store, dataItem) {
+      attachIndices(store, dataItem);
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
 };
 
@@ -643,12 +659,14 @@ var genWrappedPrimitive = function genWrappedPrimitive(type) {
     // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
     _systemName: "_" + getSystemName(new type('')),
     _encodeValue: function _encodeValue(reference, attachments) {
-      return encodeWithAttachments([reference.valueOf()], attachments);
+      return encodeWithAttachments([[reference.valueOf()]], attachments);
     },
     _generateReference: function _generateReference(store, dataItems) {
-      return new type(decodePointer(store, dataItems[0]));
+      return new type(decodePointer(store, dataItems[0][0]));
     },
-    _build: attachKeysStandard
+    _build: function _build(store, dataItem) {
+      attachKeys(store, dataItem, 1, 2);
+    }
   };
 };
 
@@ -682,8 +700,8 @@ var getPointerKey = function getPointerKey(store, item) {
 
   if (!pointerKey && !store._compat) {
     var type = getSystemName(item);
-    throw genError("Cannot encode unsupported type \"" + type + "\".", 'encode', type);
-  } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referencial integrity, but can still handle attachments
+    throw new Error("Cannot encode unsupported type \"" + type + "\".");
+  } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referential integrity, but can still handle attachments
 
 
   return pointerKey ? pointerKey : 'Ob';
@@ -736,14 +754,9 @@ var encodeAll = function encodeAll(store, resumeFromIndex) {
     if (getSystemName(encodedForm) !== 'String') {
       // Encounter all data in the encoded form to get the appropriate Pointers and
       encodedForm = encodedForm.map(function (part) {
-        if (getSystemName(part) === 'Array') {
-          return part.map(function (subPart) {
-            return encounterItem(store, subPart);
-          });
-        } // Wrapped Primitive Types have a single value for the first item, rather than an Array
-
-
-        return encounterItem(store, part);
+        return part.map(function (subPart) {
+          return encounterItem(store, subPart);
+        });
       });
     }
 
@@ -757,7 +770,7 @@ var prepOutput = function prepOutput(store, root) {
 
   var output = JSON.stringify(Object.keys(store._output).map(function (key) {
     return [key, store._output[key]];
-  }), null, store._space);
+  }));
 
   if (typeof store._onFinish === 'function') {
     store._onFinish(output);
@@ -785,7 +798,6 @@ var encode = function encode(value, options) {
     _compat: options.compat,
     _encodeSymbolKeys: options.encodeSymbolKeys,
     _onFinish: options.onFinish,
-    _space: options.space,
     _types: types$1,
     _typeMap: typeMap,
     _wrappedTypeMap: wrappedTypeMap,
@@ -808,7 +820,7 @@ var encode = function encode(value, options) {
         return prepOutput(store, rootPointerKey);
       }
 
-      throw genError('Deferred Types require onFinish option.', 'encode');
+      throw new Error('Deferred Types require onFinish option.');
     }
 
     var deferredLength = store._deferred.length;
@@ -833,12 +845,15 @@ var encode = function encode(value, options) {
 
 
   return prepOutput(store, rootPointerKey);
-};
+}; // Recursively look at the reference set for exploration values
+// This handles both pair arrays and individual values
+// This recursion is fine because it has a maximum depth of around 3
+
 
 var exploreParts = function exploreParts(store, parts) {
   if (getSystemName(parts) === 'Array') {
     parts.forEach(function (part) {
-      store._explore.push(part);
+      exploreParts(store, part);
     });
   } else {
     store._explore.push(parts);
@@ -854,7 +869,7 @@ var explorePointer = function explorePointer(store, pointer) {
       return;
     }
 
-    throw genError("Cannot decode unrecognized pointer type \"" + p._key + "\".", 'decode', p._key);
+    throw new Error("Cannot decode unrecognized pointer type \"" + p._key + "\".");
   } // If a simple pointer or an already explored pointer, ignore
 
 
@@ -873,8 +888,11 @@ var explorePointer = function explorePointer(store, pointer) {
   try {
     store._decoded[pointer]._reference = types$1[p._key]._generateReference(store, store._encoded[p._key][p._index]);
   } catch (e) {
-    // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
-    throw genError("Cannot decode recognized pointer type \"" + p._key + "\".", 'decode');
+    if (!store._compat) {
+      // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
+      throw new Error("Cannot decode recognized pointer type \"" + p._key + "\".");
+    } // In compat mode, ignore
+
   }
 
   if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
@@ -907,7 +925,7 @@ var decode = function decode(encoded, options) {
       return rootPointerKey;
     }
 
-    throw genError("Cannot decode unrecognized pointer type \"" + rootP._key + "\".", 'decode', rootP._key);
+    throw new Error("Cannot decode unrecognized pointer type \"" + rootP._key + "\".");
   } // Explore through data structure
 
 

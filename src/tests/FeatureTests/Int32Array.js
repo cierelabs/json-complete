@@ -74,7 +74,7 @@ if (typeof Int32Array === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('Int32Array: Referencial Integrity', (t) => {
+    test('Int32Array: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Int32Array(1);

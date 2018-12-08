@@ -74,7 +74,7 @@ if (typeof Int16Array === 'function') {
         t.equal(decoded.me, decoded);
     });
 
-    test('Int16Array: Referencial Integrity', (t) => {
+    test('Int16Array: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Int16Array(1);

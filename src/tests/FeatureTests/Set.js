@@ -78,7 +78,7 @@ if (typeof Set === 'function') {
         t.equal(Object.keys(value).concat(Object.getOwnPropertySymbols(value)).length, 0);
     });
 
-    test('Set: Referencial Integrity Within and Without', (t) => {
+    test('Set: Referential Integrity Within and Without', (t) => {
         t.plan(2);
 
         const obj = {
@@ -126,7 +126,7 @@ if (typeof Set === 'function') {
         t.equal(decodedSet.me, decodedSet);
     });
 
-    test('Set: Referencial Integrity', (t) => {
+    test('Set: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Set([1]);

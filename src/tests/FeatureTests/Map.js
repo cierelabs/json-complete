@@ -81,7 +81,7 @@ if (typeof Map === 'function') {
         t.equal(Object.keys(value).concat(Object.getOwnPropertySymbols(value)).length, 0);
     });
 
-    test('Map (Value): Referencial Integrity Within and Without', (t) => {
+    test('Map (Value): Referential Integrity Within and Without', (t) => {
         t.plan(2);
 
         const obj = {
@@ -137,7 +137,7 @@ if (typeof Map === 'function') {
         t.equal(Object.keys(key).concat(Object.getOwnPropertySymbols(key)).length, 0);
     });
 
-    test('Map (Key): Referencial Integrity Within and Without', (t) => {
+    test('Map (Key): Referential Integrity Within and Without', (t) => {
         t.plan(2);
 
         const obj = {
@@ -159,7 +159,7 @@ if (typeof Map === 'function') {
         t.equal(key, decoded.obj);
     });
 
-    test('Map: Referencial Integrity Between Key and Value', (t) => {
+    test('Map: Referential Integrity Between Key and Value', (t) => {
         t.plan(3);
 
         const obj = { a: { b: 2 } };
@@ -200,7 +200,7 @@ if (typeof Map === 'function') {
         t.equal(decodedMap.me, decodedMap);
     });
 
-    test('Map: Referencial Integrity', (t) => {
+    test('Map: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new Map([[0, 1]]);

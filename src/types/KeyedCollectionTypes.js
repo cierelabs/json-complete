@@ -1,5 +1,4 @@
 import attachKeys from '/utils/attachKeys.js';
-import attachKeysStandard from '/utils/attachKeysStandard.js';
 import getDecoded from '/utils/getDecoded.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
@@ -25,7 +24,7 @@ export default (typeObj) => {
                     dataItem._reference.add(getDecoded(store, pointer));
                 });
 
-                attachKeysStandard(store, dataItem);
+                attachKeys(store, dataItem, 1, 2);
             },
         };
 

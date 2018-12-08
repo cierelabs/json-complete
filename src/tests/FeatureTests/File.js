@@ -189,7 +189,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
         });
     });
 
-    test('File: Referencial Integrity', (t) => {
+    test('File: Referential Integrity', (t) => {
         t.plan(2);
 
         const obj = { a: 1 };

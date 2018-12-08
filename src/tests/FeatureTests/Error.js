@@ -144,7 +144,7 @@ test('Error: Self-Containment', (t) => {
     t.equal(decoded.me, decoded);
 });
 
-test('Error: Referencial Integrity', (t) => {
+test('Error: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = new Error('a');
@@ -172,7 +172,8 @@ test('Error: Encoding Expected', (t) => {
     // Remove extra properties a given browser might have added (namely, Safari)
     delete encoded.Nu;
     encoded.St = encoded.St.slice(0, 3);
-    encoded.Er[0] = encoded.Er[0].slice(0, 3);
+    encoded.Er[0][1] = encoded.Er[0][1].slice(0, 1);
+    encoded.Er[0][2] = encoded.Er[0][2].slice(0, 1);
 
     t.deepEqual(encoded, {
         Er: [

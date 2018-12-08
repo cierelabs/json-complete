@@ -1,4 +1,4 @@
-import attachKeysStandard from '/utils/attachKeysStandard.js';
+import attachKeys from '/utils/attachKeys.js';
 import decodePointer from '/utils/decodePointer.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
@@ -28,7 +28,9 @@ export default (typeObj) => {
             value.lastIndex = decodePointer(store, dataArray[2]);
             return value;
         },
-        _build: attachKeysStandard,
+        _build: (store, dataItem) => {
+            attachKeys(store, dataItem, 1, 2);
+        },
     };
 
     return typeObj;

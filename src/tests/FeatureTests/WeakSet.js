@@ -54,7 +54,7 @@ if (typeof WeakSet === 'function') {
         t.equal(decodedWeakSet.me, decodedWeakSet);
     });
 
-    test('WeakSet: Referencial Integrity', (t) => {
+    test('WeakSet: Referential Integrity', (t) => {
         t.plan(2);
 
         const source = new WeakSet([{ a: 1 }]);

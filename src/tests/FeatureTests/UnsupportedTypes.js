@@ -93,7 +93,7 @@ test('Unsupported Types: Self-Containment', (t) => {
     delete source.me;
 });
 
-test('Unsupported Types: Referencial Integrity', (t) => {
+test('Unsupported Types: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = Math;

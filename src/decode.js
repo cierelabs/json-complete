@@ -1,12 +1,14 @@
 import extractPointer from '/utils/extractPointer.js';
-import genError from '/utils/genError.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
 
+// Recursively look at the reference set for exploration values
+// This handles both pair arrays and individual values
+// This recursion is fine because it has a maximum depth of around 3
 const exploreParts = (store, parts) => {
     if (getSystemName(parts) === 'Array') {
         parts.forEach((part) => {
-            store._explore.push(part);
+            exploreParts(store, part);
         });
     }
     else {
@@ -24,7 +26,7 @@ const explorePointer = (store, pointer) => {
             return;
         }
 
-        throw genError(`Cannot decode unrecognized pointer type "${p._key}".`, 'decode', p._key);
+        throw new Error(`Cannot decode unrecognized pointer type "${p._key}".`);
     }
 
     // If a simple pointer or an already explored pointer, ignore
@@ -43,8 +45,12 @@ const explorePointer = (store, pointer) => {
     try {
         store._decoded[pointer]._reference = types[p._key]._generateReference(store, store._encoded[p._key][p._index]);
     } catch (e) {
-        // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
-        throw genError(`Cannot decode recognized pointer type "${p._key}".`, 'decode');
+        if (!store._compat) {
+            // This can happen if the data is malformed, or if the environment does not support the type the data has encoded
+            throw new Error(`Cannot decode recognized pointer type "${p._key}".`);
+        }
+
+        // In compat mode, ignore
     }
 
     if (getSystemName(store._decoded[pointer]._parts) === 'Array') {
@@ -81,7 +87,7 @@ export default (encoded, options) => {
             return rootPointerKey;
         }
 
-        throw genError(`Cannot decode unrecognized pointer type "${rootP._key}".`, 'decode', rootP._key);
+        throw new Error(`Cannot decode unrecognized pointer type "${rootP._key}".`);
     }
 
     // Explore through data structure

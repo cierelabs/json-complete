@@ -89,7 +89,7 @@ test('Object: Self-Containment', (t) => {
     t.equal(decodedObj.me, decodedObj);
 });
 
-test('Object: Referencial Integrity', (t) => {
+test('Object: Referential Integrity', (t) => {
     t.plan(2);
 
     const source = {};
