@@ -1,7 +1,7 @@
 {
     "name": "json-complete",
     "version": "1.0.0",
-    "description": "A library that can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again.",
+    "description": "A JSON alternative that retains references, handles circular dependencies, and encodes almost every data type available to standard JavaScript.",
     "scripts": {
         "test": "./node_modules/gulp/bin/gulp.js test",
         "test-browser": "./node_modules/gulp/bin/gulp.js test-browser",

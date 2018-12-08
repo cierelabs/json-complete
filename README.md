@@ -1,6 +1,6 @@
 # json-complete
 
-A library that can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
+json-complete can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
 
 
 
