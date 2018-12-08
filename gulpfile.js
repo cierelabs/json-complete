@@ -274,7 +274,7 @@ gulp.task('prod', (end) => {
 });
 
 const gulpGzip = require('gulp-gzip');
-const gulpZopfli = require('gulp-zopfli');
+const gulpZopfliGreen = require('gulp-zopfli-green');
 const gulpBrotli = require('gulp-brotli');
 
 const compressionPath = './_testing/compression';
@@ -297,7 +297,7 @@ gulp.task('compress-gzip', () => {
 gulp.task('compress-zopfli', () => {
     return gulp.src('./dist/*.min.js')
         .pipe(gulp.dest(compressionPath))
-        .pipe(gulpZopfli())
+        .pipe(gulpZopfliGreen())
         .pipe(gulp.dest(compressionPath));
 });
 

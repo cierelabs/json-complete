@@ -39,7 +39,7 @@
         "gulp-tape": "1.0.0",
         "gulp-terser": "1.1.5",
         "gulp-watch": "5.0.1",
-        "gulp-zopfli": "1.0.0",
+        "gulp-zopfli-green": "3.0.1",
         "rollup-plugin-root-import": "0.2.3",
         "rollup-stream": "1.24.1",
         "run-sequence": "2.2.1",
