@@ -17,6 +17,12 @@ const rollupStream = require('rollup-stream');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
 
+// const rollupPluginNodeBuiltins = require('rollup-plugin-node-builtins');
+// const rollupPluginNodeGlobals = require('rollup-plugin-node-globals');
+// const rollupPluginNodeResolve = require('rollup-plugin-node-resolve');
+// const rollupPluginCommonjs = require('rollup-plugin-commonjs');
+
+const absoluteSourcePath = `${__dirname}/src`;
 const browserOutputFiles = './_testing/browser/**/*';
 const browserOutputPath = './_testing/browser';
 const browserWatchFiles = './src/**/*.*';
@@ -64,8 +70,12 @@ const js = (options) => {
         input: options.entry,
         plugins: [
             rollupPluginRootImport({
-                root: rootPath,
+                root: absoluteSourcePath,
             }),
+            // rollupPluginNodeGlobals(),
+            // rollupPluginNodeBuiltins(),
+            // rollupPluginNodeResolve(),
+            // rollupPluginCommonjs(),
         ],
         rollup: rollup,
         output: {
@@ -84,7 +94,7 @@ const js = (options) => {
         stream = babelModern(stream);
     }
 
-    if (options.unminify) {
+    if (options.unminify && !options.stopExport) {
         stream = stream.pipe(gulp.dest(options.destination));
     }
 
@@ -110,7 +120,9 @@ const js = (options) => {
             suffix: '.min',
         }));
 
-        stream = stream.pipe(gulp.dest(options.destination));
+        if (!options.stopExport) {
+            stream = stream.pipe(gulp.dest(options.destination));
+        }
     }
 
     return stream;
@@ -123,6 +135,25 @@ gulp.task('clear-browser', () => {
         browserOutputFiles,
     ]);
 });
+
+// Cannot get rollup plugins to import all require statement code, resulting in require statements in the output which causes the script to fail
+// gulp.task('test-browser-js-tests_rollup_test', () => {
+//     let stream = js({
+//         entry: testEntry,
+//         filename: 'tests.js',
+//         format: 'cjs',
+//         unminify: true,
+//         minify: false,
+//         stopExport: true,
+//     });
+
+//     stream = stream.pipe(gulpRename({
+//         basename: 'tests',
+//     }));
+//     stream = stream.pipe(gulp.dest(browserOutputPath));
+
+//     return stream;
+// });
 
 gulp.task('test-browser-js-tests', () => {
     var b = browserify({
