@@ -1,7 +1,7 @@
 import genPrimitive from '/utils/genPrimitive.js';
 
 export default (typeObj) => {
-    /* istanbul ignore if */
+    /* istanbul ignore else */
     if (typeof BigInt === 'function') {
         typeObj.Bi = genPrimitive(BigInt);
     }

@@ -4,36 +4,40 @@ const del = require('del');
 const fs = require('fs');
 const gulp = require('gulp');
 const gulpBabel = require('gulp-babel');
-const gulpBetterRollup = require('gulp-better-rollup');
+const gulpBrotli = require('gulp-brotli');
+const gulpGzip = require('gulp-gzip');
 const gulpRename = require('gulp-rename');
 const gulpTape = require('gulp-tape');
 const gulpTerser = require('gulp-terser');
-const gulpWatch = require('gulp-watch');
+const gulpZopfliGreen = require('gulp-zopfli-green');
 const path = require('path');
+const rollup = require('rollup');
 const rollupPluginRootImport = require('rollup-plugin-root-import');
-const runSequence = require('run-sequence');
+const rollupStream = require('rollup-stream');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
+
+const browserOutputFiles = './_testing/browser/**/*';
+const browserOutputPath = './_testing/browser';
+const browserWatchFiles = './src/**/*.*';
+const compressionPath = './_testing/compression';
+const distFiles = './dist/**/*';
+const distMinFiles = './dist/*.min.js';
+const distPath = './dist';
+const libraryEntry = './src/main.js';
+const nodeOutputFiles = './_testing/node/tests/FeatureTests/*.js';
+const nodeOutputPath = './_testing/node/tests';
+const rootJavascriptFiles = './src/**/*.js';
+const rootPath = './src';
+const testEntry = './src/tests/tests.js';
+const testOutputPath = './_testing/node';
+const testPage = './src/tests/browser-tester.html';
+const testSourceFiles = './src/tests/**/*.js';
 
 function onError(e) {
     console.error(e); // eslint-disable-line no-console
     this.emit('end');
 }
-
-const rollupJs = (stream, format) => {
-    stream = stream.pipe(gulpBetterRollup({
-        plugins: [
-            rollupPluginRootImport({
-                root: './src',
-            }),
-        ],
-    }, {
-        format: format,
-    }));
-    stream = stream.on('error', onError);
-
-    return stream;
-};
 
 const babelModern = (stream) => {
     stream = stream.pipe(gulpBabel({
@@ -56,11 +60,23 @@ const babelModern = (stream) => {
 const js = (options) => {
     const format = options.format || 'esm';
 
-    let stream = gulp.src(options.entry);
-    stream = rollupJs(stream, format);
+    let stream = rollupStream({
+        input: options.entry,
+        plugins: [
+            rollupPluginRootImport({
+                root: rootPath,
+            }),
+        ],
+        rollup: rollup,
+        output: {
+            format: options.format,
+        },
+    });
+    stream = stream.on('error', onError);
+    stream = stream.pipe(vinylSourceStream(options.filename));
+    stream = stream.pipe(vinylBuffer());
 
     stream = stream.pipe(gulpRename({
-        basename: options.filename,
         suffix: `.${options.format}`,
     }));
 
@@ -77,7 +93,7 @@ const js = (options) => {
             mangle: {
                 toplevel: true,
                 properties: {
-                    regex: /_\w+/,
+                    regex: /_\w+/, // Compress all properties that start with _
                 },
             },
             compress: {
@@ -101,18 +117,18 @@ const js = (options) => {
 
 gulp.task('clear-browser', () => {
     return del([
-        './_testing/browser/**/*',
+        browserOutputFiles,
     ]);
 });
 
 gulp.task('test-browser-js-tests', () => {
     var b = browserify({
-        entries: './src/tests/tests.js',
+        entries: testEntry,
         debug: false,
     });
     b.transform('babelify', {
         plugins: [
-            ['module-resolver', { root: ['./src'] }],
+            ['module-resolver', { root: [rootPath] }],
             'babel-plugin-transform-esm-to-cjs',
         ],
     });
@@ -123,47 +139,31 @@ gulp.task('test-browser-js-tests', () => {
     stream = stream.pipe(vinylBuffer());
     stream = stream.on('error', onError);
     stream = babelModern(stream);
-    stream = stream.pipe(gulp.dest('./_testing/browser'));
+    stream = stream.pipe(gulp.dest(browserOutputPath));
 
     return stream;
 });
 
 gulp.task('test-browser-html', () => {
-    return gulp.src('./src/tests/browser-tester.html')
+    return gulp.src(testPage)
         .pipe(gulpRename({
             basename: 'index',
         }))
-        .pipe(gulp.dest('./_testing/browser'));
+        .pipe(gulp.dest(browserOutputPath));
 });
 
-gulp.task('test-browser-builder', (end) => {
-    runSequence(
-        ['test-browser-js-tests', 'test-browser-html'],
-        end
-    );
-});
-
-gulp.task('test-browser-watcher', () => {
-    return gulpWatch([
-        './src/**/*.*',
-    ], { ignoreInitial: true }, () => {
-        runSequence(
-            ['test-browser-builder'],
-            () => {} // never ends
-        );
-    });
-});
+gulp.task('test-browser-builder', gulp.parallel('test-browser-js-tests', 'test-browser-html'));
 
 gulp.task('test-serve', () => {
     browserSync.init({
-        files: ['./_testing/browser/**/*.*'],
-        reloadDebounce: 400,
+        files: [browserOutputFiles],
+        reloadDebounce: 1000,
         port: 4000,
         ui: {
             port: 5001,
         },
         server: {
-            baseDir: './_testing/browser',
+            baseDir: browserOutputPath,
         },
         ghostMode: false,
         snippetOptions: {
@@ -175,49 +175,47 @@ gulp.task('test-serve', () => {
             },
         },
     });
+
+    gulp.watch(browserWatchFiles, gulp.series('test-browser-builder')).on('change', browserSync.reload);
 });
 
-gulp.task('test-browser', (end) => {
-    runSequence(
-        ['clear-browser'],
-        ['test-browser-builder'],
-        ['test-serve'],
-        ['test-browser-watcher'],
-        end
-    );
-});
+gulp.task('test-browser', gulp.series(
+    'clear-browser',
+    'test-browser-builder',
+    'test-serve',
+));
 
 
 
 gulp.task('clear-node', () => {
     return del([
-        './_testing/node',
+        testOutputPath,
     ]);
 });
 
 gulp.task('test-node-js-library', () => {
-    return gulp.src(['./src/**/*.js', '!./src/tests/**/*.js'])
+    return gulp.src([rootJavascriptFiles, `!${testSourceFiles}`])
         .pipe(gulpBabel({
             plugins: [
-                ['module-resolver', { root: ['./src'] }],
+                ['module-resolver', { root: [rootPath] }],
                 'babel-plugin-transform-esm-to-cjs'
             ],
         }))
-        .pipe(gulp.dest('./_testing/node'));
+        .pipe(gulp.dest(testOutputPath));
 });
 
 gulp.task('test-node-js-test', () => {
-    return gulp.src(['./src/tests/**/*.js'])
+    return gulp.src([testSourceFiles])
         .pipe(gulpBabel({
             plugins: [
-                ['module-resolver', { root: ['./src'] }],
+                ['module-resolver', { root: [rootPath] }],
             ],
         }))
-        .pipe(gulp.dest('./_testing/node/tests'));
+        .pipe(gulp.dest(nodeOutputPath));
 });
 
 gulp.task('test-node', () => {
-    return gulp.src(['./_testing/node/tests/FeatureTests/*.js'])
+    return gulp.src([nodeOutputFiles])
         .pipe(gulpTape({
             bail: true,
             nyc: true,
@@ -225,59 +223,14 @@ gulp.task('test-node', () => {
         .on('error', onError);
 });
 
-gulp.task('test', (end) => {
-    runSequence(
-        ['clear-node'],
-        ['test-node-js-library', 'test-node-js-test'],
-        ['test-node'],
-        ['clear-node'],
-        end
-    );
-});
+gulp.task('test', gulp.series(
+    'clear-node',
+    gulp.parallel('test-node-js-library', 'test-node-js-test'),
+    'test-node',
+    'clear-node'
+));
 
 
-
-gulp.task('clear-dist', () => {
-    return del([
-        './dist/**/*',
-    ]);
-});
-
-gulp.task('prod-esm', () => {
-    return js({
-        entry: './src/main.js',
-        filename: 'json_complete',
-        format: 'esm',
-        unminify: true,
-        minify: true,
-        destination: './dist',
-    });
-});
-
-gulp.task('prod-cjs', () => {
-    return js({
-        entry: './src/main.js',
-        filename: 'json_complete',
-        format: 'cjs',
-        unminify: true,
-        minify: true,
-        destination: './dist',
-    });
-});
-
-gulp.task('prod', (end) => {
-    runSequence(
-        ['clear-dist'],
-        ['prod-esm', 'prod-cjs'],
-        end
-    );
-});
-
-const gulpGzip = require('gulp-gzip');
-const gulpZopfliGreen = require('gulp-zopfli-green');
-const gulpBrotli = require('gulp-brotli');
-
-const compressionPath = './_testing/compression';
 
 gulp.task('clear-compression', () => {
     return del([
@@ -286,7 +239,7 @@ gulp.task('clear-compression', () => {
 });
 
 gulp.task('compress-gzip', () => {
-    return gulp.src('./dist/*.min.js')
+    return gulp.src(distMinFiles)
         .pipe(gulp.dest(compressionPath))
         .pipe(gulpGzip({
             extension: 'zip',
@@ -295,14 +248,14 @@ gulp.task('compress-gzip', () => {
 });
 
 gulp.task('compress-zopfli', () => {
-    return gulp.src('./dist/*.min.js')
+    return gulp.src(distMinFiles)
         .pipe(gulp.dest(compressionPath))
         .pipe(gulpZopfliGreen())
         .pipe(gulp.dest(compressionPath));
 });
 
 gulp.task('compress-brotli', () => {
-    return gulp.src('./dist/*.min.js')
+    return gulp.src(distMinFiles)
         .pipe(gulp.dest(compressionPath))
         .pipe(gulpBrotli.compress())
         .pipe(gulp.dest(compressionPath));
@@ -329,8 +282,6 @@ gulp.task('compress-calculate', (end) => {
         // Convert data to displayable form
         const esmBaseSize = types.esm.base;
         const cjsBaseSize = types.cjs.base;
-
-
 
         const table = `
 | Compression | ES Module  | CommonJS |
@@ -364,12 +315,45 @@ gulp.task('compress-calculate', (end) => {
     });
 });
 
-gulp.task('compression-report', (end) => {
-    runSequence(
-        ['clear-compression'],
-        ['compress-gzip', 'compress-zopfli', 'compress-brotli'],
-        ['compress-calculate'],
-        ['clear-compression'],
-        end
-    );
+gulp.task('compression-report', gulp.series(
+    'clear-compression',
+    gulp.parallel('compress-gzip', 'compress-zopfli', 'compress-brotli'),
+    'compress-calculate',
+    'clear-compression'
+));
+
+
+
+gulp.task('clear-dist', () => {
+    return del([
+        distFiles,
+    ]);
 });
+
+gulp.task('prod-esm', () => {
+    return js({
+        entry: libraryEntry,
+        filename: 'json_complete.js',
+        format: 'esm',
+        unminify: true,
+        minify: true,
+        destination: distPath,
+    });
+});
+
+gulp.task('prod-cjs', () => {
+    return js({
+        entry: libraryEntry,
+        filename: 'json_complete.js',
+        format: 'cjs',
+        unminify: true,
+        minify: true,
+        destination: distPath,
+    });
+});
+
+gulp.task('prod', gulp.series(
+    'clear-dist',
+    gulp.parallel('prod-esm', 'prod-cjs'),
+    'compression-report'
+));

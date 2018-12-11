@@ -331,7 +331,7 @@ var BasePrimitiveTypes = (typeObj) => {
 };
 
 var BigIntType = (typeObj) => {
-    /* istanbul ignore if */
+    /* istanbul ignore else */
     if (typeof BigInt === 'function') {
         typeObj.Bi = genPrimitive(BigInt);
     }
