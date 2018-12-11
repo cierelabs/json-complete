@@ -181,7 +181,7 @@ console.log(encoded);
 #### Majority Type Support
 
 | json  | json-complete | Types                                                |
-|-------|---------------|------------------------------------------------------|
+|:-----:|:-------------:|------------------------------------------------------|
 | ❌     | ✅             | undefined                                            |
 | ✅     | ✅             | null                                                 |
 | ✅     | ✅             | Booleans                                             |
@@ -206,8 +206,8 @@ console.log(encoded);
 | ❌     | ✅             | Objects: Symbol Keys                                 |
 | ✅     | ✅             | Arrays                                               |
 | ❌     | ✅             | Arrays: String and Symbol Keys                       |
-| ⚠ *1* | ✅             | Arrays: Sparse Arrays                                |
-| ⚠ *2* | ✅             | Arguments Object                                     |
+| ⚠ `1` | ✅             | Arrays: Sparse Arrays                                |
+| ⚠ `2` | ✅             | Arguments Object                                     |
 | ❌     | ✅             | ArrayBuffer                                          |
 | ❌     | ✅             | SharedArrayBuffer                                    |
 | ❌     | ✅             | Int8Array                                            |
@@ -221,13 +221,13 @@ console.log(encoded);
 | ❌     | ✅             | Float64Array                                         |
 | ❌     | ✅             | Set                                                  |
 | ❌     | ✅             | Map                                                  |
-| ❌     | ✅ *3*         | Blob                                                 |
-| ❌     | ✅ *3*         | File                                                 |
+| ❌     | ✅ `3`         | Blob                                                 |
+| ❌     | ✅ `3`         | File                                                 |
 | ❌     | ✅             | BigInt                                               |
 
-* *1* - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
-* *2* - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
-* *3* - The asynchronous form of `encode` is required if the value contains a Blob or File type.
+* `1` - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
+* `2` - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
+* `3` - The asynchronous form of `encode` is required if the value contains a Blob or File type.
 
 
 #### Internal Referential Integrity
@@ -328,10 +328,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7299 bytes | 8352 bytes |
-| gzip        | 2884 bytes | 2907 bytes |
-| zopfli      | 2830 bytes | 2855 bytes |
-| brotli      | 2648 bytes | 2674 bytes |
+| Minified    | 7343 bytes | 8396 bytes |
+| gzip        | 2924 bytes | 2947 bytes |
+| zopfli      | 2871 bytes | 2895 bytes |
+| brotli      | 2681 bytes | 2706 bytes |
 
 
 

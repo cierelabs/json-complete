@@ -99,6 +99,9 @@ const js = (options) => {
             compress: {
                 inline: true,
             },
+            output: {
+                preamble: '/* @license BSL-1.0 https://git.io/fpQEc */',
+            },
         }));
 
         stream = stream.on('error', onError);

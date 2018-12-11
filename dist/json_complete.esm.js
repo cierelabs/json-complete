@@ -964,6 +964,8 @@ var decode = (encoded, options) => {
     return store._decoded[rootPointerKey]._reference;
 };
 
+/* @license BSL-1.0 https://git.io/fpQEc */
+
 var main = {
     encode: encode,
     decode: decode,
