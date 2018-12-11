@@ -11,10 +11,8 @@
     },
     "author": "Dwight House",
     "license": "BSL-1.0",
-    "repository": {
-        "type": "git",
-        "url": "ssh://git@stash.cierecloud.com:7999/cier/json-complete.git"
-    },
+    "repository": "cierelabs/json-complete",
+    "homepage": "https://github.com/cierelabs/json-complete",
     "main": "./dist/json_complete.cjs.min.js",
     "module": "./dist/json_complete.esm.min.js",
     "esnext": "./dist/json_complete.esm.min.js",
