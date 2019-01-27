@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -151,62 +152,10 @@ if (typeof File === 'function' && supportsFileCreation()) {
         }
     });
 
-    test('File: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-
+    StandardObjectTests('File', 'File', () => {
         const obj = { a: 1 };
         const blob = new Blob([JSON.stringify(obj)]);
-        const file = new File([blob], 'test.json');
-        file.x = 2;
-        file[Symbol.for('File')] = 'test';
-
-        encode([file], {
-            encodeSymbolKeys: true,
-            onFinish: (encoded) => {
-                const decoded = decode(encoded)[0];
-
-                t.equal(testHelpers.systemName(decoded), '[object File]');
-                t.equal(decoded.x, 2);
-                t.equal(decoded[Symbol.for('File')], 'test');
-            },
-        });
-    });
-
-    test('File: Self-Containment', (t) => {
-        t.plan(1);
-
-        const obj = { a: 1 };
-        const blob = new Blob([JSON.stringify(obj)]);
-        const file = new File([blob], 'test.json');
-        file.me = file;
-
-        encode([file], {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded)[0];
-
-                t.equal(decoded.me, decoded);
-            },
-        });
-    });
-
-    test('File: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const obj = { a: 1 };
-        const blob = new Blob([JSON.stringify(obj)]);
-        const file = new File([blob], 'test.json');
-
-        encode({
-            x: file,
-            y: file,
-        }, {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded);
-
-                t.equal(decoded.x, decoded.y);
-                t.notEqual(decoded.x, file);
-            },
-        });
+        return new File([blob], 'test.json');
     });
 
     test('File: Encoding Expected', (t) => {

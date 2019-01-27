@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
 const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
@@ -9,17 +10,23 @@ if (typeof Set === 'function') {
     test('Set: Normal', (t) => {
         t.plan(4);
 
-        const source = [1, 2, 'test', { a: { b: 2 } }];
+        const originalData = [1, 2, 'test', { a: { b: 2 } }];
 
-        const decoded = decode(encode([new Set(source)]))[0];
+        const source = new Set();
+        source.add(originalData[0]);
+        source.add(originalData[1]);
+        source.add(originalData[2]);
+        source.add(originalData[3]);
+
+        const decoded = decode(encode([source]))[0];
 
         let i = 0;
         decoded.forEach((v) => {
             if (!testHelpers.isObject(v)) {
-                t.equal(source[i], v);
+                t.equal(originalData[i], v);
             }
             else {
-                t.equal(source[i].a.b, v.a.b);
+                t.equal(originalData[i].a.b, v.a.b);
             }
             i += 1;
         });
@@ -28,17 +35,23 @@ if (typeof Set === 'function') {
     test('Set: Root Value', (t) => {
         t.plan(4);
 
-        const source = [1, 2, 'test', { a: { b: 2 } }];
+        const originalData = [1, 2, 'test', { a: { b: 2 } }];
 
-        const decoded = decode(encode(new Set(source)));
+        const source = new Set();
+        source.add(originalData[0]);
+        source.add(originalData[1]);
+        source.add(originalData[2]);
+        source.add(originalData[3]);
+
+        const decoded = decode(encode(source));
 
         let i = 0;
         decoded.forEach((v) => {
             if (!testHelpers.isObject(v)) {
-                t.equal(source[i], v);
+                t.equal(originalData[i], v);
             }
             else {
-                t.equal(source[i].a.b, v.a.b);
+                t.equal(originalData[i].a.b, v.a.b);
             }
             i += 1;
         });
@@ -46,7 +59,11 @@ if (typeof Set === 'function') {
 
     test('Set: void 0', (t) => {
         t.plan(1);
-        const decoded = decode(encode([new Set([void 0])]))[0];
+
+        const source = new Set();
+        source.add(void 0);
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
@@ -56,7 +73,11 @@ if (typeof Set === 'function') {
 
     test('Set: -0 (Sets do not store -0, only 0: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set#Value_equality )', (t) => {
         t.plan(2);
-        const decoded = decode(encode([new Set([-0])]))[0];
+
+        const source = new Set();
+        source.add(-0);
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
@@ -68,14 +89,23 @@ if (typeof Set === 'function') {
     test('Set: Object Inside', (t) => {
         t.plan(2);
 
-        const decoded = decode(encode([new Set([{}])]))[0];
+        const source = new Set();
+        source.add({});
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
         });
 
         t.ok(testHelpers.isObject(value));
-        t.equal(Object.keys(value).concat(Object.getOwnPropertySymbols(value)).length, 0);
+
+        let values = Object.keys(value);
+        if (typeof Symbol === 'function') {
+            values = values.concat(Object.getOwnPropertySymbols(value));
+        }
+
+        t.equal(values.length, 0);
     });
 
     test('Set: Referential Integrity Within and Without', (t) => {
@@ -87,10 +117,11 @@ if (typeof Set === 'function') {
             },
         };
 
-        const set = new Set([obj]);
-        set.obj = obj;
+        const source = new Set();
+        source.add(obj);
+        source.obj = obj;
 
-        const decoded = decode(encode([set]))[0];
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
@@ -100,44 +131,12 @@ if (typeof Set === 'function') {
         t.equal(value, decoded.obj);
     });
 
-    test('Set: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-        const set = new Set([1]);
-        set.x = 2;
-        set[Symbol.for('set')] = 'test';
+    const detectedMapSystemName = testHelpers.systemName(new Set()) === '[object Set]' ? 'Set' : 'Object';
 
-        const decodedSet = decode(encode([set], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(decodedSet.has(1));
-        t.equal(decodedSet.x, 2);
-        t.equal(decodedSet[Symbol.for('set')], 'test');
-    });
-
-    test('Set: Self-Containment', (t) => {
-        t.plan(2);
-        const set = new Set([1]);
-        set.me = set;
-
-        const decodedSet = decode(encode([set]))[0];
-
-        t.ok(decodedSet.has(1));
-        t.equal(decodedSet.me, decodedSet);
-    });
-
-    test('Set: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Set([1]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Set', detectedMapSystemName, () => {
+        const source = new Set();
+        source.add(3);
+        return source;
     });
 
     test('Set: Encoding Expected', (t) => {

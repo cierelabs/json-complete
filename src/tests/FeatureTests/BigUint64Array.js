@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -48,93 +49,8 @@ if (typeof BigUint64Array === 'function') {
         t.deepEqual(decode(encode(new BigUint64Array([BigInt(1)]))), new BigUint64Array([BigInt(1)]));
     });
 
-    test('BigUint64Array: Arbitrary Attached Data with String Key', (t) => {
-        t.plan(2);
-
-        const obj = new BigUint64Array(2);
-
-        obj.x = 2;
-
-        const options = {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded).a;
-
-                t.equal(testHelpers.systemName(decoded).slice(8, -1), 'BigUint64Array');
-                t.equal(decoded.x, 2);
-            },
-            compat: false,
-        };
-
-        encode({
-            a: obj,
-        }, options);
-    });
-
-    if (typeof Symbol === 'function') {
-        test('BigUint64Array: Arbitrary Attached Data with Symbol Key', (t) => {
-            t.plan(2);
-
-            const obj = new BigUint64Array(2);
-
-            obj[Symbol.for('attached')] = 3;
-
-            const options = {
-                encodeSymbolKeys: true,
-                onFinish: (encoded) => {
-                    const decoded = decode(encoded).a;
-
-                    t.equal(testHelpers.systemName(decoded).slice(8, -1), 'BigUint64Array');
-                    t.equal(decoded[Symbol.for('attached')], 3);
-                },
-                compat: false,
-            };
-
-            encode({
-                a: obj,
-            }, options);
-        });
-    }
-    else {
-        console.warn('Test for BigUint64Array Arbitrary Attachment Data with Symbol Key skipped because Symbols are not supported in the current environment.'); // eslint-disable-line no-console
-    }
-
-    test('BigUint64Array: Self-Containment', (t) => {
-        t.plan(1);
-
-        const obj = new BigUint64Array(2);
-        obj.me = obj;
-
-        const options = {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded)[0];
-
-                t.equal(decoded.me, decoded);
-            },
-            compat: false,
-        };
-
-        encode([obj], options);
-    });
-
-    test('BigUint64Array: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const obj = new BigUint64Array(2);
-
-        const options = {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded);
-
-                t.equal(decoded.x, decoded.y);
-                t.notEqual(decoded.x, obj);
-            },
-            compat: false,
-        };
-
-        encode({
-            x: obj,
-            y: obj,
-        }, options);
+    StandardObjectTests('BigUint64Array', 'BigUint64Array', () => {
+        return new BigUint64Array(2);
     });
 
     test('BigUint64Array: Encoding Expected', (t) => {

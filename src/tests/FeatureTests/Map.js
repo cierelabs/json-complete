@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -9,19 +10,25 @@ if (typeof Map === 'function') {
     test('Map: Normal', (t) => {
         t.plan(8);
 
-        const source = [[1, 1], [2, 2], ['test', 'test'], [{ a: { b: 2 } }, { a: { b: 2 } }]];
+        const originalData = [1, 2, 'test', { a: { b: 2 } }];
 
-        const decoded = decode(encode([new Map(source)]))[0];
+        const source = new Map();
+        source.set(originalData[0], originalData[0]);
+        source.set(originalData[1], originalData[1]);
+        source.set(originalData[2], originalData[2]);
+        source.set(originalData[3], originalData[3]);
+
+        const decoded = decode(encode([source]))[0];
 
         let i = 0;
         decoded.forEach((v, k) => {
             if (!testHelpers.isObject(v)) {
-                t.equal(source[i][0], k);
-                t.equal(source[i][1], v);
+                t.equal(originalData[i], k);
+                t.equal(originalData[i], v);
             }
             else {
-                t.equal(source[i][0].a.b, k.a.b);
-                t.equal(source[i][1].a.b, v.a.b);
+                t.equal(originalData[i].a.b, k.a.b);
+                t.equal(originalData[i].a.b, v.a.b);
             }
             i += 1;
         });
@@ -30,19 +37,25 @@ if (typeof Map === 'function') {
     test('Map: Root Value', (t) => {
         t.plan(8);
 
-        const source = [[1, 1], [2, 2], ['test', 'test'], [{ a: { b: 2 } }, { a: { b: 2 } }]];
+        const originalData = [1, 2, 'test', { a: { b: 2 } }];
 
-        const decoded = decode(encode(new Map(source)));
+        const source = new Map();
+        source.set(originalData[0], originalData[0]);
+        source.set(originalData[1], originalData[1]);
+        source.set(originalData[2], originalData[2]);
+        source.set(originalData[3], originalData[3]);
+
+        const decoded = decode(encode(source));
 
         let i = 0;
         decoded.forEach((v, k) => {
             if (!testHelpers.isObject(v)) {
-                t.equal(source[i][0], k);
-                t.equal(source[i][1], v);
+                t.equal(originalData[i], k);
+                t.equal(originalData[i], v);
             }
             else {
-                t.equal(source[i][0].a.b, k.a.b);
-                t.equal(source[i][1].a.b, v.a.b);
+                t.equal(originalData[i].a.b, k.a.b);
+                t.equal(originalData[i].a.b, v.a.b);
             }
             i += 1;
         });
@@ -50,7 +63,11 @@ if (typeof Map === 'function') {
 
     test('Map (Value): void 0', (t) => {
         t.plan(1);
-        const decoded = decode(encode([new Map([[0, void 0]])]))[0];
+
+        const source = new Map();
+        source.set(0, void 0);
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
@@ -60,7 +77,11 @@ if (typeof Map === 'function') {
 
     test('Map (Value): -0', (t) => {
         t.plan(1);
-        const decoded = decode(encode([new Map([[0, -0]])]))[0];
+
+        const source = new Map();
+        source.set(0, -0);
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
@@ -71,14 +92,22 @@ if (typeof Map === 'function') {
     test('Map (Value): Object Inside', (t) => {
         t.plan(2);
 
-        const decoded = decode(encode([new Map([[0, {}]])]))[0];
+        const source = new Map();
+        source.set(0, {});
+
+        const decoded = decode(encode([source]))[0];
         let value;
         decoded.forEach((v) => {
             value = v;
         });
 
         t.ok(testHelpers.isObject(value));
-        t.equal(Object.keys(value).concat(Object.getOwnPropertySymbols(value)).length, 0);
+
+        let keys = Object.keys(value);
+        if (typeof Symbol === 'function') {
+            keys = keys.concat(Object.getOwnPropertySymbols(value));
+        }
+        t.equal(keys.length, 0);
     });
 
     test('Map (Value): Referential Integrity Within and Without', (t) => {
@@ -90,7 +119,10 @@ if (typeof Map === 'function') {
             },
         };
 
-        const map = new Map([[0, obj]]);
+        const source = new Map();
+        source.set(0, obj);
+
+        const map = source;
         map.obj = obj;
 
         const decoded = decode(encode([map]))[0];
@@ -105,7 +137,11 @@ if (typeof Map === 'function') {
 
     test('Map (Key): void 0', (t) => {
         t.plan(1);
-        const decoded = decode(encode([new Map([[void 0, 1]])]))[0];
+
+        const source = new Map();
+        source.set(void 0, 1);
+
+        const decoded = decode(encode([source]))[0];
         let key;
         decoded.forEach((v, k) => {
             key = k;
@@ -127,14 +163,22 @@ if (typeof Map === 'function') {
     test('Map (Key): Object Inside', (t) => {
         t.plan(2);
 
-        const decoded = decode(encode([new Map([[{}, 1]])]))[0];
+        const source = new Map();
+        source.set({}, 1);
+
+        const decoded = decode(encode([source]))[0];
         let key;
         decoded.forEach((v, k) => {
             key = k;
         });
 
         t.ok(testHelpers.isObject(key));
-        t.equal(Object.keys(key).concat(Object.getOwnPropertySymbols(key)).length, 0);
+
+        let keys = Object.keys(key);
+        if (typeof Symbol === 'function') {
+            keys = keys.concat(Object.getOwnPropertySymbols(key));
+        }
+        t.equal(keys.length, 0);
     });
 
     test('Map (Key): Referential Integrity Within and Without', (t) => {
@@ -146,7 +190,10 @@ if (typeof Map === 'function') {
             },
         };
 
-        const map = new Map([[obj, 1]]);
+        const source = new Map();
+        source.set(obj, 1);
+
+        const map = source;
         map.obj = obj;
 
         const decoded = decode(encode([map]))[0];
@@ -163,9 +210,11 @@ if (typeof Map === 'function') {
         t.plan(3);
 
         const obj = { a: { b: 2 } };
-        const source = [[obj, obj]];
 
-        const decoded = decode(encode([new Map(source)]))[0];
+        const source = new Map();
+        source.set(obj, obj);
+
+        const decoded = decode(encode([source]))[0];
 
         decoded.forEach((v, k) => {
             t.equal(k, v);
@@ -174,44 +223,12 @@ if (typeof Map === 'function') {
         });
     });
 
-    test('Map: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-        const map = new Map([[0, 1]]);
-        map.x = 2;
-        map[Symbol.for('map')] = 'test';
+    const detectedMapSystemName = testHelpers.systemName(new Map()) === '[object Map]' ? 'Map' : 'Object';
 
-        const decodedMap = decode(encode([map], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(decodedMap.has(0));
-        t.equal(decodedMap.x, 2);
-        t.equal(decodedMap[Symbol.for('map')], 'test');
-    });
-
-    test('Map: Self-Containment', (t) => {
-        t.plan(2);
-        const map = new Map([[0, 1]]);
-        map.me = map;
-
-        const decodedMap = decode(encode([map]))[0];
-
-        t.ok(decodedMap.has(0));
-        t.equal(decodedMap.me, decodedMap);
-    });
-
-    test('Map: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Map([[0, 1]]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Map', detectedMapSystemName, () => {
+        const source = new Map();
+        source.set(2, 1);
+        return source;
     });
 
     test('Map: Encoding Expected', (t) => {
