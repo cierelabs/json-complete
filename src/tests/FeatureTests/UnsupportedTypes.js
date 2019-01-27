@@ -9,50 +9,38 @@ const decode = jsonComplete.decode;
 test('Unsupported Types: Normal', (t) => {
     t.plan(2);
 
-    const encoded = encode([() => {}], {
+    const encoded = encode([Math], {
         compat: true,
     });
     const decoded = decode(encoded)[0];
 
     t.ok(testHelpers.isObject(decoded));
-
-    let keys = Object.keys(decoded);
-    if (typeof Symbol === 'function') {
-        keys = keys.concat(Object.getOwnPropertySymbols(decoded));
-    }
-
-    t.deepEqual(keys, []);
+    t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
 });
 
 test('Unsupported Types: Root Value', (t) => {
     t.plan(2);
 
-    const encoded = encode(() => {}, {
+    const encoded = encode(Math, {
         compat: true,
     });
     const decoded = decode(encoded);
 
     t.ok(testHelpers.isObject(decoded));
-
-    let keys = Object.keys(decoded);
-    if (typeof Symbol === 'function') {
-        keys = keys.concat(Object.getOwnPropertySymbols(decoded));
-    }
-
-    t.deepEqual(keys, []);
+    t.deepEqual(Object.keys(decoded).concat(Object.getOwnPropertySymbols(decoded)), []);
 });
 
 test('Unsupported Types: Normal Throw', (t) => {
     t.plan(1);
 
     try {
-        encode([() => {}], {
+        encode([Math], {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Function".', e.message);
+        t.equal('Cannot encode unsupported type "Math".', e.message);
     }
 });
 
@@ -60,18 +48,18 @@ test('Unsupported Types: Root Value Throw', (t) => {
     t.plan(1);
 
     try {
-        encode(() => {}, {
+        encode(Math, {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Function".', e.message);
+        t.equal('Cannot encode unsupported type "Math".', e.message);
     }
 });
 
 StandardObjectTests('Unsupported Types', 'Object', () => {
-    return () => {};
+    return Math;
 }, true);
 
 test('Unsupported Types: Encoding Expected', (t) => {
@@ -87,14 +75,23 @@ test('Unsupported Types: Encoding Expected', (t) => {
             [
                 [
                     'St0',
+                    'St1',
+                    'St2',
                 ],
                 [
+                    'Nu0',
+                    'Ob0',
                     'fa',
                 ],
             ],
         ],
         St: [
+            'x',
+            'me',
             'a',
+        ],
+        Nu: [
+            '2',
         ],
         r: 'Ob0',
     });
