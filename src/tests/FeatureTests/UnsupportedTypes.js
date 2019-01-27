@@ -9,7 +9,7 @@ const decode = jsonComplete.decode;
 test('Unsupported Types: Normal', (t) => {
     t.plan(2);
 
-    const encoded = encode([Math], {
+    const encoded = encode([() => {}], {
         compat: true,
     });
     const decoded = decode(encoded)[0];
@@ -21,7 +21,7 @@ test('Unsupported Types: Normal', (t) => {
 test('Unsupported Types: Root Value', (t) => {
     t.plan(2);
 
-    const encoded = encode(Math, {
+    const encoded = encode(() => {}, {
         compat: true,
     });
     const decoded = decode(encoded);
@@ -34,13 +34,13 @@ test('Unsupported Types: Normal Throw', (t) => {
     t.plan(1);
 
     try {
-        encode([Math], {
+        encode([() => {}], {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Math".', e.message);
+        t.equal('Cannot encode unsupported type "Function".', e.message);
     }
 });
 
@@ -48,24 +48,24 @@ test('Unsupported Types: Root Value Throw', (t) => {
     t.plan(1);
 
     try {
-        encode(Math, {
+        encode(() => {}, {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Math".', e.message);
+        t.equal('Cannot encode unsupported type "Function".', e.message);
     }
 });
 
 StandardObjectTests('Unsupported Types', 'Object', () => {
-    return Math;
+    return () => {};
 }, true);
 
 test('Unsupported Types: Encoding Expected', (t) => {
     t.plan(1);
 
-    const source = Math;
+    const source = () => {};
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source, {
@@ -75,23 +75,14 @@ test('Unsupported Types: Encoding Expected', (t) => {
             [
                 [
                     'St0',
-                    'St1',
-                    'St2',
                 ],
                 [
-                    'Nu0',
-                    'Ob0',
                     'fa',
                 ],
             ],
         ],
         St: [
-            'x',
-            'me',
             'a',
-        ],
-        Nu: [
-            '2',
         ],
         r: 'Ob0',
     });

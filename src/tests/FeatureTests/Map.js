@@ -51,7 +51,6 @@ if (typeof Map === 'function') {
 
     test('Map (Value): void 0', (t) => {
         t.plan(1);
-
         const decoded = decode(encode([new Map([[0, void 0]])]))[0];
         let value;
         decoded.forEach((v) => {
@@ -62,7 +61,6 @@ if (typeof Map === 'function') {
 
     test('Map (Value): -0', (t) => {
         t.plan(1);
-
         const decoded = decode(encode([new Map([[0, -0]])]))[0];
         let value;
         decoded.forEach((v) => {
@@ -108,7 +106,6 @@ if (typeof Map === 'function') {
 
     test('Map (Key): void 0', (t) => {
         t.plan(1);
-
         const decoded = decode(encode([new Map([[void 0, 1]])]))[0];
         let key;
         decoded.forEach((v, k) => {

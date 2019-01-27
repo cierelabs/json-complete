@@ -35,13 +35,11 @@ test('Error: Empty Stack', (t) => {
 
     const value = new Error('a');
 
-    const expectedStackType = value.stack === void 0 ? '[object Undefined]' : '[object String]';
-
     const decoded = decode(encode([value]))[0];
 
     t.ok(decoded instanceof Error);
-    t.equal(testHelpers.systemName(decoded.stack), expectedStackType);
-    t.ok(String(decoded.stack).length > 0);
+    t.equal(testHelpers.systemName(decoded.stack), '[object String]');
+    t.ok(decoded.stack.length > 0);
 });
 
 test('Error: Root Value', (t) => {
