@@ -7,6 +7,7 @@ import extractPointer from '/utils/extractPointer.js';
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             // Skip the decoding of the main value for now
             return encodeWithAttachments([[void 0].concat(propertiesKeys.map((property) => {

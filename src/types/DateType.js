@@ -5,6 +5,7 @@ import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 export default (typeObj) => {
     typeObj.D = {
         _systemName: 'Date',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[reference.valueOf()]], attachments);
         },

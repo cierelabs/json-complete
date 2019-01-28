@@ -3,6 +3,7 @@ export default (typeObj) => {
     if (typeof Symbol === 'function') {
         typeObj.P = {
             _systemName: 'Symbol',
+            _compressionType: 0,
             _encodeValue: (reference) => {
                 const symbolStringKey = Symbol.keyFor(reference);
                 const isRegistered = symbolStringKey !== void 0;

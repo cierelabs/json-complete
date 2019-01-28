@@ -7,6 +7,7 @@ import getSystemName from '/utils/getSystemName.js';
 const genArrayBuffer = (type) => {
     return {
         _systemName: getSystemName(new type()),
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([Array.prototype.slice.call(new Uint8Array(reference))], attachments);
         },

@@ -18,19 +18,8 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
     const encoded = encode([1, 2, 1]);
 
     t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-        A: [
-            [
-                [
-                    'N0',
-                    'N1',
-                    'N0',
-                ],
-            ],
-        ],
-        N: [
-            '1',
-            '2',
-        ],
+        A: 'N0N1N0',
+        N: '1,2',
         r: 'A0',
     });
 

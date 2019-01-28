@@ -11,7 +11,7 @@ if (typeof Symbol === 'function') {
     // }, {
     //     encodeSymbolKeys: true,
     // });
-    const encodedSymbolKeyObject = '[["O",[[["S0","P0"],["N0","N1"]]]],["S",["k"]],["P",["rs"]],["N",["2","1"]],["r","O0"],["v","1.0.0"]]';
+    const encodedSymbolKeyObject = '["O0","1.0.2",["O","S0P0 N0N1"],["S",["k"]],["P",["rs"]],["N","2,1"]]';
 
     test('Decoding Symbol Key when Symbols are Not Supported: Defaults to throw', (t) => {
         t.plan(2);

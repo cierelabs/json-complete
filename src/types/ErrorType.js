@@ -14,6 +14,7 @@ const standardErrors = {
 export default (typeObj) => {
     typeObj.E = {
         _systemName: 'Error',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[
                 standardErrors[reference.name] ? reference.name : 'Error',

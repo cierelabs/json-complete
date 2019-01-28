@@ -61,22 +61,8 @@ if (typeof Float32Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            FS: [
-                [
-                    [
-                        'N0',
-                    ],
-                    [
-                        'S0',
-                    ],
-                    [
-                        'F',
-                    ],
-                ],
-            ],
-            N: [
-                '1',
-            ],
+            FS: 'N0 S0 F0',
+            N: '1',
             S: [
                 'a',
             ],

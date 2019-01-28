@@ -61,22 +61,8 @@ if (typeof Uint8Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            $: [
-                [
-                    [
-                        'N0',
-                    ],
-                    [
-                        'S0',
-                    ],
-                    [
-                        'F',
-                    ],
-                ],
-            ],
-            N: [
-                '1',
-            ],
+            $: 'N0 S0 F0',
+            N: '1',
             S: [
                 'a',
             ],

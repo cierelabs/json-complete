@@ -27,12 +27,13 @@ const isArray = (v) => {
 };
 
 const simplifyEncoded = (encoded) => {
-    return JSON.parse(encoded).filter((i) => {
-        return i[0] !== 'v';
-    }).reduce((accumulator, e) => {
+    const parsed = JSON.parse(encoded);
+    const objectForm = parsed.slice(2).reduce((accumulator, e) => {
         accumulator[e[0]] = e[1];
         return accumulator;
     }, {});
+    objectForm.r = parsed[0];
+    return objectForm;
 };
 
 const getGlobal = () => {

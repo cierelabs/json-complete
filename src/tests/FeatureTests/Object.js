@@ -74,16 +74,7 @@ test('Object: Encoding Expected', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode({ a: true })), {
-        O: [
-            [
-                [
-                    'S0',
-                ],
-                [
-                    'T',
-                ],
-            ],
-        ],
+        O: 'S0 T0',
         S: [
             'a',
         ],

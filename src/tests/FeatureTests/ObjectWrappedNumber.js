@@ -102,22 +102,8 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        H: [
-            [
-                [
-                    'N0',
-                ],
-                [
-                    'S0',
-                ],
-                [
-                    'F',
-                ],
-            ],
-        ],
-        N: [
-            '1',
-        ],
+        H: 'N0 S0 F0',
+        N: '1',
         S: [
             'a',
         ],
@@ -131,13 +117,7 @@ test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
     const source = new Number(Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        H: [
-            [
-                [
-                    'I',
-                ],
-            ],
-        ],
+        H: 'I0',
         r: 'H0',
     });
 });
@@ -148,13 +128,7 @@ test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
     const source = new Number(-Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        H: [
-            [
-                [
-                    'J',
-                ],
-            ],
-        ],
+        H: 'J0',
         r: 'H0',
     });
 });
@@ -165,13 +139,7 @@ test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
     const source = new Number(NaN);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        H: [
-            [
-                [
-                    'C',
-                ],
-            ],
-        ],
+        H: 'C0',
         r: 'H0',
     });
 });
@@ -182,13 +150,7 @@ test('Object-Wrapped Number: Encoding Expected -0', (t) => {
     const source = new Number(-0);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        H: [
-            [
-                [
-                    'M',
-                ],
-            ],
-        ],
+        H: 'M0',
         r: 'H0',
     });
 });

@@ -5,6 +5,7 @@ import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 export default (typeObj) => {
     typeObj.A = {
         _systemName: 'Array',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);
         },
@@ -19,6 +20,7 @@ export default (typeObj) => {
 
     typeObj.Q = {
         _systemName: 'Arguments',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);
         },

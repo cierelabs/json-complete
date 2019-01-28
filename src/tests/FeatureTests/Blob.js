@@ -95,34 +95,13 @@ if (typeof Blob === 'function') {
         encode(blob, {
             onFinish: (encoded) => {
                 t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-                    Y: [
-                        [
-                            [
-                                '$0',
-                                'S0',
-                            ],
-                            [
-                                'S1',
-                            ],
-                            [
-                                'F',
-                            ],
-                        ],
-                    ],
+                    Y: '$0S0 S1 F0',
                     S: [
                         'application/json',
                         'a',
                     ],
-                    $: [
-                        [
-                            [
-                                'N0',
-                            ],
-                        ],
-                    ],
-                    N: [
-                        '49',
-                    ],
+                    $: 'N0',
+                    N: '49',
                     r: 'Y0',
                 });
             },

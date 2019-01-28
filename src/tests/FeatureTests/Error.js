@@ -122,40 +122,21 @@ StandardObjectTests('Error', 'Error', () => {
 test('Error: Encoding Expected', (t) => {
     t.plan(1);
 
-    const value = new Error('a');
-    value.a = false;
+    const value = new Error('');
+    value.stack = '';
 
     const encoded = testHelpers.simplifyEncoded(encode(value));
 
-    // Simplify stack for check
-    encoded.S[2] = 'stack!!!';
-
     // Remove extra properties a given browser might have added (namely, Safari)
     delete encoded.N;
-    encoded.S = encoded.S.slice(0, 3);
-    encoded.E[0][1] = encoded.E[0][1].slice(0, 1);
-    encoded.E[0][2] = encoded.E[0][2].slice(0, 1);
+    encoded.S = encoded.S.slice(0, 2);
+    encoded.E = encoded.E.split(' ')[0];
 
     t.deepEqual(encoded, {
-        E: [
-            [
-                [
-                    'S0',
-                    'S1',
-                    'S2',
-                ],
-                [
-                    'S1',
-                ],
-                [
-                    'F',
-                ],
-            ],
-        ],
+        E: 'S0S1S1',
         S: [
             'Error',
-            'a',
-            'stack!!!',
+            '',
         ],
         r: 'E0',
     });

@@ -15,6 +15,7 @@ const getFlags = (reference) => {
 export default (typeObj) => {
     typeObj.R = {
         _systemName: 'RegExp',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[
                 reference.source,

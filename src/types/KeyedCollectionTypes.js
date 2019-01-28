@@ -8,6 +8,7 @@ export default (typeObj) => {
     if (typeof Set === 'function') {
         typeObj.U = {
             _systemName: 'Set',
+            _compressionType: 2,
             _encodeValue: (reference, attachments) => {
                 const data = [];
                 reference.forEach((value) => {
@@ -30,7 +31,7 @@ export default (typeObj) => {
 
         typeObj.V = {
             _systemName: 'Map',
-            _deepValue: 1,
+            _compressionType: 2,
             _encodeValue: (reference, attachments) => {
                 const keys = [];
                 const values = [];

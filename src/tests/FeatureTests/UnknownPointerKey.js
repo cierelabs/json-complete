@@ -7,12 +7,9 @@ test('Unknown Pointer Key: Inner Data', (t) => {
     t.plan(1);
 
     const innerData = JSON.stringify([
-        ['r', 'A0'],
-        ['A', [
-            [
-                ['NOTUSED0'],
-            ],
-        ]],
+        'Q0',
+        '1.0.2',
+        ['Q', 'NOTUSED0'],
         ['NOTUSED', ['a']],
     ]);
 
@@ -25,7 +22,8 @@ test('Unknown Pointer Key: Root Value', (t) => {
     t.plan(1);
 
     const valueData = JSON.stringify([
-        ['r', 'NOTUSED0'],
+        'NOTUSED0',
+        '1.0.2',
         ['NOTUSED', ['a']],
     ]);
 
@@ -38,13 +36,9 @@ test('Unknown Pointer Key: Key Data', (t) => {
     t.plan(2);
 
     const objectKeyData = JSON.stringify([
-        ['r', 'O0'],
-        ['O', [
-            [
-                ['NOTUSED0'],
-                ['S0'],
-            ],
-        ]],
+        'O0',
+        '1.0.2',
+        ['O', 'NOTUSED0 S0'],
         ['S', ['1']],
         ['NOTUSED', ['a']],
     ]);
@@ -61,12 +55,9 @@ test('Unknown Pointer Key: Non-Compat Mode', (t) => {
     t.plan(1);
 
     const innerData = JSON.stringify([
-        ['r', 'A0'],
-        ['A', [
-            [
-                ['NOTUSED0'],
-            ],
-        ]],
+        'Q0',
+        '1.0.2',
+        ['Q', 'NOTUSED0'],
         ['NOTUSED', ['a']],
     ]);
 
@@ -84,7 +75,8 @@ test('Unknown Pointer Key: Root Value Non-Compat Mode', (t) => {
     t.plan(1);
 
     const valueData = JSON.stringify([
-        ['r', 'NOTUSED0'],
+        'NOTUSED0',
+        '1.0.2',
         ['NOTUSED', ['a']],
     ]);
 

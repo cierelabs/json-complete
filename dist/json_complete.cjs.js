@@ -1,41 +1,87 @@
 'use strict';
 
+var extractPointer = function extractPointer(pointer) {
+  var parts = pointer.split(/([A-Z$_]+)/);
+  return {
+    _key: parts[1],
+    _index: Number(parts[2])
+  };
+};
+
+var alphabet = '0123456789abcdefghijklmnopqrstuvwxyz!#%&\'()*+-./:;<=>?@[]^`{|}~';
+var radix = alphabet.length;
+
+var toBase63 = function toBase63(number) {
+  var result = '';
+
+  do {
+    result = alphabet[number % radix] + result;
+    number = Math.floor(number / radix);
+  } while (number);
+
+  return result;
+};
+
+var compressValues = function compressValues(key, value, types) {
+  // Unrecognized Types, Strings, and Symbols get no additional compression
+  if (!types[key] || types[key]._compressionType === 0) {
+    return value;
+  } // Join Numbers and BigInts using comma, strings need to stay in Array form
+
+
+  if (types[key]._compressionType === 1) {
+    return value.join(',');
+  } // Convert all indices to Base63 notation, separate item parts with comma, and separate items with space
+
+
+  return value.map(function (outerArray) {
+    return outerArray.map(function (innerArray) {
+      return innerArray.map(function (pointer) {
+        var parts = extractPointer(pointer);
+        return parts._key + toBase63(parts._index);
+      }).join('');
+    }).join(' ');
+  }).join(',');
+};
+
 var getSystemName = function getSystemName(v) {
   return Object.prototype.toString.call(v).slice(8, -1);
 };
 
 var findItemKey = function findItemKey(store, item) {
   if (item === void 0) {
-    return 'un';
+    return 'K';
   }
 
   if (item === null) {
-    return 'nl';
+    return 'L';
   }
 
   if (item === true) {
-    return 'tr';
+    return 'T';
   }
 
   if (item === false) {
-    return 'fa';
+    return 'F';
   }
 
   if (typeof item === 'number') {
     if (item === Infinity) {
-      return 'pI';
+      return 'I';
     }
 
     if (item === -Infinity) {
-      return 'nI';
-    }
+      return 'J';
+    } // NaN
+
 
     if (item !== item) {
-      return 'Na';
-    }
+      return 'C';
+    } // -0
+
 
     if (item === 0 && 1 / item === -Infinity) {
-      return 'n0';
+      return 'M';
     }
   }
 
@@ -150,7 +196,7 @@ var getAttachments = function getAttachments(item, encodeSymbolKeys) {
     return !indexObj[key];
   });
 
-  if (encodeSymbolKeys) {
+  if (encodeSymbolKeys && typeof Symbol === 'function') {
     keys = keys.concat(Object.getOwnPropertySymbols(item).filter(function (symbol) {
       // Ignore built-in Symbols
       // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
@@ -178,13 +224,6 @@ var getAttachments = function getAttachments(item, encodeSymbolKeys) {
     _keys: [],
     _values: []
   });
-};
-
-var extractPointer = function extractPointer(pointer) {
-  return {
-    _key: pointer.slice(0, 2),
-    _index: Number(pointer.slice(2))
-  };
 }; // This is the function for getting pointer references in the build functions
 
 
@@ -213,14 +252,13 @@ var attachIndices = function attachIndices(store, dataItem) {
 
 var attachKeys = function attachKeys(store, dataItem, keyIndex, valueIndex) {
   for (var i = 0; i < (dataItem._parts[keyIndex] || []).length; i += 1) {
-    // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
-    var key = dataItem._parts[keyIndex][i];
+    var keyPointer = dataItem._parts[keyIndex][i]; // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
 
-    if (key.slice(0, 2) === 'Sy' && typeof Symbol !== 'function' && store._compat) {
+    if (store._compat && typeof Symbol !== 'function' && extractPointer(keyPointer)._key === 'P') {
       return;
     }
 
-    dataItem._reference[getDecoded(store, key)] = getDecoded(store, dataItem._parts[valueIndex][i]);
+    dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
   }
 }; // This is the function for getting pointer values in the generateReference functions
 
@@ -241,6 +279,7 @@ var encodeWithAttachments = function encodeWithAttachments(encodedBase, attachme
 var genArrayBuffer = function genArrayBuffer(type) {
   return {
     _systemName: getSystemName(new type()),
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([Array.prototype.slice.call(new Uint8Array(reference))], attachments);
     },
@@ -263,7 +302,7 @@ var genArrayBuffer = function genArrayBuffer(type) {
 var ArrayBufferTypes = function ArrayBufferTypes(typeObj) {
   /* istanbul ignore else */
   if (typeof ArrayBuffer === 'function') {
-    typeObj.AB = genArrayBuffer(ArrayBuffer);
+    typeObj.W = genArrayBuffer(ArrayBuffer);
   } // Support does not exist or was removed from most environments due to Spectre and Meltdown vulnerabilities
   // https://caniuse.com/#feat=sharedarraybuffer
 
@@ -271,15 +310,16 @@ var ArrayBufferTypes = function ArrayBufferTypes(typeObj) {
 
 
   if (typeof SharedArrayBuffer === 'function') {
-    typeObj.Sh = genArrayBuffer(SharedArrayBuffer);
+    typeObj.X = genArrayBuffer(SharedArrayBuffer);
   }
 
   return typeObj;
 };
 
 var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
-  typeObj.Ar = {
+  typeObj.A = {
     _systemName: 'Array',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([attachments._indices], attachments);
     },
@@ -291,8 +331,9 @@ var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
       attachKeys(store, dataItem, 1, 2);
     }
   };
-  typeObj.rg = {
+  typeObj.Q = {
     _systemName: 'Arguments',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([attachments._indices], attachments);
     },
@@ -309,9 +350,10 @@ var ArrayLikeTypes = function ArrayLikeTypes(typeObj) {
   return typeObj;
 };
 
-var genPrimitive = function genPrimitive(type) {
+var genPrimitive = function genPrimitive(type, compressionType) {
   return {
     _systemName: getSystemName(type('')),
+    _compressionType: compressionType || 0,
     _encodeValue: function _encodeValue(reference) {
       return String(reference);
     },
@@ -323,8 +365,8 @@ var genPrimitive = function genPrimitive(type) {
 };
 
 var BasePrimitiveTypes = function BasePrimitiveTypes(typeObj) {
-  typeObj.St = genPrimitive(String);
-  typeObj.Nu = genPrimitive(Number);
+  typeObj.S = genPrimitive(String);
+  typeObj.N = genPrimitive(Number, 1);
   return typeObj;
 };
 
@@ -348,7 +390,7 @@ var genTypedArray = function genTypedArray(type) {
 var BigIntType = function BigIntType(typeObj) {
   /* istanbul ignore else */
   if (typeof BigInt === 'function') {
-    typeObj.Bi = genPrimitive(BigInt);
+    typeObj._ = genPrimitive(BigInt, 1);
   }
   /* istanbul ignore else */
 
@@ -371,6 +413,7 @@ var BigIntType = function BigIntType(typeObj) {
 var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
   return {
     _systemName: systemName,
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       // Skip the decoding of the main value for now
       return encodeWithAttachments([[void 0].concat(propertiesKeys.map(function (property) {
@@ -405,7 +448,7 @@ var BlobTypes = function BlobTypes(typeObj) {
 
   /* istanbul ignore if */
   if (typeof Blob === 'function') {
-    typeObj.Bl = genBlobLike('Blob', ['type'], function (store, buffer, dataArray) {
+    typeObj.Y = genBlobLike('Blob', ['type'], function (store, buffer, dataArray) {
       return new Blob(buffer, {
         type: decodePointer(store, dataArray[1])
       });
@@ -416,7 +459,7 @@ var BlobTypes = function BlobTypes(typeObj) {
 
 
   if (typeof File === 'function') {
-    typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], function (store, buffer, dataArray) {
+    typeObj.Z = genBlobLike('File', ['type', 'name', 'lastModified'], function (store, buffer, dataArray) {
       try {
         return new File(buffer, decodePointer(store, dataArray[2]), {
           type: decodePointer(store, dataArray[1]),
@@ -444,8 +487,9 @@ var BlobTypes = function BlobTypes(typeObj) {
 };
 
 var DateType = function DateType(typeObj) {
-  typeObj.Da = {
+  typeObj.D = {
     _systemName: 'Date',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([[reference.valueOf()]], attachments);
     },
@@ -469,8 +513,9 @@ var standardErrors = {
 };
 
 var ErrorType = function ErrorType(typeObj) {
-  typeObj.Er = {
+  typeObj.E = {
     _systemName: 'Error',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([[standardErrors[reference.name] ? reference.name : 'Error', reference.message, reference.stack]], attachments);
     },
@@ -492,8 +537,9 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
 
   /* istanbul ignore else */
   if (typeof Set === 'function') {
-    typeObj.Se = {
+    typeObj.U = {
       _systemName: 'Set',
+      _compressionType: 2,
       _encodeValue: function _encodeValue(reference, attachments) {
         var data = [];
         reference.forEach(function (value) {
@@ -512,9 +558,9 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
         attachKeys(store, dataItem, 1, 2);
       }
     };
-    typeObj.Ma = {
+    typeObj.V = {
       _systemName: 'Map',
-      _deepValue: 1,
+      _compressionType: 2,
       _encodeValue: function _encodeValue(reference, attachments) {
         var keys = [];
         var values = [];
@@ -541,8 +587,9 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
 };
 
 var ObjectType = function ObjectType(typeObj) {
-  typeObj.Ob = {
+  typeObj.O = {
     _systemName: 'Object',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([], attachments);
     },
@@ -567,8 +614,9 @@ var getFlags = function getFlags(reference) {
 };
 
 var RegExpType = function RegExpType(typeObj) {
-  typeObj.Re = {
+  typeObj.R = {
     _systemName: 'RegExp',
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([[reference.source, getFlags(reference), reference.lastIndex]], attachments);
     },
@@ -586,28 +634,28 @@ var RegExpType = function RegExpType(typeObj) {
 };
 
 var SimpleTypes = function SimpleTypes(typeObj) {
-  typeObj.un = {
+  typeObj.K = {
     _value: void 0
   };
-  typeObj.nl = {
+  typeObj.L = {
     _value: null
   };
-  typeObj.tr = {
+  typeObj.T = {
     _value: true
   };
-  typeObj.fa = {
+  typeObj.F = {
     _value: false
   };
-  typeObj.pI = {
+  typeObj.I = {
     _value: Infinity
   };
-  typeObj.nI = {
+  typeObj.J = {
     _value: -Infinity
   };
-  typeObj.Na = {
+  typeObj.C = {
     _value: NaN
   };
-  typeObj.n0 = {
+  typeObj.M = {
     _value: -0
   };
   return typeObj;
@@ -616,15 +664,16 @@ var SimpleTypes = function SimpleTypes(typeObj) {
 var SymbolType = function SymbolType(typeObj) {
   /* istanbul ignore else */
   if (typeof Symbol === 'function') {
-    typeObj.Sy = {
+    typeObj.P = {
       _systemName: 'Symbol',
+      _compressionType: 0,
       _encodeValue: function _encodeValue(reference) {
         var symbolStringKey = Symbol.keyFor(reference);
         var isRegistered = symbolStringKey !== void 0;
-        return isRegistered ? "R" + symbolStringKey : " " + String(reference).slice(7, -1);
+        return isRegistered ? "r" + symbolStringKey : "s" + String(reference).slice(7, -1);
       },
       _generateReference: function _generateReference(store, decodedString) {
-        return decodedString[0] === 'R' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
+        return decodedString[0] === 'r' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
       },
       _build: function _build() {} // Symbols do not allow attachments, no-op
 
@@ -639,13 +688,13 @@ var TypedArrayTypes = function TypedArrayTypes(typeObj) {
 
   /* istanbul ignore else */
   if (typeof Int8Array === 'function') {
-    typeObj.I1 = genTypedArray(Int8Array);
-    typeObj.I2 = genTypedArray(Int16Array);
-    typeObj.I3 = genTypedArray(Int32Array);
-    typeObj.U1 = genTypedArray(Uint8Array);
-    typeObj.U2 = genTypedArray(Uint16Array);
-    typeObj.U3 = genTypedArray(Uint32Array);
-    typeObj.F3 = genTypedArray(Float32Array);
+    typeObj.IE = genTypedArray(Int8Array);
+    typeObj.IS = genTypedArray(Int16Array);
+    typeObj.IT = genTypedArray(Int32Array);
+    typeObj.$ = genTypedArray(Uint8Array);
+    typeObj.US = genTypedArray(Uint16Array);
+    typeObj.UT = genTypedArray(Uint32Array);
+    typeObj.FT = genTypedArray(Float32Array);
   } // IE10 and IE Mobile do not support Uint8ClampedArray
   // https://caniuse.com/#feat=typedarrays
 
@@ -653,7 +702,7 @@ var TypedArrayTypes = function TypedArrayTypes(typeObj) {
 
 
   if (typeof Uint8ClampedArray === 'function') {
-    typeObj.C1 = genTypedArray(Uint8ClampedArray);
+    typeObj.UC = genTypedArray(Uint8ClampedArray);
   } // Safari versions prior to 5.1 might not support the Float64ArrayType, even as they support other TypeArray types
   // https://caniuse.com/#feat=typedarrays
 
@@ -661,7 +710,7 @@ var TypedArrayTypes = function TypedArrayTypes(typeObj) {
 
 
   if (typeof Float64Array === 'function') {
-    typeObj.F4 = genTypedArray(Float64Array);
+    typeObj.FS = genTypedArray(Float64Array);
   }
 
   return typeObj;
@@ -671,6 +720,7 @@ var genWrappedPrimitive = function genWrappedPrimitive(type) {
   return {
     // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
     _systemName: "_" + getSystemName(new type('')),
+    _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
       return encodeWithAttachments([[reference.valueOf()]], attachments);
     },
@@ -684,9 +734,9 @@ var genWrappedPrimitive = function genWrappedPrimitive(type) {
 };
 
 var WrappedPrimitiveTypes = function WrappedPrimitiveTypes(typeObj) {
-  typeObj.Bo = genWrappedPrimitive(Boolean);
-  typeObj.NU = genWrappedPrimitive(Number);
-  typeObj.ST = genWrappedPrimitive(String);
+  typeObj.B = genWrappedPrimitive(Boolean);
+  typeObj.G = genWrappedPrimitive(String);
+  typeObj.H = genWrappedPrimitive(Number);
   return typeObj;
 };
 
@@ -717,7 +767,7 @@ var getPointerKey = function getPointerKey(store, item) {
   } // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referential integrity, but can still handle attachments
 
 
-  return pointerKey ? pointerKey : 'Ob';
+  return pointerKey ? pointerKey : 'O';
 };
 
 var encounterItem = function encounterItem(store, item) {
@@ -778,12 +828,10 @@ var encodeAll = function encodeAll(store, resumeFromIndex) {
 };
 
 var prepOutput = function prepOutput(store, root) {
-  store._output.r = root;
-  store._output.v = '1.0.0'; // Convert the output object form to an output array form
-
-  var output = JSON.stringify(Object.keys(store._output).map(function (key) {
-    return [key, store._output[key]];
-  }));
+  // Convert the output object form to an output array form
+  var output = JSON.stringify([root, '1.0.2'].concat(Object.keys(store._output).map(function (key) {
+    return [key, compressValues(key, store._output[key], store._types)];
+  })));
 
   if (typeof store._onFinish === 'function') {
     store._onFinish(output);
@@ -858,6 +906,43 @@ var encode = function encode(value, options) {
 
 
   return prepOutput(store, rootPointerKey);
+};
+
+var radix$1 = alphabet.length;
+
+var fromBase63 = function fromBase63(base63) {
+  return base63.split('').reduce(function (character, index) {
+    return character * radix$1 + alphabet.indexOf(index);
+  }, 0);
+};
+
+var decompressValues = function decompressValues(key, value, types) {
+  // Unrecognized Types, Strings, and Symbols get no additional decompression
+  if (!types[key] || types[key]._compressionType === 0) {
+    return value;
+  } // Join Numbers and BigInts using comma, strings need to stay in Array form
+
+
+  if (types[key]._compressionType === 1) {
+    return value.split(',');
+  } // Split items into Pointer data sets, and split Pointer data sets into individual Pointers
+  // Convert each pointer from Base63 indies, and account for simple types having no index
+
+
+  return value.split(',').map(function (valueItems) {
+    return valueItems.split(' ').map(function (pointerCombinedString) {
+      var parts = pointerCombinedString.split(/([A-Z$_]+)/).slice(1);
+      var pointers = [];
+
+      for (var p = 0; p < parts.length; p += 2) {
+        var _key = parts[p];
+        var isSimple = types[_key] && !types[_key]._systemName;
+        pointers.push(isSimple ? _key : _key + fromBase63(parts[p + 1]));
+      }
+
+      return pointers;
+    });
+  });
 }; // Recursively look at the reference set for exploration values
 // This handles both pair arrays and individual values
 // This recursion is fine because it has a maximum depth of around 3
@@ -915,17 +1000,19 @@ var explorePointer = function explorePointer(store, pointer) {
 
 var decode = function decode(encoded, options) {
   options = options || {};
+  var parsed = JSON.parse(encoded);
+  var formatted = parsed.slice(2).reduce(function (accumulator, e) {
+    accumulator[e[0]] = decompressValues(e[0], e[1], types$1);
+    return accumulator;
+  }, {});
+  var rootPointerKey = parsed[0];
   var store = {
     _compat: options.compat,
     _types: types$1,
-    _encoded: JSON.parse(encoded).reduce(function (accumulator, e) {
-      accumulator[e[0]] = e[1];
-      return accumulator;
-    }, {}),
+    _encoded: formatted,
     _decoded: {},
     _explore: []
-  };
-  var rootPointerKey = store._encoded.r; // Simple pointer, return value
+  }; // Simple pointer, return value
 
   if (types$1[rootPointerKey]) {
     return types$1[rootPointerKey]._value;

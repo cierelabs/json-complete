@@ -97,22 +97,8 @@ if (typeof SharedArrayBuffer === 'function') {
         sab.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(sab)), {
-            X: [
-                [
-                    [
-                        'N0',
-                    ],
-                    [
-                        'S0',
-                    ],
-                    [
-                        'F',
-                    ]
-                ],
-            ],
-            N: [
-                '1',
-            ],
+            X: 'N0 S0 F0',
+            N: '1',
             S: [
                 'b',
             ],

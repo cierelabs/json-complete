@@ -8,17 +8,10 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
     t.plan(1);
 
     const malformedEncoded = JSON.stringify([
+        'R0',
+        '1.0.2',
         [
-            'R',
-            [
-                [
-                    [
-                        'S0',
-                        'S1',
-                        'N0',
-                    ],
-                ],
-            ],
+            'R', 'S0S1N0',
         ],
         [
             'S',
@@ -28,18 +21,7 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
             ],
         ],
         [
-            'N',
-            [
-                '0',
-            ],
-        ],
-        [
-            'r',
-            'R0',
-        ],
-        [
-            'v',
-            '1.0.0',
+            'N', '0',
         ],
     ]);
 

@@ -57,19 +57,7 @@ test('Object-Wrapped String: Encoding Expected', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        G: [
-            [
-                [
-                    'S0',
-                ],
-                [
-                    'S0',
-                ],
-                [
-                    'F',
-                ],
-            ],
-        ],
+        G: 'S0 S0 F0',
         S: [
             'a',
         ],

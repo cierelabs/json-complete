@@ -1,3 +1,4 @@
+import compressValues from '/utils/compression/compressValues.js';
 import findItemKey from '/utils/getItemKey.js';
 import genReferenceTracker from '/utils/genReferenceTracker.js';
 import getAttachments from '/utils/getAttachments.js';
@@ -76,16 +77,10 @@ const encodeAll = (store, resumeFromIndex) => {
 };
 
 const prepOutput = (store, root) => {
-    store._output.r = root;
-    store._output.v = '1.0.0';
-
     // Convert the output object form to an output array form
-    const output = JSON.stringify(Object.keys(store._output).map((key) => {
-        return [
-            key,
-            store._output[key],
-        ];
-    }));
+    const output = JSON.stringify([root, '1.0.2'].concat(Object.keys(store._output).map((key) => {
+        return [key, compressValues(key, store._output[key], store._types)];
+    })));
 
     if (typeof store._onFinish === 'function') {
         store._onFinish(output);

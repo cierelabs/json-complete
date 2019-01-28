@@ -61,22 +61,8 @@ if (typeof Int16Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            IS: [
-                [
-                    [
-                        'N0',
-                    ],
-                    [
-                        'S0',
-                    ],
-                    [
-                        'F',
-                    ],
-                ],
-            ],
-            N: [
-                '1',
-            ],
+            IS: 'N0 S0 F0',
+            N: '1',
             S: [
                 'a',
             ],

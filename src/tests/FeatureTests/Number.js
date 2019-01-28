@@ -79,9 +79,7 @@ test('Number: Encoding Expected Normal', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(1)), {
-        N: [
-            '1',
-        ],
+        N: '1',
         r: 'N0',
     });
 });

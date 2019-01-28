@@ -7,39 +7,11 @@ const decode = jsonComplete.decode;
 const time = 1522558801000;
 
 const encodedFileInArray = JSON.stringify([
-    [
-        'A',
-        [
-            [
-                [
-                    'Z0'
-                ]
-            ]
-        ]
-    ],
-    [
-        'Z',
-        [
-            [
-                [
-                    '$0',
-                    'S0',
-                    'S1',
-                    'N0'
-                ]
-            ]
-        ]
-    ],
-    [
-        '$',
-        [
-            [
-                [
-                    'N1'
-                ]
-            ]
-        ]
-    ],
+    'A0',
+    '1.0.2',
+    ['A','Z0'],
+    ['Z', '$0S0S1N0'],
+    ['$', 'N1'],
     [
         'S',
         [
@@ -47,21 +19,7 @@ const encodedFileInArray = JSON.stringify([
             '1.txt'
         ]
     ],
-    [
-        'N',
-        [
-            String(time),
-            '49'
-        ]
-    ],
-    [
-        'r',
-        'A0'
-    ],
-    [
-        'v',
-        '1.0.0'
-    ]
+    ['N', `${String(time)},49`],
 ]);
 
 

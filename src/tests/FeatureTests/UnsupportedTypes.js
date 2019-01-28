@@ -71,16 +71,7 @@ test('Unsupported Types: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(source, {
         compat: true,
     })), {
-        O: [
-            [
-                [
-                    'S0',
-                ],
-                [
-                    'F',
-                ],
-            ],
-        ],
+        O: 'S0 F0',
         S: [
             'a',
         ],
