@@ -18,20 +18,20 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
     const encoded = encode([1, 2, 1]);
 
     t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-        Ar: [
+        A: [
             [
                 [
-                    'Nu0',
-                    'Nu1',
-                    'Nu0',
+                    'N0',
+                    'N1',
+                    'N0',
                 ],
             ],
         ],
-        Nu: [
+        N: [
             '1',
             '2',
         ],
-        r: 'Ar0',
+        r: 'A0',
     });
 
     globalThis.Map = oldMap;

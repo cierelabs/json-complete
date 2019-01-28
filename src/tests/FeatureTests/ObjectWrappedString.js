@@ -57,22 +57,22 @@ test('Object-Wrapped String: Encoding Expected', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        ST: [
+        G: [
             [
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'fa',
+                    'F',
                 ],
             ],
         ],
-        St: [
+        S: [
             'a',
         ],
-        r: 'ST0',
+        r: 'G0',
     });
 });

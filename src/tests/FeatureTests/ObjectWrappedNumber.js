@@ -102,26 +102,26 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
+        H: [
             [
                 [
-                    'Nu0',
+                    'N0',
                 ],
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'fa',
+                    'F',
                 ],
             ],
         ],
-        Nu: [
+        N: [
             '1',
         ],
-        St: [
+        S: [
             'a',
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -131,14 +131,14 @@ test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
     const source = new Number(Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
+        H: [
             [
                 [
-                    'pI',
+                    'I',
                 ],
             ],
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -148,14 +148,14 @@ test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
     const source = new Number(-Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
+        H: [
             [
                 [
-                    'nI',
+                    'J',
                 ],
             ],
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -165,14 +165,14 @@ test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
     const source = new Number(NaN);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
+        H: [
             [
                 [
-                    'Na',
+                    'C',
                 ],
             ],
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -182,13 +182,13 @@ test('Object-Wrapped Number: Encoding Expected -0', (t) => {
     const source = new Number(-0);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
+        H: [
             [
                 [
-                    'n0',
+                    'M',
                 ],
             ],
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });

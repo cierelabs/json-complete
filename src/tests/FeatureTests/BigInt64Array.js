@@ -64,20 +64,20 @@ if (typeof BigInt64Array === 'function') {
             BI: [
                 [
                     [
-                        'Bi0',
+                        '_0',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ],
                 ],
             ],
-            Bi: [
+            _: [
                 '1',
             ],
-            St: [
+            S: [
                 'a',
             ],
             r: 'BI0',

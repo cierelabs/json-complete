@@ -4,7 +4,7 @@ import genTypedArray from '/utils/genTypedArray.js';
 export default (typeObj) => {
     /* istanbul ignore else */
     if (typeof BigInt === 'function') {
-        typeObj.Bi = genPrimitive(BigInt);
+        typeObj._ = genPrimitive(BigInt);
     }
 
     /* istanbul ignore else */

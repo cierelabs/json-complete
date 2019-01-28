@@ -61,26 +61,26 @@ if (typeof Uint16Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            U2: [
+            US: [
                 [
                     [
-                        'Nu0',
+                        'N0',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ],
                 ],
             ],
-            Nu: [
+            N: [
                 '1',
             ],
-            St: [
+            S: [
                 'a',
             ],
-            r: 'U20',
+            r: 'US0',
         });
     });
 }

@@ -97,26 +97,26 @@ if (typeof SharedArrayBuffer === 'function') {
         sab.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(sab)), {
-            Sh: [
+            X: [
                 [
                     [
-                        'Nu0',
+                        'N0',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ]
                 ],
             ],
-            Nu: [
+            N: [
                 '1',
             ],
-            St: [
+            S: [
                 'b',
             ],
-            r: 'Sh0',
+            r: 'X0',
         });
     });
 }

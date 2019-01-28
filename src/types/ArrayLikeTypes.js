@@ -3,7 +3,7 @@ import attachKeys from '/utils/attachKeys.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
 export default (typeObj) => {
-    typeObj.Ar = {
+    typeObj.A = {
         _systemName: 'Array',
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);
@@ -17,7 +17,7 @@ export default (typeObj) => {
         },
     };
 
-    typeObj.rg = {
+    typeObj.Q = {
         _systemName: 'Arguments',
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);

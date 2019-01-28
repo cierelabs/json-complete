@@ -61,10 +61,10 @@ if (typeof Symbol === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
-            Sy: [
-                'Ra',
+            P: [
+                'ra',
             ],
-            r: 'Sy0',
+            r: 'P0',
         });
     });
 
@@ -72,10 +72,10 @@ if (typeof Symbol === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol())), {
-            Sy: [
-                ' ',
+            P: [
+                's',
             ],
-            r: 'Sy0',
+            r: 'P0',
         });
     });
 }

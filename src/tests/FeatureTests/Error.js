@@ -128,35 +128,35 @@ test('Error: Encoding Expected', (t) => {
     const encoded = testHelpers.simplifyEncoded(encode(value));
 
     // Simplify stack for check
-    encoded.St[2] = 'stack!!!';
+    encoded.S[2] = 'stack!!!';
 
     // Remove extra properties a given browser might have added (namely, Safari)
-    delete encoded.Nu;
-    encoded.St = encoded.St.slice(0, 3);
-    encoded.Er[0][1] = encoded.Er[0][1].slice(0, 1);
-    encoded.Er[0][2] = encoded.Er[0][2].slice(0, 1);
+    delete encoded.N;
+    encoded.S = encoded.S.slice(0, 3);
+    encoded.E[0][1] = encoded.E[0][1].slice(0, 1);
+    encoded.E[0][2] = encoded.E[0][2].slice(0, 1);
 
     t.deepEqual(encoded, {
-        Er: [
+        E: [
             [
                 [
-                    'St0',
-                    'St1',
-                    'St2',
+                    'S0',
+                    'S1',
+                    'S2',
                 ],
                 [
-                    'St1',
+                    'S1',
                 ],
                 [
-                    'fa',
+                    'F',
                 ],
             ],
         ],
-        St: [
+        S: [
             'Error',
             'a',
             'stack!!!',
         ],
-        r: 'Er0',
+        r: 'E0',
     });
 });

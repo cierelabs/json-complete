@@ -115,16 +115,16 @@ test('Arguments: Encoding Expected', (t) => {
     const args = genArgs('a');
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(args)), {
-        rg: [
+        Q: [
             [
                 [
-                    'St0',
+                    'S0',
                 ],
             ],
         ],
-        St: [
+        S: [
             'a',
         ],
-        r: 'rg0',
+        r: 'Q0',
     });
 });

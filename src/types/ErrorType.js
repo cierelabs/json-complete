@@ -12,7 +12,7 @@ const standardErrors = {
 };
 
 export default (typeObj) => {
-    typeObj.Er = {
+    typeObj.E = {
         _systemName: 'Error',
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[

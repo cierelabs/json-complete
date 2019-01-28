@@ -136,22 +136,22 @@ test('Array: Encoding Expected', (t) => {
     arr.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(arr)), {
-        Ar: [
+        A: [
             [
                 [
-                    'tr',
+                    'T',
                 ],
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'fa',
+                    'F',
                 ]
             ],
         ],
-        St: [
+        S: [
             'a',
         ],
-        r: 'Ar0',
+        r: 'A0',
     });
 });

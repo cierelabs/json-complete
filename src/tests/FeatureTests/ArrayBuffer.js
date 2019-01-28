@@ -81,26 +81,26 @@ if (typeof ArrayBuffer === 'function') {
         a.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(a)), {
-            AB: [
+            W: [
                 [
                     [
-                        'Nu0',
+                        'N0',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ]
                 ],
             ],
-            Nu: [
+            N: [
                 '1',
             ],
-            St: [
+            S: [
                 'b',
             ],
-            r: 'AB0',
+            r: 'W0',
         });
     });
 }

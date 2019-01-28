@@ -3,7 +3,7 @@ import decodePointer from '/utils/decodePointer.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
 export default (typeObj) => {
-    typeObj.Da = {
+    typeObj.D = {
         _systemName: 'Date',
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[reference.valueOf()]], attachments);

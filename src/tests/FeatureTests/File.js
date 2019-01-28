@@ -173,39 +173,39 @@ if (typeof File === 'function' && supportsFileCreation()) {
         encode(file, {
             onFinish: (encoded) => {
                 t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-                    Fi: [
+                    Z: [
                         [
                             [
-                                'U10',
-                                'St0',
-                                'St1',
-                                'Nu0',
+                                '$0',
+                                'S0',
+                                'S1',
+                                'N0',
                             ],
                             [
-                                'St2',
+                                'S2',
                             ],
                             [
-                                'fa',
+                                'F',
                             ],
                         ],
                     ],
-                    St: [
+                    S: [
                         'application/json',
                         'test.json',
                         'a',
                     ],
-                    U1: [
+                    $: [
                         [
                             [
-                                'Nu1',
+                                'N1',
                             ],
                         ],
                     ],
-                    Nu: [
+                    N: [
                         String(now),
                         '49',
                     ],
-                    r: 'Fi0',
+                    r: 'Z0',
                 });
             },
         });

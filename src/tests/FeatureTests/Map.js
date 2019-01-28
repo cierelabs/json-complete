@@ -186,26 +186,26 @@ if (typeof Map === 'function') {
         source.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            Ma: [
+            V: [
                 [
                     [
-                        'fa',
+                        'F',
                     ],
                     [
-                        'tr',
+                        'T',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ],
                 ],
             ],
-            St: [
+            S: [
                 'b',
             ],
-            r: 'Ma0',
+            r: 'V0',
         });
     });
 }

@@ -9,8 +9,8 @@ test('Deduplication: Numbers', (t) => {
 
     const encoded = testHelpers.simplifyEncoded(encode([1, 2, 1, 3.14, 4, 3.14]));
 
-    t.equal(encoded.Nu.length, 4);
-    t.deepEqual(encoded.Nu, ['1', '2', '3.14', '4']);
+    t.equal(encoded.N.length, 4);
+    t.deepEqual(encoded.N, ['1', '2', '3.14', '4']);
 });
 
 test('Deduplication: Strings', (t) => {
@@ -18,8 +18,8 @@ test('Deduplication: Strings', (t) => {
 
     const encoded = testHelpers.simplifyEncoded(encode(['a', 'b', 'a', '', 'c', '']));
 
-    t.equal(encoded.St.length, 4);
-    t.deepEqual(encoded.St, ['a', 'b', '', 'c']);
+    t.equal(encoded.S.length, 4);
+    t.deepEqual(encoded.S, ['a', 'b', '', 'c']);
 });
 
 if (typeof BigInt === 'function') {
@@ -28,8 +28,8 @@ if (typeof BigInt === 'function') {
 
         const encoded = testHelpers.simplifyEncoded(encode([BigInt(1), BigInt(2), BigInt(1), BigInt(0), BigInt(-1), BigInt(0)]));
 
-        t.equal(encoded.Bi.length, 4);
-        t.deepEqual(encoded.Bi, ['1', '2', '0', '-1']);
+        t.equal(encoded._.length, 4);
+        t.deepEqual(encoded._, ['1', '2', '0', '-1']);
     });
 }
 else {
@@ -43,10 +43,10 @@ if (typeof Symbol === 'function') {
         const sharedSymbol = Symbol('shared');
         const encoded = testHelpers.simplifyEncoded(encode([sharedSymbol, Symbol.for('unshared'), sharedSymbol]));
 
-        t.equal(encoded.Sy.length, 2);
-        t.deepEqual(encoded.Sy, [
-            ' shared',
-            'Runshared',
+        t.equal(encoded.P.length, 2);
+        t.deepEqual(encoded.P, [
+            'sshared',
+            'runshared',
         ]);
     });
 }
@@ -62,8 +62,8 @@ test('Deduplication: Objects', (t) => {
     };
     const encoded = testHelpers.simplifyEncoded(encode([sharedObj, {}, sharedObj]));
 
-    t.equal(encoded.Ob.length, 2);
-    t.deepEqual(encoded.Ob, [[['St0'], ['Nu0']], []]);
+    t.equal(encoded.O.length, 2);
+    t.deepEqual(encoded.O, [[['S0'], ['N0']], []]);
 });
 
 test('Deduplication: Array', (t) => {
@@ -76,6 +76,6 @@ test('Deduplication: Array', (t) => {
         c: sharedArr,
     }));
 
-    t.equal(encoded.Ar.length, 2);
-    t.deepEqual(encoded.Ar, [[['Nu0']], [['Nu1']]]);
+    t.equal(encoded.A.length, 2);
+    t.deepEqual(encoded.A, [[['N0']], [['N1']]]);
 });

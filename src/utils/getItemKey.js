@@ -2,36 +2,38 @@ import getSystemName from '/utils/getSystemName.js';
 
 export default (store, item) => {
     if (item === void 0) {
-        return 'un';
+        return 'K';
     }
 
     if (item === null) {
-        return 'nl';
+        return 'L';
     }
 
     if (item === true) {
-        return 'tr';
+        return 'T';
     }
 
     if (item === false) {
-        return 'fa';
+        return 'F';
     }
 
     if (typeof item === 'number') {
         if (item === Infinity) {
-            return 'pI';
+            return 'I';
         }
 
         if (item === -Infinity) {
-            return 'nI';
+            return 'J';
         }
 
+        // NaN
         if (item !== item) {
-            return 'Na';
+            return 'C';
         }
 
+        // -0
         if (item === 0 && (1 / item) === -Infinity) {
-            return 'n0';
+            return 'M';
         }
     }
 

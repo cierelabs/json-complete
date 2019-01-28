@@ -64,20 +64,20 @@ if (typeof BigUint64Array === 'function') {
             BU: [
                 [
                     [
-                        'Bi0',
+                        '_0',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ],
                 ],
             ],
-            Bi: [
+            _: [
                 '1',
             ],
-            St: [
+            S: [
                 'a',
             ],
             r: 'BU0',

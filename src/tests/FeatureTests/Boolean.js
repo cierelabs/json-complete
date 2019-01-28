@@ -33,6 +33,6 @@ test('Boolean: Encoding Expected', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(false)), {
-        r: 'fa',
+        r: 'F',
     });
 });

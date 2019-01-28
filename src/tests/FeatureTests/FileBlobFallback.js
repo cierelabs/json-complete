@@ -8,47 +8,47 @@ const time = 1522558801000;
 
 const encodedFileInArray = JSON.stringify([
     [
-        'Ar',
+        'A',
         [
             [
                 [
-                    'Fi0'
+                    'Z0'
                 ]
             ]
         ]
     ],
     [
-        'Fi',
+        'Z',
         [
             [
                 [
-                    'U10',
-                    'St0',
-                    'St1',
-                    'Nu0'
+                    '$0',
+                    'S0',
+                    'S1',
+                    'N0'
                 ]
             ]
         ]
     ],
     [
-        'U1',
+        '$',
         [
             [
                 [
-                    'Nu1'
+                    'N1'
                 ]
             ]
         ]
     ],
     [
-        'St',
+        'S',
         [
             'text/plain',
             '1.txt'
         ]
     ],
     [
-        'Nu',
+        'N',
         [
             String(time),
             '49'
@@ -56,7 +56,7 @@ const encodedFileInArray = JSON.stringify([
     ],
     [
         'r',
-        'Ar0'
+        'A0'
     ],
     [
         'v',
@@ -81,7 +81,7 @@ if (typeof Blob === 'function') {
             const decoded = decode(encodedFileInArray); // eslint-disable-line
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Cannot decode recognized pointer type "Fi".');
+            t.equal(e.message, 'Cannot decode recognized pointer type "Z".');
         }
 
         globalThis.File = oldFile;

@@ -6,7 +6,7 @@ export default (typeObj) => {
     // If Set is supported, Map is also supported
     /* istanbul ignore else */
     if (typeof Set === 'function') {
-        typeObj.Se = {
+        typeObj.U = {
             _systemName: 'Set',
             _encodeValue: (reference, attachments) => {
                 const data = [];
@@ -28,7 +28,7 @@ export default (typeObj) => {
             },
         };
 
-        typeObj.Ma = {
+        typeObj.V = {
             _systemName: 'Map',
             _deepValue: 1,
             _encodeValue: (reference, attachments) => {

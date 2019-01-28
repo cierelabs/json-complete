@@ -79,10 +79,10 @@ test('Number: Encoding Expected Normal', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(1)), {
-        Nu: [
+        N: [
             '1',
         ],
-        r: 'Nu0',
+        r: 'N0',
     });
 });
 
@@ -90,7 +90,7 @@ test('Number: Encoding Expected Infinity', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(Infinity)), {
-        r: 'pI',
+        r: 'I',
     });
 });
 
@@ -98,7 +98,7 @@ test('Number: Encoding Expected -Infinity', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(-Infinity)), {
-        r: 'nI',
+        r: 'J',
     });
 });
 
@@ -106,7 +106,7 @@ test('Number: Encoding Expected NaN', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(NaN)), {
-        r: 'Na',
+        r: 'C',
     });
 });
 
@@ -114,6 +114,6 @@ test('Number: Encoding Expected -0', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(-0)), {
-        r: 'n0',
+        r: 'M',
     });
 });

@@ -46,7 +46,7 @@ if (typeof Symbol === 'function') {
         });
 
         JSON.parse(encoded).forEach((types) => {
-            if (types[0] === 'rg') {
+            if (types[0] === 'Q') {
                 t.equal(types[1][0][1].length, 5);
                 t.equal(types[1][0][2].length, 5);
             }
@@ -77,7 +77,7 @@ if (typeof Symbol === 'function') {
         });
 
         JSON.parse(encoded).forEach((types) => {
-            if (types[0] === 'rg') {
+            if (types[0] === 'Q') {
                 t.equal(types[1][0][1].length, 1);
                 t.equal(types[1][0][2].length, 1);
             }

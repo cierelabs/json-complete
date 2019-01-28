@@ -1,6 +1,7 @@
 export default (pointer) => {
+    const parts = pointer.split(/([A-Z$_]+)/);
     return {
-        _key: pointer.slice(0, 2),
-        _index: Number(pointer.slice(2)),
+        _key: parts[1],
+        _index: Number(parts[2]),
     };
 };

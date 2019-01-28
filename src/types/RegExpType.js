@@ -13,7 +13,7 @@ const getFlags = (reference) => {
 };
 
 export default (typeObj) => {
-    typeObj.Re = {
+    typeObj.R = {
         _systemName: 'RegExp',
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[

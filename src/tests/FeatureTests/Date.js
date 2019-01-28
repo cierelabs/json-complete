@@ -40,25 +40,25 @@ test('Date: Encoding Expected', (t) => {
     date.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
-        Da: [
+        D: [
             [
                 [
-                    'Nu0',
+                    'N0',
                 ],
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'fa',
+                    'F',
                 ],
             ],
         ],
-        St: [
+        S: [
             'a',
         ],
-        Nu: [
+        N: [
             String(now),
         ],
-        r: 'Da0',
+        r: 'D0',
     });
 });

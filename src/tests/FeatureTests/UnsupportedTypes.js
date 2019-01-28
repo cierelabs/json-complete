@@ -71,19 +71,19 @@ test('Unsupported Types: Encoding Expected', (t) => {
     t.deepEqual(testHelpers.simplifyEncoded(encode(source, {
         compat: true,
     })), {
-        Ob: [
+        O: [
             [
                 [
-                    'St0',
+                    'S0',
                 ],
                 [
-                    'fa',
+                    'F',
                 ],
             ],
         ],
-        St: [
+        S: [
             'a',
         ],
-        r: 'Ob0',
+        r: 'O0',
     });
 });

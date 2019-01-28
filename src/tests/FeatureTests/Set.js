@@ -112,23 +112,23 @@ if (typeof Set === 'function') {
         source.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            Se: [
+            U: [
                 [
                     [
-                        'tr',
+                        'T',
                     ],
                     [
-                        'St0',
+                        'S0',
                     ],
                     [
-                        'fa',
+                        'F',
                     ],
                 ],
             ],
-            St: [
+            S: [
                 'b',
             ],
-            r: 'Se0',
+            r: 'U0',
         });
     });
 }

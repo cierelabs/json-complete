@@ -13,7 +13,7 @@ const getPointerKey = (store, item) => {
     }
 
     // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referential integrity, but can still handle attachments
-    return pointerKey ? pointerKey : 'Ob';
+    return pointerKey ? pointerKey : 'O';
 };
 
 const encounterItem = (store, item) => {
