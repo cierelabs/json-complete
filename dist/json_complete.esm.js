@@ -1,5 +1,9 @@
+var splitPointers = (pointerString) => {
+    return pointerString.split(/([A-Z$_]+)/);
+};
+
 var extractPointer = (pointer) => {
-    const parts = pointer.split(/([A-Z$_]+)/);
+    const parts = splitPointers(pointer);
     return {
         _key: parts[1],
         _index: Number(parts[2]),
@@ -1004,7 +1008,7 @@ var decompressValues = (key, value, types) => {
     // Convert each pointer from Base63 indies, and account for simple types having no index
     return value.split(',').map((valueItems) => {
         return valueItems.split(' ').map((pointerCombinedString) => {
-            const parts = pointerCombinedString.split(/([A-Z$_]+)/).slice(1);
+            const parts = splitPointers(pointerCombinedString).slice(1);
 
             const pointers = [];
             for (let p = 0; p < parts.length; p += 2) {

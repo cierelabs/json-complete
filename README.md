@@ -331,10 +331,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8703 bytes | 9835 bytes |
-| gzip        | 3454 bytes | 3460 bytes |
-| zopfli      | 3378 bytes | 3384 bytes |
-| brotli      | 3119 bytes | 3126 bytes |
+| Minified    | 8696 bytes | 9845 bytes |
+| gzip        | 3450 bytes | 3453 bytes |
+| zopfli      | 3375 bytes | 3375 bytes |
+| brotli      | 3110 bytes | 3123 bytes |
 
 
 

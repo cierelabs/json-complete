@@ -15,13 +15,7 @@ test('Unsupported Types: Normal', (t) => {
     const decoded = decode(encoded)[0];
 
     t.ok(testHelpers.isObject(decoded));
-
-    let keys = Object.keys(decoded);
-    if (typeof Symbol === 'function') {
-        keys = keys.concat(Object.getOwnPropertySymbols(decoded));
-    }
-
-    t.deepEqual(keys, []);
+    t.deepEqual(testHelpers.getAllKeys(decoded), []);
 });
 
 test('Unsupported Types: Root Value', (t) => {
@@ -33,13 +27,7 @@ test('Unsupported Types: Root Value', (t) => {
     const decoded = decode(encoded);
 
     t.ok(testHelpers.isObject(decoded));
-
-    let keys = Object.keys(decoded);
-    if (typeof Symbol === 'function') {
-        keys = keys.concat(Object.getOwnPropertySymbols(decoded));
-    }
-
-    t.deepEqual(keys, []);
+    t.deepEqual(testHelpers.getAllKeys(decoded), []);
 });
 
 test('Unsupported Types: Normal Throw', (t) => {

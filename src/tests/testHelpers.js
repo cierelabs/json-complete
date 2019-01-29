@@ -101,24 +101,32 @@ const getGlobal = () => {
     return global;
 };
 
+const getOnlyKeyFromCollection = (collection) => {
+    let key;
+    collection.forEach((v, k) => {
+        key = k;
+    });
+    return key;
+};
+
+const getOnlyValueFromCollection = (collection) => {
+    let value;
+    collection.forEach((v) => {
+        value = v;
+    });
+    return value;
+};
+
 const setSupportsDistinctNegativeZero = () => {
     const test = new Set();
     test.add(-0);
-    let value;
-    test.forEach((v) => {
-        value = v;
-    });
-    return isNegativeZero(value);
+    return isNegativeZero(getOnlyValueFromCollection(test));
 };
 
 const mapSupportsDistinctNegativeZeroKeys = () => {
     const test = new Map();
     test.set(-0, 1);
-    let key;
-    test.forEach((v, k) => {
-        key = k;
-    });
-    return isNegativeZero(key);
+    return isNegativeZero(getOnlyKeyFromCollection(test));
 };
 
 const regexSupportsSticky = () => {
@@ -128,6 +136,14 @@ const regexSupportsSticky = () => {
     } catch(e) {
         return false;
     }
+};
+
+const getAllKeys = (obj) => {
+    let keys = Object.keys(obj);
+    if (typeof Symbol === 'function') {
+        keys = keys.concat(Object.getOwnPropertySymbols(obj));
+    }
+    return keys;
 };
 
 module.exports = {
@@ -140,7 +156,10 @@ module.exports = {
     isArray: isArray,
     simplifyEncoded: simplifyEncoded,
     getGlobal: getGlobal,
+    getOnlyKeyFromCollection: getOnlyKeyFromCollection,
+    getOnlyValueFromCollection: getOnlyValueFromCollection,
     setSupportsDistinctNegativeZero: setSupportsDistinctNegativeZero,
     mapSupportsDistinctNegativeZeroKeys: mapSupportsDistinctNegativeZeroKeys,
     regexSupportsSticky: regexSupportsSticky,
+    getAllKeys: getAllKeys,
 };
