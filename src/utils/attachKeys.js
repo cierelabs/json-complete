@@ -6,10 +6,8 @@ export default (store, dataItem, keyIndex, valueIndex) => {
         const keyPointer = dataItem._parts[keyIndex][i];
 
         // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
-        if (store._compat && typeof Symbol !== 'function' && extractPointer(keyPointer)._key === 'P') {
-            return;
+        if (!store._compat || typeof Symbol === 'function' || extractPointer(keyPointer)._key !== 'P') {
+            dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
         }
-
-        dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
     }
 };

@@ -35,7 +35,7 @@ test('Arguments: Empty', (t) => {
     const decoded = decode(encode([args]))[0];
 
     t.equal(testHelpers.systemName(decoded), '[object Arguments]');
-    t.deepEqual(Array.from(decoded), []);
+    t.deepEqual(Array.prototype.slice.call(decoded), []);
 });
 
 test('Arguments: Root Value', (t) => {
@@ -69,7 +69,7 @@ test('Arguments: Sparse Index', (t) => {
 });
 
 test('Arguments: Non-Index Keys', (t) => {
-    t.plan(6);
+    t.plan(5);
 
     const sharedObj = {
         a: 1,
@@ -79,17 +79,13 @@ test('Arguments: Non-Index Keys', (t) => {
 
     args['x'] = 5;
     args['obj'] = sharedObj;
-    args[Symbol.for('arguments')] = 6;
 
-    const decoded = decode(encode(args, {
-        encodeSymbolKeys: true,
-    }));
+    const decoded = decode(encode(args));
 
     t.equal(testHelpers.systemName(decoded), '[object Arguments]');
     t.equal(decoded[0], 1);
     t.equal(decoded['x'], 5);
     t.deepEqual(decoded[1], sharedObj);
-    t.equal(decoded[Symbol.for('arguments')], 6);
     t.equal(decoded[1], decoded['obj']);
 });
 

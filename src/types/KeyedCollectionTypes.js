@@ -3,7 +3,6 @@ import getDecoded from '/utils/getDecoded.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
 
 export default (typeObj) => {
-    // If Set is supported, Map is also supported
     /* istanbul ignore else */
     if (typeof Set === 'function') {
         typeObj.U = {
@@ -28,7 +27,10 @@ export default (typeObj) => {
                 attachKeys(store, dataItem, 1, 2);
             },
         };
+    }
 
+    /* istanbul ignore else */
+    if (typeof Map === 'function') {
         typeObj.V = {
             _systemName: 'Map',
             _compressionType: 2,

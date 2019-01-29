@@ -101,6 +101,35 @@ const getGlobal = () => {
     return global;
 };
 
+const setSupportsDistinctNegativeZero = () => {
+    const test = new Set();
+    test.add(-0);
+    let value;
+    test.forEach((v) => {
+        value = v;
+    });
+    return isNegativeZero(value);
+};
+
+const mapSupportsDistinctNegativeZeroKeys = () => {
+    const test = new Map();
+    test.set(-0, 1);
+    let key;
+    test.forEach((v, k) => {
+        key = k;
+    });
+    return isNegativeZero(key);
+};
+
+const regexSupportsSticky = () => {
+    try {
+        const value = /abc. /y;
+        return typeof value.source === 'string';
+    } catch(e) {
+        return false;
+    }
+};
+
 module.exports = {
     systemName: systemName,
     isNanValue: isNanValue,
@@ -111,4 +140,7 @@ module.exports = {
     isArray: isArray,
     simplifyEncoded: simplifyEncoded,
     getGlobal: getGlobal,
+    setSupportsDistinctNegativeZero: setSupportsDistinctNegativeZero,
+    mapSupportsDistinctNegativeZeroKeys: mapSupportsDistinctNegativeZeroKeys,
+    regexSupportsSticky: regexSupportsSticky,
 };

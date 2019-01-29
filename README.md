@@ -26,8 +26,8 @@ jsonComplete.encode(value, [options={}]);
 
 * `value` - (any type) Some value to encode.
 * `options` - (Object) Optional. Option definitions:
-  - `options.compat` - (truthy or falsy) Optional. Makes the encoder more forgiving of unknown or incompatible Types. See **Option: Compat Mode** below.
-  - `options.encodeSymbolKeys` - (truthy or falsy) Optional. Turns on the encoder's ability to encode Symbol keys on Types, at the cost of lost information. See **Option: Symbol Key Encoding** below.
+  - `options.compat` - (truthy or falsy) Optional. Makes the encoder more forgiving of unknown or incompatible Types, at the cost of lost information. See **Option: Compat Mode** below.
+  - `options.encodeSymbolKeys` - (truthy or falsy) Optional. Turns on the encoder's ability to encode Symbol keys on Types. See **Option: Symbol Key Encoding** below.
   - `options.onFinish` - (Function) Optional, except when using a Deferred Type. If specified, the encoder will call the provided function with the encoded String as an argument, rather than returning it from the `encode` function. This option can be useful for creating a Promise-based wrapper. This option is **required** if the `value` contains a Deferred Type, since Deferred Types cannot be synchronously encoded.
 * *return value* - (String) - The encoded String form of `value`. If `options.onFinish` is specified, the return value is `undefined`.
 
@@ -312,6 +312,7 @@ If the `compat` option is set to a truthy value, the library attempts to do its 
   - If the Pointer type is not recognized, the Pointer string itself will be decoded in its place, rather than attempt to get its value.
   - If a given Type cannot be constructed due to malformed encoded data or the environment does not support a given Type, the Type will be ignored and skipped over, remaining undefined.
   - If the environment does not support Symbols, but the encoded data defines a Symbol key, that particular key-value pair will be skipped.
+  - If the environment does not support the Sticky or Unicode flags in RegExp objects, but the encoded data defines such a flag, the RegExp object will be created without either of those flags.
   - If attempting to decode a File object in an environment that supports Files but doesn't support the File Constructor (IE10, IE11, and Edge), the File will be decoded as a Blob type, with the `name` and `lastModified` values simply attached as properties.
 
 Compat Mode will **NOT** prevent throws related to significantly malformed encoded data when decoding.
@@ -330,16 +331,16 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8172 bytes | 9332 bytes |
-| gzip        | 3292 bytes | 3306 bytes |
-| zopfli      | 3229 bytes | 3241 bytes |
-| brotli      | 2985 bytes | 3012 bytes |
+| Minified    | 8703 bytes | 9835 bytes |
+| gzip        | 3454 bytes | 3460 bytes |
+| zopfli      | 3378 bytes | 3384 bytes |
+| brotli      | 3119 bytes | 3126 bytes |
 
 
 
 ## Tests
 
-There are currently 728 tests, constituting 100% code coverage across all platforms.
+There are currently 727 tests, constituting 100% code coverage when tested across all platforms. Some codepath branches may not be testable on a given platform, however.
 
 Only Google Chrome is currently able to run all of the tests due to differences in Type support across various browser and Node platforms.
 
@@ -349,6 +350,7 @@ The library and all its supportable tests have been tested on:
 * Firefox
 * Safari (Desktop)
 * Edge (17)
+* Internet Explorer (11)
 * Node (11.4.0)
 
 
@@ -398,14 +400,18 @@ In an extremely rare edge case, which should be avoided, built-in Symbols can be
 
 #### Microsoft Edge Limitations
 
-Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in an ES2015 Map collection. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native Map.
+Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in an ES2015 Map collection. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native ES2015 Map.
 
 Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
 
 
 #### Internet Explorer 11 Limitations
 
-Not yet supported.
+The keys in Maps and the values in Set can support negative zero (-0) as a distinct value separate from 0. This is allowed, but users should be aware of this in case they are also storing a zero value, and then expecting to have two different results when decoding on a more modern browser.
+
+Even though IE11 supports a Map type, it differs slightly from other implementations. To be safe, it is not used internally. As a result, the performance of the encoder can be significantly worse than in other browsers.
+
+IE11 and below do not support the sticky and unicode flags on RegExp objects. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 10 Limitations
@@ -512,13 +518,14 @@ Not yet supported.
 - [x] Add support for BigInt64Array and BigUint64Array.
 - [x] Split out and add if checks around Arbitrary Attached Data tests that use symbols.
 - [x] Explore String compressed form for internal arrays.
+- [x] Support IE11
 
 
 ## Future Plans
 - [ ] Write script that will convert 1.0.0 data to 2.0.0 data.
 - [ ] Write script that will convert 2.0.0 data to 1.0.0 data.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
-- [ ] Support IE11
+- [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
 - [ ] Support IE10
 - [ ] Support IE9
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
@@ -527,4 +534,3 @@ Not yet supported.
 - [ ] Support IE6 with legacy version
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await.
 - [ ] Move tests to [BrowserStack](https://www.browserstack.com/) to provide more coverage of available environments.
-- [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.

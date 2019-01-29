@@ -37,6 +37,15 @@ export default (store, item) => {
         }
     }
 
+    // In IE11, Set and Map are supported, but they do not have the expected System Name
+    if (typeof Set === 'function' && item instanceof Set) {
+        return 'U';
+    }
+
+    if (typeof Map === 'function' && item instanceof Map) {
+        return 'V';
+    }
+
     let systemName = getSystemName(item);
     const wrappedTypeSystemName = store._wrappedTypeMap[systemName];
 

@@ -60,7 +60,13 @@ const encounterItem = (store, item) => {
 
 const encodeAll = (store, resumeFromIndex) => {
     return store._references._resumableForEach((dataItem) => {
-        let encodedForm = types[dataItem._key]._encodeValue(dataItem._reference, getAttachments(dataItem._reference, store._encodeSymbolKeys));
+        let attachments = [];
+
+        if (!types[dataItem._key]._isAttachless) {
+            attachments = getAttachments(dataItem._reference, store._encodeSymbolKeys);
+        }
+
+        let encodedForm = types[dataItem._key]._encodeValue(dataItem._reference, attachments);
 
         // All types that encode directly to Strings (String, Number, BigInt, and Symbol) do not have attachments
         if (getSystemName(encodedForm) !== 'String') {
