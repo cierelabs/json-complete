@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
 const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
@@ -100,44 +101,8 @@ if (typeof Set === 'function') {
         t.equal(value, decoded.obj);
     });
 
-    test('Set: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-        const set = new Set([1]);
-        set.x = 2;
-        set[Symbol.for('set')] = 'test';
-
-        const decodedSet = decode(encode([set], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(decodedSet.has(1));
-        t.equal(decodedSet.x, 2);
-        t.equal(decodedSet[Symbol.for('set')], 'test');
-    });
-
-    test('Set: Self-Containment', (t) => {
-        t.plan(2);
-        const set = new Set([1]);
-        set.me = set;
-
-        const decodedSet = decode(encode([set]))[0];
-
-        t.ok(decodedSet.has(1));
-        t.equal(decodedSet.me, decodedSet);
-    });
-
-    test('Set: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Set([1]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Set', 'Set', () => {
+        return new Set([3]);
     });
 
     test('Set: Encoding Expected', (t) => {

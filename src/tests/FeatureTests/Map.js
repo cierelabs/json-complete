@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -174,44 +175,8 @@ if (typeof Map === 'function') {
         });
     });
 
-    test('Map: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-        const map = new Map([[0, 1]]);
-        map.x = 2;
-        map[Symbol.for('map')] = 'test';
-
-        const decodedMap = decode(encode([map], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(decodedMap.has(0));
-        t.equal(decodedMap.x, 2);
-        t.equal(decodedMap[Symbol.for('map')], 'test');
-    });
-
-    test('Map: Self-Containment', (t) => {
-        t.plan(2);
-        const map = new Map([[0, 1]]);
-        map.me = map;
-
-        const decodedMap = decode(encode([map]))[0];
-
-        t.ok(decodedMap.has(0));
-        t.equal(decodedMap.me, decodedMap);
-    });
-
-    test('Map: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Map([[0, 1]]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Map', 'Map', () => {
+        return new Map([[2, 1]]);
     });
 
     test('Map: Encoding Expected', (t) => {

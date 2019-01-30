@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -65,42 +66,8 @@ test('Object: Circular Object References', (t) => {
     t.equal(decodedCircularObj, decodedCircularObj.x.y.z.x.y.z);
 });
 
-test('Object: Arbitrary Attached Data', (t) => {
-    t.plan(2);
-
-    const decodedObj = decode(encode([{
-        x: 2,
-        [Symbol.for('obj')]: 'test',
-    }], {
-        encodeSymbolKeys: true,
-    }))[0];
-
-    t.equal(decodedObj.x, 2);
-    t.equal(decodedObj[Symbol.for('obj')], 'test');
-});
-
-test('Object: Self-Containment', (t) => {
-    t.plan(1);
-
-    const obj = {};
-    obj.me = obj;
-    const decodedObj = decode(encode([obj]))[0];
-
-    t.equal(decodedObj.me, decodedObj);
-});
-
-test('Object: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = {};
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
+StandardObjectTests('Object', 'Object', () => {
+    return {};
 });
 
 test('Object: Encoding Expected', (t) => {

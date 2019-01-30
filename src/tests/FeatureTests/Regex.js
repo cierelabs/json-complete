@@ -1,5 +1,6 @@
 const test = require('tape');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
 const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
@@ -72,44 +73,8 @@ test('Regex: Root Value lastIndex', (t) => {
     t.equal(decode(encode(/\s+/g)).lastIndex, 0);
 });
 
-test('Regex: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-
-    const regex = /\s+/g;
-    regex.x = 2;
-    regex[Symbol.for('regex')] = 'test';
-
-    const decodedRegex = decode(encode([regex], {
-        encodeSymbolKeys: true,
-    }))[0];
-    t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
-    t.equal(decodedRegex.x, 2);
-    t.equal(decodedRegex[Symbol.for('regex')], 'test');
-});
-
-test('Regex: Self-Containment', (t) => {
-    t.plan(2);
-
-    const regex = /\s+/g;
-    regex.me = regex;
-
-    const decodedRegex = decode(encode([regex]))[0];
-    t.equal('a a  a  \t  a \n'.replace(decodedRegex, ''), 'aaaa');
-    t.equal(decodedRegex.me, decodedRegex);
-});
-
-test('Regex: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = /\s+/g;
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
+StandardObjectTests('Regex', 'RegExp', () => {
+    return /\s+/g;
 });
 
 test('Regex: Encoding Expected', (t) => {

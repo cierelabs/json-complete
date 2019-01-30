@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -106,49 +107,7 @@ test('Arguments: Direct Self-Containment', (t) => {
     t.equal(decoded[1], decoded);
 });
 
-test('Arguments: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-
-    const args = genArgs();
-
-    args.x = 2;
-    args[Symbol.for('arguments')] = 'test';
-
-    const decoded = decode(encode({
-        a: args,
-    }, {
-        encodeSymbolKeys: true,
-    })).a;
-
-    t.equal(decoded.length, 0);
-    t.equal(decoded.x, 2);
-    t.equal(decoded[Symbol.for('arguments')], 'test');
-});
-
-test('Arguments: Self-Containment', (t) => {
-    t.plan(1);
-
-    const args = genArgs();
-
-    args.me = args;
-    const decoded = decode(encode([args]))[0];
-
-    t.equal(decoded.me, decoded);
-});
-
-test('Arguments: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const args = genArgs();
-
-    const decoded = decode(encode({
-        x: args,
-        y: args,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, args);
-});
+StandardObjectTests('Arguments', 'Arguments', genArgs);
 
 test('Arguments: Encoding Expected', (t) => {
     t.plan(1);

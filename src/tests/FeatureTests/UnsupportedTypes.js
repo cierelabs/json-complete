@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -8,7 +9,7 @@ const decode = jsonComplete.decode;
 test('Unsupported Types: Normal', (t) => {
     t.plan(2);
 
-    const encoded = encode([Math], {
+    const encoded = encode([() => {}], {
         compat: true,
     });
     const decoded = decode(encoded)[0];
@@ -20,7 +21,7 @@ test('Unsupported Types: Normal', (t) => {
 test('Unsupported Types: Root Value', (t) => {
     t.plan(2);
 
-    const encoded = encode(Math, {
+    const encoded = encode(() => {}, {
         compat: true,
     });
     const decoded = decode(encoded);
@@ -33,13 +34,13 @@ test('Unsupported Types: Normal Throw', (t) => {
     t.plan(1);
 
     try {
-        encode([Math], {
+        encode([() => {}], {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Math".', e.message);
+        t.equal('Cannot encode unsupported type "Function".', e.message);
     }
 });
 
@@ -47,72 +48,24 @@ test('Unsupported Types: Root Value Throw', (t) => {
     t.plan(1);
 
     try {
-        encode(Math, {
+        encode(() => {}, {
             compat: false,
         });
 
         t.ok(false);
     } catch (e) {
-        t.equal('Cannot encode unsupported type "Math".', e.message);
+        t.equal('Cannot encode unsupported type "Function".', e.message);
     }
 });
 
-test('Unsupported Types: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-
-    const source = Math;
-    source.x = 2;
-    source[Symbol.for('FullyUnsupportedTypes')] = 'test';
-
-    const decodedFullyUnsupportedTypes = decode(encode([source], {
-        compat: true,
-        encodeSymbolKeys: true,
-    }))[0];
-
-    t.ok(testHelpers.isObject(decodedFullyUnsupportedTypes));
-    t.equal(decodedFullyUnsupportedTypes.x, 2);
-    t.equal(decodedFullyUnsupportedTypes[Symbol.for('FullyUnsupportedTypes')], 'test');
-
-    delete source.x;
-    delete source[Symbol.for('FullyUnsupportedTypes')];
-});
-
-test('Unsupported Types: Self-Containment', (t) => {
-    t.plan(2);
-
-    const source = Math;
-    source.me = source;
-
-    const decodedFullyUnsupportedTypes = decode(encode([source], {
-        compat: true,
-    }))[0];
-
-    t.ok(testHelpers.isObject(decodedFullyUnsupportedTypes));
-    t.equal(decodedFullyUnsupportedTypes.me, decodedFullyUnsupportedTypes);
-
-    delete source.me;
-});
-
-test('Unsupported Types: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = Math;
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }, {
-        compat: true,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
-});
+StandardObjectTests('Unsupported Types', 'Object', () => {
+    return () => {};
+}, true);
 
 test('Unsupported Types: Encoding Expected', (t) => {
     t.plan(1);
 
-    const source = Math;
+    const source = () => {};
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source, {

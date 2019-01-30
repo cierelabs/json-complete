@@ -339,7 +339,7 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 ## Tests
 
-There are currently 702 tests, constituting 100% code coverage across all platforms.
+There are currently 728 tests, constituting 100% code coverage across all platforms.
 
 Only Google Chrome is currently able to run all of them due to differences in Type support across various browser and Node platforms.
 

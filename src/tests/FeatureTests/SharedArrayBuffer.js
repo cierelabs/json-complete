@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -82,45 +83,8 @@ if (typeof SharedArrayBuffer === 'function') {
         t.equal(decoded['8'], 9);
     });
 
-    test('SharedArrayBuffer: Arbitrary Attached Data', (t) => {
-        t.plan(2);
-
-        const sab = new SharedArrayBuffer(2);
-
-        sab.x = 2;
-        sab[Symbol.for('SharedArrayBuffer')] = 'test';
-
-        const decoded = decode(encode([sab], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.equal(decoded.x, 2);
-        t.equal(decoded[Symbol.for('SharedArrayBuffer')], 'test');
-    });
-
-    test('SharedArrayBuffer: Self-Containment', (t) => {
-        t.plan(1);
-
-        const sab = new SharedArrayBuffer(2);
-        sab.me = sab;
-
-        const decoded = decode(encode([sab]))[0];
-
-        t.equal(decoded.me, decoded);
-    });
-
-    test('SharedArrayBuffer: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new SharedArrayBuffer(2);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('SharedArrayBuffer', 'SharedArrayBuffer', () => {
+        return new SharedArrayBuffer(2);
     });
 
     test('SharedArrayBuffer: Encoding Expected', (t) => {

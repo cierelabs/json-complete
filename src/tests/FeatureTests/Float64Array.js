@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -48,44 +49,8 @@ if (typeof Float32Array === 'function') {
         t.deepEqual(decode(encode(new Float64Array([1]))), new Float64Array([1]));
     });
 
-    test('Float64Array: Arbitrary Attached Data', (t) => {
-        t.plan(2);
-
-        const a = new Float64Array(2);
-        a.x = 2;
-        a[Symbol.for('Float64Array')] = 'test';
-
-        const decoded = decode(encode([a], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.equal(decoded.x, 2);
-        t.equal(decoded[Symbol.for('Float64Array')], 'test');
-    });
-
-    test('Float64Array: Self-Containment', (t) => {
-        t.plan(1);
-
-        const a = new Float64Array(2);
-        a.me = a;
-
-        const decoded = decode(encode([a]))[0];
-
-        t.equal(decoded.me, decoded);
-    });
-
-    test('Float64Array: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Float64Array(1);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Float64Array', 'Float64Array', () => {
+        return new Float64Array(2);
     });
 
     test('Float64Array: Encoding Expected', (t) => {
