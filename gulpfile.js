@@ -103,7 +103,7 @@ const js = (options) => {
             mangle: {
                 toplevel: true,
                 properties: {
-                    regex: /_\w+/, // Compress all properties that start with _
+                    regex: /_\w+/, // Compress all properties that start with _, but contain more than just an underscore
                 },
             },
             compress: {

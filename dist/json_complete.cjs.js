@@ -1,7 +1,11 @@
 'use strict';
 
+var splitPointers = function splitPointers(pointerString) {
+  return pointerString.split(/([A-Z$_]+)/);
+};
+
 var extractPointer = function extractPointer(pointer) {
-  var parts = pointer.split(/([A-Z$_]+)/);
+  var parts = splitPointers(pointer);
   return {
     _key: parts[1],
     _index: Number(parts[2])
@@ -997,7 +1001,7 @@ var decompressValues = function decompressValues(key, value, types) {
 
   return value.split(',').map(function (valueItems) {
     return valueItems.split(' ').map(function (pointerCombinedString) {
-      var parts = pointerCombinedString.split(/([A-Z$_]+)/).slice(1);
+      var parts = splitPointers(pointerCombinedString).slice(1);
       var pointers = [];
 
       for (var p = 0; p < parts.length; p += 2) {

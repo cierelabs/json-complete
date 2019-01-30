@@ -12,7 +12,7 @@ if (typeof Symbol === 'function') {
         const decodedNormalSymbolObj = decode(encode({ [Symbol()]: 3 }, {
             encodeSymbolKeys: true,
         }));
-        const decodedNormalSymbolKeys = Object.keys(decodedNormalSymbolObj).concat(Object.getOwnPropertySymbols(decodedNormalSymbolObj));
+        const decodedNormalSymbolKeys = testHelpers.getAllKeys(decodedNormalSymbolObj);
 
         t.equal(decodedNormalSymbolKeys.length, 1);
         t.ok(testHelpers.isSymbol(decodedNormalSymbolKeys[0]));
@@ -25,7 +25,7 @@ if (typeof Symbol === 'function') {
         const decodedKeyedSymbolObj = decode(encode({ [Symbol.for('keyed')]: 4 }, {
             encodeSymbolKeys: true,
         }));
-        const decodedKeyedSymbolKeys = Object.keys(decodedKeyedSymbolObj).concat(Object.getOwnPropertySymbols(decodedKeyedSymbolObj));
+        const decodedKeyedSymbolKeys = testHelpers.getAllKeys(decodedKeyedSymbolObj);
 
         t.equal(decodedKeyedSymbolKeys.length, 1);
         t.ok(testHelpers.isSymbol(decodedKeyedSymbolKeys[0]));
@@ -46,7 +46,7 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         }));
         const decodedSharedSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj);
-        const decodedSharedInnerSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj.b);
+        const decodedSharedInnerSymbolKeys = testHelpers.getAllKeys(decodedSharedSymbolObj.b);
 
         t.equal(decodedSharedSymbolKeys[0], decodedSharedInnerSymbolKeys[0]);
         t.equal(decodedSharedSymbolObj[decodedSharedSymbolKeys[0]], 1);
@@ -63,7 +63,7 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         }));
 
-        const decodedSharedSymbolKeys = Object.getOwnPropertySymbols(decodedSharedSymbolObj);
+        const decodedSharedSymbolKeys = testHelpers.getAllKeys(decodedSharedSymbolObj);
 
         t.equal(decodedSharedSymbolKeys[0], decodedSharedSymbolObj[decodedSharedSymbolKeys[0]]);
     });

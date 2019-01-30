@@ -64,10 +64,8 @@ if (typeof Set === 'function') {
         source.add(void 0);
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
+
         t.equal(value, void 0);
     });
 
@@ -80,10 +78,8 @@ if (typeof Set === 'function') {
             source.add(-0);
 
             const decoded = decode(encode([source]))[0];
-            let value;
-            decoded.forEach((v) => {
-                value = v;
-            });
+            const value = testHelpers.getOnlyValueFromCollection(decoded);
+
             t.notOk(testHelpers.isNegativeZero(value));
             t.equal(value, 0);
         });
@@ -96,19 +92,10 @@ if (typeof Set === 'function') {
         source.add({});
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
 
         t.ok(testHelpers.isObject(value));
-
-        let values = Object.keys(value);
-        if (typeof Symbol === 'function') {
-            values = values.concat(Object.getOwnPropertySymbols(value));
-        }
-
-        t.equal(values.length, 0);
+        t.equal(testHelpers.getAllKeys(value).length, 0);
     });
 
     test('Set: Referential Integrity Within and Without', (t) => {
@@ -125,10 +112,7 @@ if (typeof Set === 'function') {
         source.obj = obj;
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
 
         t.equal(value.a.b, decoded.obj.a.b);
         t.equal(value, decoded.obj);

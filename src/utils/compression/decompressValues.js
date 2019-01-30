@@ -1,4 +1,5 @@
 import fromBase63 from '/utils/base63/fromBase63.js';
+import splitPointers from '/utils/splitPointers.js';
 
 export default (key, value, types) => {
     // Unrecognized Types, Strings, and Symbols get no additional decompression
@@ -15,7 +16,7 @@ export default (key, value, types) => {
     // Convert each pointer from Base63 indies, and account for simple types having no index
     return value.split(',').map((valueItems) => {
         return valueItems.split(' ').map((pointerCombinedString) => {
-            const parts = pointerCombinedString.split(/([A-Z$_]+)/).slice(1);
+            const parts = splitPointers(pointerCombinedString).slice(1);
 
             const pointers = [];
             for (let p = 0; p < parts.length; p += 2) {

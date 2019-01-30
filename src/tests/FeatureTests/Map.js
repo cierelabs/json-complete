@@ -68,10 +68,8 @@ if (typeof Map === 'function') {
         source.set(0, void 0);
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
+
         t.equal(value, void 0);
     });
 
@@ -82,10 +80,8 @@ if (typeof Map === 'function') {
         source.set(0, -0);
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
+
         t.ok(testHelpers.isNegativeZero(value));
     });
 
@@ -96,18 +92,10 @@ if (typeof Map === 'function') {
         source.set(0, {});
 
         const decoded = decode(encode([source]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
 
         t.ok(testHelpers.isObject(value));
-
-        let keys = Object.keys(value);
-        if (typeof Symbol === 'function') {
-            keys = keys.concat(Object.getOwnPropertySymbols(value));
-        }
-        t.equal(keys.length, 0);
+        t.equal(testHelpers.getAllKeys(value).length, 0);
     });
 
     test('Map (Value): Referential Integrity Within and Without', (t) => {
@@ -126,10 +114,7 @@ if (typeof Map === 'function') {
         map.obj = obj;
 
         const decoded = decode(encode([map]))[0];
-        let value;
-        decoded.forEach((v) => {
-            value = v;
-        });
+        const value = testHelpers.getOnlyValueFromCollection(decoded);
 
         t.equal(value.a.b, decoded.obj.a.b);
         t.equal(value, decoded.obj);
@@ -142,10 +127,8 @@ if (typeof Map === 'function') {
         source.set(void 0, 1);
 
         const decoded = decode(encode([source]))[0];
-        let key;
-        decoded.forEach((v, k) => {
-            key = k;
-        });
+        const key = testHelpers.getOnlyKeyFromCollection(decoded);
+
         t.equal(key, void 0);
     });
 
@@ -158,10 +141,8 @@ if (typeof Map === 'function') {
             source.set(-0, 1);
 
             const decoded = decode(encode([source]))[0];
-            let key;
-            decoded.forEach((v, k) => {
-                key = k;
-            });
+            const key = testHelpers.getOnlyKeyFromCollection(decoded);
+
             t.notOk(testHelpers.isNegativeZero(key));
             t.equal(key, 0);
         });
@@ -174,18 +155,10 @@ if (typeof Map === 'function') {
         source.set({}, 1);
 
         const decoded = decode(encode([source]))[0];
-        let key;
-        decoded.forEach((v, k) => {
-            key = k;
-        });
+        const key = testHelpers.getOnlyKeyFromCollection(decoded);
 
         t.ok(testHelpers.isObject(key));
-
-        let keys = Object.keys(key);
-        if (typeof Symbol === 'function') {
-            keys = keys.concat(Object.getOwnPropertySymbols(key));
-        }
-        t.equal(keys.length, 0);
+        t.equal(testHelpers.getAllKeys(key).length, 0);
     });
 
     test('Map (Key): Referential Integrity Within and Without', (t) => {
@@ -204,10 +177,7 @@ if (typeof Map === 'function') {
         map.obj = obj;
 
         const decoded = decode(encode([map]))[0];
-        let key;
-        decoded.forEach((v, k) => {
-            key = k;
-        });
+        const key = testHelpers.getOnlyKeyFromCollection(decoded);
 
         t.equal(key.a.b, decoded.obj.a.b);
         t.equal(key, decoded.obj);
