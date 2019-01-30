@@ -330,10 +330,37 @@ var BasePrimitiveTypes = (typeObj) => {
     return typeObj;
 };
 
+var genTypedArray = (type) => {
+    return {
+        _systemName: getSystemName(new type()),
+        _compressionType: 2,
+        _encodeValue: (reference, attachments) => {
+            return encodeWithAttachments([attachments._indices], attachments);
+        },
+        _generateReference: (store, dataItems) => {
+            return new type(dataItems[0].length);
+        },
+        _build: (store, dataItem) => {
+            attachIndices(store, dataItem);
+            attachKeys(store, dataItem, 1, 2);
+        },
+    };
+};
+
 var BigIntType = (typeObj) => {
     /* istanbul ignore else */
     if (typeof BigInt === 'function') {
         typeObj.Bi = genPrimitive(BigInt);
+    }
+
+    /* istanbul ignore else */
+    if (typeof BigInt64Array === 'function') {
+        typeObj.BI = genTypedArray(BigInt64Array);
+    }
+
+    /* istanbul ignore else */
+    if (typeof BigUint64Array === 'function') {
+        typeObj.BU = genTypedArray(BigUint64Array);
     }
 
     return typeObj;
@@ -607,22 +634,6 @@ var SymbolType = (typeObj) => {
     }
 
     return typeObj;
-};
-
-const genTypedArray = (type) => {
-    return {
-        _systemName: getSystemName(new type()),
-        _encodeValue: (reference, attachments) => {
-            return encodeWithAttachments([attachments._indices], attachments);
-        },
-        _generateReference: (store, dataItems) => {
-            return new type(dataItems[0].length);
-        },
-        _build: (store, dataItem) => {
-            attachIndices(store, dataItem);
-            attachKeys(store, dataItem, 1, 2);
-        },
-    };
 };
 
 var TypedArrayTypes = (typeObj) => {

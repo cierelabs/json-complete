@@ -224,6 +224,8 @@ console.log(encoded);
 | ❌     | ✅ `3`         | Blob                                                 |
 | ❌     | ✅ `3`         | File                                                 |
 | ❌     | ✅             | BigInt                                               |
+| ❌     | ✅             | BigInt64Array                                        |
+| ❌     | ✅             | BigUint64Array                                       |
 
 * `1` - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * `2` - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
@@ -328,16 +330,16 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7343 bytes | 8396 bytes |
-| gzip        | 2924 bytes | 2947 bytes |
-| zopfli      | 2871 bytes | 2895 bytes |
-| brotli      | 2681 bytes | 2706 bytes |
+| Minified    | 7455 bytes | 8518 bytes |
+| gzip        | 2954 bytes | 2973 bytes |
+| zopfli      | 2901 bytes | 2923 bytes |
+| brotli      | 2706 bytes | 2740 bytes |
 
 
 
 ## Tests
 
-There are currently 670 tests, constituting 100% code coverage across all platforms.
+There are currently 702 tests, constituting 100% code coverage across all platforms.
 
 Only Google Chrome is currently able to run all of them due to differences in Type support across various browser and Node platforms.
 
@@ -458,6 +460,8 @@ Not yet supported.
   - Uint32Array
   - Float32Array
   - Float64Array
+  - BigInt64Array
+  - BigUint64Array
 * Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
   - All Object-like Types
   - All Array-like Types
@@ -501,10 +505,10 @@ Not yet supported.
 - [x] Convert the output to string and allow the decoder to accept a string
 - [x] Update decoding error messages for types not supported in a given environment
 - [x] Release 1.0.0 publicly
+- [x] Add support for BigInt64Array and BigUint64Array.
 
 
 ## Future Plans
-- [ ] Add support for BigInt64Array and BigUint64Array.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols.
 - [ ] Support IE11
