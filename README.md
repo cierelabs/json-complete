@@ -157,7 +157,6 @@ var encoded = jsonComplete.encode(input, {
 ```
 
 
-
 #### Example: Deferred Type and onFinish Option Not Provided
 
 ```javascript
@@ -327,7 +326,8 @@ By default, json-complete will ignore Symbol keys. By setting the `encodeSymbolK
 On the other hand, Symbols stored in value positions, not key positions, will not be ignored regardless of the `encodeSymbolKeys` setting.
 
 
-#### Library Size
+
+## Library Size
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
@@ -342,15 +342,15 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 There are currently 727 tests, constituting 100% code coverage when tested across all platforms. Some codepath branches may not be testable on a given platform, however.
 
-Only Google Chrome is currently able to run all of the tests due to differences in Type support across various browser and Node platforms.
+Only Google Chrome is currently able to run all of the primary tests due to differences in Type support across various browser and Node platforms.
 
 The library and all its supportable tests have been tested on:
 
-* Google Chrome
-* Firefox
-* Safari (Desktop)
+* Google Chrome (70)
+* Firefox (65)
+* Safari (12)
 * Edge (17)
-* Internet Explorer (11)
+* Internet Explorer 11
 * Node (11.4.0)
 
 
@@ -398,25 +398,57 @@ For some specific examples:
 In an extremely rare edge case, which should be avoided, built-in Symbols can be stored as values on other Objects, since the Symbol is a Reference Type like most other types. When encoding these values, the Symbol is converted to the String form, which removes the reference to the original built-in Symbol. When decoding them, the Symbol will be unique, but it won't be the same kind of Symbol.
 
 
-#### Microsoft Edge Limitations
 
-Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in an ES2015 Map collection. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native ES2015 Map.
+## Platform Support
 
-Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+The table below illustrates the primary feature support differences on various platforms. Below that, more detailed explainations of specific limitations, beyond simply not supporting a type, are explained. If a Type or Feature is not listed, that means it is supported by all tested platforms.
+
+| Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 |                              |
+|:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|------------------------------|
+| 727         | 671         | 659          | 659         | 634       | 507   | 424  | Tests Runnable               |
+| ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | Faster Reference Encoder     |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigInt                       |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigInt64Array                |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigUint64Array               |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | SharedArrayBuffer            |
+| ✅           | ❌           | ✅            | ✅           | ✅         | ✅     | ✅    | Blob                         |
+| ✅           | ❌           | ✅            | ✅           | ⚠ `1`     | ⚠ `1` | ⚠ `1` | File                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Regex Sticky Flag            |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Regex Unicode Flag           |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Symbol                       |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | WeakSet Tests                |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Set                          |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Map                          |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Uint8ClampedArray            |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | WeakMap Tests                |
+
+* `1` - Cannot construct a native File type. In compat mode, encoded File objects will be decoded as duck-typed Blobs.
+
+
+#### Node (11.4.0) Limitations
+
+* **No Blob or File Support** - Node supports `Buffer` instead. In the future, the ability to encode or decode between these types will be provided through extra utility functions.
+
+
+#### Microsoft Edge (17) Limitations
+
+* **Slower Reference Encoder** - Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in an ES2015 Map collection. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native ES2015 Map.
+* **Limited File Decoding** - Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
 
 
 #### Internet Explorer 11 Limitations
 
-The keys in Maps and the values in Set can support negative zero (-0) as a distinct value separate from 0. This is allowed, but users should be aware of this in case they are also storing a zero value, and then expecting to have two different results when decoding on a more modern browser.
-
-Even though IE11 supports a Map type, it differs slightly from other implementations. To be safe, it is not used internally. As a result, the performance of the encoder can be significantly worse than in other browsers.
-
-IE11 and below do not support the sticky and unicode flags on RegExp objects. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
+* **Slower Reference Encoder** - Even though IE11 supports a Map type, it differs slightly from other implementations. To be safe, it is not used internally. As a result, the performance of the encoder can be significantly worse than in other browsers.
+* **Limited File Decoding** - Internet Explorer 11 supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+* **Distinct Negative Zero Keyed Collections** - The keys in Maps and the values in Set can support negative zero (-0) as a distinct value separate from 0. This is allowed, but users should be aware of this in case they are also storing a zero value, and then expecting to have two different results when decoding on a more modern browser.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 10 Limitations
 
-Not yet supported.
+* **Slower Reference Encoder** - IE10 does not support Map, so it falls back to a slower, list-based implementation.
+* **Limited File Decoding** - Internet Explorer 10 supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 9 Limitations
@@ -519,6 +551,7 @@ Not yet supported.
 - [x] Split out and add if checks around Arbitrary Attached Data tests that use symbols.
 - [x] Explore String compressed form for internal arrays.
 - [x] Support IE11
+- [x] Support IE10
 
 
 ## Future Plans
@@ -526,7 +559,6 @@ Not yet supported.
 - [ ] Write script that will convert 2.0.0 data to 1.0.0 data.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
-- [ ] Support IE10
 - [ ] Support IE9
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
 - [ ] Support IE8 with legacy version

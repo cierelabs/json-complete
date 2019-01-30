@@ -20,7 +20,7 @@ if (typeof Symbol === 'function') {
 
         const oldSymbol = globalThis.Symbol;
 
-        globalThis.Symbol = {};
+        globalThis.Symbol = void 0;
 
         try {
             const decoded = decode(encodedSymbolKeyObject, {
@@ -44,7 +44,7 @@ if (typeof Symbol === 'function') {
 
         const oldSymbol = globalThis.Symbol;
 
-        globalThis.Symbol = {};
+        globalThis.Symbol = void 0;
 
         try {
             const decoded = decode(encodedSymbolKeyObject, {

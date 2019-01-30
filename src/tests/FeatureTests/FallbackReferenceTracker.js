@@ -10,10 +10,11 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
     const globalThis = testHelpers.getGlobal();
 
     const oldMap = globalThis.Map;
+    const oldMapSystemName = testHelpers.systemName(globalThis.Map);
 
-    globalThis.Map = {};
+    globalThis.Map = void 0;
 
-    t.equal(testHelpers.systemName(globalThis.Map), '[object Object]');
+    t.equal(testHelpers.systemName(globalThis.Map), '[object Undefined]');
 
     const encoded = encode([1, 2, 1]);
 
@@ -25,5 +26,5 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
 
     globalThis.Map = oldMap;
 
-    t.equal(testHelpers.systemName(globalThis.Map), '[object Function]');
+    t.equal(testHelpers.systemName(globalThis.Map), oldMapSystemName);
 });
