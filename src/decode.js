@@ -101,7 +101,9 @@ export default (encoded, options) => {
     }
 
     // Having explored all of the data structure, fill out data and references
-    Object.values(store._decoded).forEach((dataItem) => {
+    // IE11 and lower do not support Object.values
+    Object.keys(store._decoded).forEach((key) => {
+        const dataItem = store._decoded[key];
         types[dataItem._key]._build(store, dataItem);
     });
 

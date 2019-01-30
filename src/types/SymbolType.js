@@ -4,6 +4,7 @@ export default (typeObj) => {
         typeObj.P = {
             _systemName: 'Symbol',
             _compressionType: 0,
+            _isAttachless: 1,
             _encodeValue: (reference) => {
                 const symbolStringKey = Symbol.keyFor(reference);
                 const isRegistered = symbolStringKey !== void 0;

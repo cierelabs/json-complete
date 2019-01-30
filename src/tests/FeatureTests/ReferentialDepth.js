@@ -4,6 +4,22 @@ const jsonComplete = require('/main.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
+const first = (collection) => {
+    let item = void 0;
+    let done = false;
+
+    collection.forEach((v) => {
+        if (done) {
+            return;
+        }
+
+        item = v;
+        done = true;
+    });
+
+    return item;
+};
+
 if (typeof Set === 'function' && typeof Map === 'function') {
     test('Referential Depth: Deep Reference Mixing Stress Test', (t) => {
         t.plan(2);
@@ -15,31 +31,28 @@ if (typeof Set === 'function' && typeof Map === 'function') {
             'loop',
         ];
 
+        const innerMap = new Map();
+        innerMap.set(2, {
+            c: [
+                [
+                    deepValue,
+                ],
+            ],
+        });
+
+        const outerMap = new Map();
+        outerMap.set(1, [
+            {
+                b: innerMap,
+            },
+        ]);
+
+        const outerSet = new Set();
+        outerSet.add(outerMap);
+
         const source = {
             a: [
-                new Set([
-                    new Map([
-                        [
-                            1,
-                            [
-                                {
-                                    b: new Map([
-                                        [
-                                            2,
-                                            {
-                                                c: [
-                                                    [
-                                                        deepValue,
-                                                    ],
-                                                ],
-                                            },
-                                        ],
-                                    ]),
-                                },
-                            ],
-                        ],
-                    ]),
-                ]),
+                outerSet,
             ],
         };
 
@@ -48,8 +61,8 @@ if (typeof Set === 'function' && typeof Map === 'function') {
         const encoded = encode(source);
         const decoded = decode(encoded);
 
-        t.equal(decoded.a[0].values().next()['value'].get(1)[0].b.get(2).c[0][0][0].d, 3);
-        t.equal(decoded.a[0].values().next()['value'].get(1)[0].b.get(2).c[0][0][1], decoded);
+        t.equal(first(decoded.a[0]).get(1)[0].b.get(2).c[0][0][0].d, 3);
+        t.equal(first(decoded.a[0]).get(1)[0].b.get(2).c[0][0][1], decoded);
     });
 }
 else {
@@ -105,7 +118,7 @@ if (typeof Set === 'function') {
 
         setRef = decoded;
         for (let d = 0; d < depth; d += 1) {
-            setRef = setRef.values().next().value;
+            setRef = first(setRef);
         }
 
         t.equal(setRef, false);

@@ -83,6 +83,15 @@ var findItemKey = function findItemKey(store, item) {
     if (item === 0 && 1 / item === -Infinity) {
       return 'M';
     }
+  } // In IE11, Set and Map are supported, but they do not have the expected System Name
+
+
+  if (typeof Set === 'function' && item instanceof Set) {
+    return 'U';
+  }
+
+  if (typeof Map === 'function' && item instanceof Map) {
+    return 'V';
   }
 
   var systemName = getSystemName(item);
@@ -254,11 +263,9 @@ var attachKeys = function attachKeys(store, dataItem, keyIndex, valueIndex) {
   for (var i = 0; i < (dataItem._parts[keyIndex] || []).length; i += 1) {
     var keyPointer = dataItem._parts[keyIndex][i]; // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
 
-    if (store._compat && typeof Symbol !== 'function' && extractPointer(keyPointer)._key === 'P') {
-      return;
+    if (!store._compat || typeof Symbol === 'function' || extractPointer(keyPointer)._key !== 'P') {
+      dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
     }
-
-    dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
   }
 }; // This is the function for getting pointer values in the generateReference functions
 
@@ -354,6 +361,7 @@ var genPrimitive = function genPrimitive(type, compressionType) {
   return {
     _systemName: getSystemName(type('')),
     _compressionType: compressionType || 0,
+    _isAttachless: 1,
     _encodeValue: function _encodeValue(reference) {
       return String(reference);
     },
@@ -432,7 +440,7 @@ var genBlobLike = function genBlobLike(systemName, propertiesKeys, create) {
       var p = extractPointer(dataItems[0][0]); // If we are decoding a Deferred Type that wasn't properly deferred, then the Uint8Array would never have gotten encoded
       // This will result in an empty Blob or File
 
-      var dataArray = p._key === 'un' ? [] : store._encoded[p._key][p._index][0];
+      var dataArray = p._key === 'K' ? [] : store._encoded[p._key][p._index][0];
       return create(store, [new Uint8Array(dataArray.map(function (pointer) {
         return decodePointer(store, pointer);
       }))], dataItems[0]);
@@ -452,13 +460,8 @@ var BlobTypes = function BlobTypes(typeObj) {
       return new Blob(buffer, {
         type: decodePointer(store, dataArray[1])
       });
-    });
-  } // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
+    }); // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor, so they will use the fallback in compat mode
 
-  /* istanbul ignore if */
-
-
-  if (typeof File === 'function') {
     typeObj.Z = genBlobLike('File', ['type', 'name', 'lastModified'], function (store, buffer, dataArray) {
       try {
         return new File(buffer, decodePointer(store, dataArray[2]), {
@@ -466,7 +469,7 @@ var BlobTypes = function BlobTypes(typeObj) {
           lastModified: decodePointer(store, dataArray[3])
         });
       } catch (e) {
-        // IE10, IE11, and Edge does not support the File constructor
+        // IE10, IE11, and Edge do not support the File constructor
         // In compat mode, decoding an encoded File object results in a Blob that is duck-typed to be like a File object
         // Such a Blob will still report its System Name as "Blob" instead of "File"
         if (store._compat) {
@@ -533,8 +536,6 @@ var ErrorType = function ErrorType(typeObj) {
 };
 
 var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
-  // If Set is supported, Map is also supported
-
   /* istanbul ignore else */
   if (typeof Set === 'function') {
     typeObj.U = {
@@ -558,6 +559,11 @@ var KeyedCollectionTypes = function KeyedCollectionTypes(typeObj) {
         attachKeys(store, dataItem, 1, 2);
       }
     };
+  }
+  /* istanbul ignore else */
+
+
+  if (typeof Map === 'function') {
     typeObj.V = {
       _systemName: 'Map',
       _compressionType: 2,
@@ -603,26 +609,53 @@ var ObjectType = function ObjectType(typeObj) {
   return typeObj;
 };
 
-var getFlags = function getFlags(reference) {
-  /* istanbul ignore if */
-  if (reference.flags === void 0) {
-    // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
-    return reference.options;
-  }
+var supportsFlag = function supportsFlag(flag) {
+  try {
+    var value = new RegExp(' ', flag);
+    return getSystemName(value) === 'RegExp';
+  } catch (e) {
+    // Only false in IE11 and below
 
-  return reference.flags;
+    /* istanbul ignore next */
+    return false;
+  }
 };
+
+var supportsSticky = supportsFlag('y');
+var supportsUnicode = supportsFlag('u');
 
 var RegExpType = function RegExpType(typeObj) {
   typeObj.R = {
     _systemName: 'RegExp',
     _compressionType: 2,
     _encodeValue: function _encodeValue(reference, attachments) {
-      return encodeWithAttachments([[reference.source, getFlags(reference), reference.lastIndex]], attachments);
+      var flags = reference.flags; // Edge and IE use `options` parameter instead of `flags`, regardless of what it says on MDN
+
+      /* istanbul ignore if */
+
+      if (flags === void 0) {
+        flags = reference.options;
+      }
+
+      return encodeWithAttachments([[reference.source, flags, reference.lastIndex]], attachments);
     },
     _generateReference: function _generateReference(store, dataItems) {
       var dataArray = dataItems[0];
-      var value = new RegExp(decodePointer(store, dataArray[0]), decodePointer(store, dataArray[1]));
+      var flags = decodePointer(store, dataArray[1]); // Only applies to IE
+
+      /* istanbul ignore next */
+
+      if (store._compat) {
+        if (!supportsSticky) {
+          flags = flags.replace(/y/g, '');
+        }
+
+        if (!supportsUnicode) {
+          flags = flags.replace(/u/g, '');
+        }
+      }
+
+      var value = new RegExp(decodePointer(store, dataArray[0]), flags);
       value.lastIndex = decodePointer(store, dataArray[2]);
       return value;
     },
@@ -667,6 +700,7 @@ var SymbolType = function SymbolType(typeObj) {
     typeObj.P = {
       _systemName: 'Symbol',
       _compressionType: 0,
+      _isAttachless: 1,
       _encodeValue: function _encodeValue(reference) {
         var symbolStringKey = Symbol.keyFor(reference);
         var isRegistered = symbolStringKey !== void 0;
@@ -681,31 +715,57 @@ var SymbolType = function SymbolType(typeObj) {
   }
 
   return typeObj;
-};
+}; // Some TypedArray types are not supported by some browsers, so test for all
+// https://caniuse.com/#feat=typedarrays
+
 
 var TypedArrayTypes = function TypedArrayTypes(typeObj) {
-  // If an environment supports Int8Array, it will support most of the TypedArray types
-
   /* istanbul ignore else */
   if (typeof Int8Array === 'function') {
     typeObj.IE = genTypedArray(Int8Array);
-    typeObj.IS = genTypedArray(Int16Array);
-    typeObj.IT = genTypedArray(Int32Array);
-    typeObj.$ = genTypedArray(Uint8Array);
-    typeObj.US = genTypedArray(Uint16Array);
-    typeObj.UT = genTypedArray(Uint32Array);
-    typeObj.FT = genTypedArray(Float32Array);
-  } // IE10 and IE Mobile do not support Uint8ClampedArray
-  // https://caniuse.com/#feat=typedarrays
+  }
+  /* istanbul ignore else */
 
+
+  if (typeof Int16Array === 'function') {
+    typeObj.IS = genTypedArray(Int16Array);
+  }
+  /* istanbul ignore else */
+
+
+  if (typeof Int32Array === 'function') {
+    typeObj.IT = genTypedArray(Int32Array);
+  }
+  /* istanbul ignore else */
+
+
+  if (typeof Uint8Array === 'function') {
+    typeObj.$ = genTypedArray(Uint8Array);
+  }
   /* istanbul ignore else */
 
 
   if (typeof Uint8ClampedArray === 'function') {
     typeObj.UC = genTypedArray(Uint8ClampedArray);
-  } // Safari versions prior to 5.1 might not support the Float64ArrayType, even as they support other TypeArray types
-  // https://caniuse.com/#feat=typedarrays
+  }
+  /* istanbul ignore else */
 
+
+  if (typeof Uint16Array === 'function') {
+    typeObj.US = genTypedArray(Uint16Array);
+  }
+  /* istanbul ignore else */
+
+
+  if (typeof Uint32Array === 'function') {
+    typeObj.UT = genTypedArray(Uint32Array);
+  }
+  /* istanbul ignore else */
+
+
+  if (typeof Float32Array === 'function') {
+    typeObj.FT = genTypedArray(Float32Array);
+  }
   /* istanbul ignore else */
 
 
@@ -811,7 +871,13 @@ var encounterItem = function encounterItem(store, item) {
 
 var encodeAll = function encodeAll(store, resumeFromIndex) {
   return store._references._resumableForEach(function (dataItem) {
-    var encodedForm = types$1[dataItem._key]._encodeValue(dataItem._reference, getAttachments(dataItem._reference, store._encodeSymbolKeys)); // All types that encode directly to Strings (String, Number, BigInt, and Symbol) do not have attachments
+    var attachments = [];
+
+    if (!types$1[dataItem._key]._isAttachless) {
+      attachments = getAttachments(dataItem._reference, store._encodeSymbolKeys);
+    }
+
+    var encodedForm = types$1[dataItem._key]._encodeValue(dataItem._reference, attachments); // All types that encode directly to Strings (String, Number, BigInt, and Symbol) do not have attachments
 
 
     if (getSystemName(encodedForm) !== 'String') {
@@ -1034,9 +1100,12 @@ var decode = function decode(encoded, options) {
   while (store._explore.length) {
     explorePointer(store, store._explore.shift());
   } // Having explored all of the data structure, fill out data and references
+  // IE11 and lower do not support Object.values
 
 
-  Object.values(store._decoded).forEach(function (dataItem) {
+  Object.keys(store._decoded).forEach(function (key) {
+    var dataItem = store._decoded[key];
+
     types$1[dataItem._key]._build(store, dataItem);
   });
   return store._decoded[rootPointerKey]._reference;
