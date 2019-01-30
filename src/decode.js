@@ -1,3 +1,4 @@
+import decompressValues from '/utils/compression/decompressValues.js';
 import extractPointer from '/utils/extractPointer.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
@@ -61,18 +62,21 @@ const explorePointer = (store, pointer) => {
 export default (encoded, options) => {
     options = options || {};
 
+    const parsed = JSON.parse(encoded);
+    const formatted = parsed.slice(2).reduce((accumulator, e) => {
+        accumulator[e[0]] = decompressValues(e[0], e[1], types);
+        return accumulator;
+    }, {});
+
+    const rootPointerKey = parsed[0];
+
     const store = {
         _compat: options.compat,
         _types: types,
-        _encoded: JSON.parse(encoded).reduce((accumulator, e) => {
-            accumulator[e[0]] = e[1];
-            return accumulator;
-        }, {}),
+        _encoded: formatted,
         _decoded: {},
         _explore: [],
     };
-
-    const rootPointerKey = store._encoded.r;
 
     // Simple pointer, return value
     if (types[rootPointerKey]) {

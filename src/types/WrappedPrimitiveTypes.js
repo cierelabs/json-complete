@@ -7,6 +7,7 @@ const genWrappedPrimitive = (type) => {
     return {
         // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
         _systemName: `_${getSystemName(new type(''))}`,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[reference.valueOf()]], attachments);
         },
@@ -20,11 +21,11 @@ const genWrappedPrimitive = (type) => {
 };
 
 export default (typeObj) => {
-    typeObj.Bo = genWrappedPrimitive(Boolean);
+    typeObj.B = genWrappedPrimitive(Boolean);
 
-    typeObj.NU = genWrappedPrimitive(Number);
+    typeObj.G = genWrappedPrimitive(String);
 
-    typeObj.ST = genWrappedPrimitive(String);
+    typeObj.H = genWrappedPrimitive(Number);
 
     return typeObj;
 };

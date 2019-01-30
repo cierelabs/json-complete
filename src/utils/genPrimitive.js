@@ -1,8 +1,9 @@
 import getSystemName from '/utils/getSystemName.js';
 
-export default (type) => {
+export default (type, compressionType) => {
     return {
         _systemName: getSystemName(type('')),
+        _compressionType: compressionType || 0,
         _encodeValue: (reference) => {
             return String(reference);
         },

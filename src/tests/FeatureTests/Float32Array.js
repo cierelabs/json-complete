@@ -61,26 +61,12 @@ if (typeof Float32Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            F3: [
-                [
-                    [
-                        'Nu0',
-                    ],
-                    [
-                        'St0',
-                    ],
-                    [
-                        'fa',
-                    ],
-                ],
-            ],
-            Nu: [
-                '1',
-            ],
-            St: [
+            FT: 'N0 S0 F0',
+            N: '1',
+            S: [
                 'a',
             ],
-            r: 'F30',
+            r: 'FT0',
         });
     });
 }

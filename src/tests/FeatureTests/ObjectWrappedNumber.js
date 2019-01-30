@@ -102,26 +102,12 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'Nu0',
-                ],
-                [
-                    'St0',
-                ],
-                [
-                    'fa',
-                ],
-            ],
-        ],
-        Nu: [
-            '1',
-        ],
-        St: [
+        H: 'N0 S0 F0',
+        N: '1',
+        S: [
             'a',
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -131,14 +117,8 @@ test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
     const source = new Number(Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'pI',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: 'I0',
+        r: 'H0',
     });
 });
 
@@ -148,14 +128,8 @@ test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
     const source = new Number(-Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'nI',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: 'J0',
+        r: 'H0',
     });
 });
 
@@ -165,14 +139,8 @@ test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
     const source = new Number(NaN);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'Na',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: 'C0',
+        r: 'H0',
     });
 });
 
@@ -182,13 +150,7 @@ test('Object-Wrapped Number: Encoding Expected -0', (t) => {
     const source = new Number(-0);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'n0',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: 'M0',
+        r: 'H0',
     });
 });

@@ -61,26 +61,12 @@ if (typeof Int16Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            I2: [
-                [
-                    [
-                        'Nu0',
-                    ],
-                    [
-                        'St0',
-                    ],
-                    [
-                        'fa',
-                    ],
-                ],
-            ],
-            Nu: [
-                '1',
-            ],
-            St: [
+            IS: 'N0 S0 F0',
+            N: '1',
+            S: [
                 'a',
             ],
-            r: 'I20',
+            r: 'IS0',
         });
     });
 }

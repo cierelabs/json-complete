@@ -186,26 +186,11 @@ if (typeof Map === 'function') {
         source.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            Ma: [
-                [
-                    [
-                        'fa',
-                    ],
-                    [
-                        'tr',
-                    ],
-                    [
-                        'St0',
-                    ],
-                    [
-                        'fa',
-                    ],
-                ],
-            ],
-            St: [
+            V: 'F0 T0 S0 F0',
+            S: [
                 'b',
             ],
-            r: 'Ma0',
+            r: 'V0',
         });
     });
 }

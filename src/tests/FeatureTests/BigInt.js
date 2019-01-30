@@ -54,10 +54,8 @@ if (typeof BigInt === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(BigInt(extremeSizeNumber))), {
-            Bi: [
-                extremeSizeNumber,
-            ],
-            r: 'Bi0',
+            _: extremeSizeNumber,
+            r: '_0',
         });
     });
 }

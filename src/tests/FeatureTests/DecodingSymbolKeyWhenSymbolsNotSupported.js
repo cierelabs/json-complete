@@ -4,52 +4,60 @@ const jsonComplete = require('/main.js');
 
 const decode = jsonComplete.decode;
 
-const encodedSymbolKeyObject = '[["Ob",[[["St0","Sy0"],["St1","St2"]]]],["St",["k","2","1"]],["Sy",["Rs"]],["r","Ob0"],["v","1.0.0"]]';
+if (typeof Symbol === 'function') {
+    // encode({
+    //     k: 2,
+    //     [Symbol.for('s')]: 1,
+    // }, {
+    //     encodeSymbolKeys: true,
+    // });
+    const encodedSymbolKeyObject = '["O0","1.0.2",["O","S0P0 N0N1"],["S",["k"]],["P",["rs"]],["N","2,1"]]';
 
-test('Decoding Symbol Key when Symbols are Not Supported: Defaults to throw', (t) => {
-    t.plan(2);
+    test('Decoding Symbol Key when Symbols are Not Supported: Defaults to throw', (t) => {
+        t.plan(2);
 
-    const globalThis = testHelpers.getGlobal();
+        const globalThis = testHelpers.getGlobal();
 
-    const oldSymbol = globalThis.Symbol;
+        const oldSymbol = globalThis.Symbol;
 
-    globalThis.Symbol = {};
+        globalThis.Symbol = {};
 
-    try {
-        const decoded = decode(encodedSymbolKeyObject, {
-            compat: false,
-        });
-        console.log(decoded); // eslint-disable-line no-console
-        t.ok(false);
-    } catch (e) {
-        t.equal(e.message, 'Cannot decode recognized pointer type "Sy".');
-    }
+        try {
+            const decoded = decode(encodedSymbolKeyObject, {
+                compat: false,
+            });
+            console.log(decoded); // eslint-disable-line no-console
+            t.ok(false);
+        } catch (e) {
+            t.equal(e.message, 'Cannot decode recognized pointer type "P".');
+        }
 
-    globalThis.Symbol = oldSymbol;
+        globalThis.Symbol = oldSymbol;
 
-    t.ok(true);
-});
+        t.ok(true);
+    });
 
-test('Decoding Symbol Key when Symbols are Not Supported: Skips Symbol Keys in compat mode', (t) => {
-    t.plan(2);
+    test('Decoding Symbol Key when Symbols are Not Supported: Skips Symbol Keys in compat mode', (t) => {
+        t.plan(2);
 
-    const globalThis = testHelpers.getGlobal();
+        const globalThis = testHelpers.getGlobal();
 
-    const oldSymbol = globalThis.Symbol;
+        const oldSymbol = globalThis.Symbol;
 
-    globalThis.Symbol = {};
+        globalThis.Symbol = {};
 
-    try {
-        const decoded = decode(encodedSymbolKeyObject, {
-            compat: true,
-        });
-        t.deepEqual(decoded, {k: '2'});
-    } catch (e) {
-        t.ok(false);
-        throw e;
-    }
+        try {
+            const decoded = decode(encodedSymbolKeyObject, {
+                compat: true,
+            });
+            t.deepEqual(decoded, {k: 2});
+        } catch (e) {
+            t.ok(false);
+            throw e;
+        }
 
-    globalThis.Symbol = oldSymbol;
+        globalThis.Symbol = oldSymbol;
 
-    t.ok(true);
-});
+        t.ok(true);
+    });
+}

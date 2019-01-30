@@ -1,39 +1,86 @@
+var extractPointer = (pointer) => {
+    const parts = pointer.split(/([A-Z$_]+)/);
+    return {
+        _key: parts[1],
+        _index: Number(parts[2]),
+    };
+};
+
+var alphabet = '0123456789abcdefghijklmnopqrstuvwxyz!#%&\'()*+-./:;<=>?@[]^`{|}~';
+
+const radix = alphabet.length;
+
+var toBase63 = (number) => {
+    let result = '';
+
+    do {
+        result = alphabet[number % radix] + result;
+        number = Math.floor(number / radix);
+    } while (number);
+
+    return result;
+};
+
+var compressValues = (key, value, types) => {
+    // Unrecognized Types, Strings, and Symbols get no additional compression
+    if (!types[key] || types[key]._compressionType === 0) {
+        return value;
+    }
+
+    // Join Numbers and BigInts using comma, strings need to stay in Array form
+    if (types[key]._compressionType === 1) {
+        return value.join(',');
+    }
+
+    // Convert all indices to Base63 notation, separate item parts with comma, and separate items with space
+    return value.map((outerArray) => {
+        return outerArray.map((innerArray) => {
+            return innerArray.map((pointer) => {
+                const parts = extractPointer(pointer);
+                return parts._key + toBase63(parts._index);
+            }).join('');
+        }).join(' ');
+    }).join(',');
+};
+
 var getSystemName = (v) => {
     return Object.prototype.toString.call(v).slice(8, -1);
 };
 
 var findItemKey = (store, item) => {
     if (item === void 0) {
-        return 'un';
+        return 'K';
     }
 
     if (item === null) {
-        return 'nl';
+        return 'L';
     }
 
     if (item === true) {
-        return 'tr';
+        return 'T';
     }
 
     if (item === false) {
-        return 'fa';
+        return 'F';
     }
 
     if (typeof item === 'number') {
         if (item === Infinity) {
-            return 'pI';
+            return 'I';
         }
 
         if (item === -Infinity) {
-            return 'nI';
+            return 'J';
         }
 
+        // NaN
         if (item !== item) {
-            return 'Na';
+            return 'C';
         }
 
+        // -0
         if (item === 0 && (1 / item) === -Infinity) {
-            return 'n0';
+            return 'M';
         }
     }
 
@@ -151,7 +198,7 @@ var getAttachments = (item, encodeSymbolKeys) => {
         return !indexObj[key];
     });
 
-    if (encodeSymbolKeys) {
+    if (encodeSymbolKeys && typeof Symbol === 'function') {
         keys = keys.concat(Object.getOwnPropertySymbols(item).filter((symbol) => {
             // Ignore built-in Symbols
             // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol
@@ -180,13 +227,6 @@ var getAttachments = (item, encodeSymbolKeys) => {
     });
 };
 
-var extractPointer = (pointer) => {
-    return {
-        _key: pointer.slice(0, 2),
-        _index: Number(pointer.slice(2)),
-    };
-};
-
 // This is the function for getting pointer references in the build functions
 var getDecoded = (store, pointer) => {
     // Simple type, return the value
@@ -212,13 +252,14 @@ var attachIndices = (store, dataItem) => {
 
 var attachKeys = (store, dataItem, keyIndex, valueIndex) => {
     for (let i = 0; i < (dataItem._parts[keyIndex] || []).length; i += 1) {
+        const keyPointer = dataItem._parts[keyIndex][i];
+
         // In compat mode, if Symbol types are not supported, but the encoded data uses a Symbol key, skip this entry
-        const key = dataItem._parts[keyIndex][i];
-        if (key.slice(0, 2) === 'Sy' && typeof Symbol !== 'function' && store._compat) {
+        if (store._compat && typeof Symbol !== 'function' && extractPointer(keyPointer)._key === 'P') {
             return;
         }
 
-        dataItem._reference[getDecoded(store, key)] = getDecoded(store, dataItem._parts[valueIndex][i]);
+        dataItem._reference[getDecoded(store, keyPointer)] = getDecoded(store, dataItem._parts[valueIndex][i]);
     }
 };
 
@@ -240,6 +281,7 @@ var encodeWithAttachments = (encodedBase, attachments) => {
 const genArrayBuffer = (type) => {
     return {
         _systemName: getSystemName(new type()),
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([Array.prototype.slice.call(new Uint8Array(reference))], attachments);
         },
@@ -262,22 +304,23 @@ const genArrayBuffer = (type) => {
 var ArrayBufferTypes = (typeObj) => {
     /* istanbul ignore else */
     if (typeof ArrayBuffer === 'function') {
-        typeObj.AB = genArrayBuffer(ArrayBuffer);
+        typeObj.W = genArrayBuffer(ArrayBuffer);
     }
 
     // Support does not exist or was removed from most environments due to Spectre and Meltdown vulnerabilities
     // https://caniuse.com/#feat=sharedarraybuffer
     /* istanbul ignore else */
     if (typeof SharedArrayBuffer === 'function') {
-        typeObj.Sh = genArrayBuffer(SharedArrayBuffer);
+        typeObj.X = genArrayBuffer(SharedArrayBuffer);
     }
 
     return typeObj;
 };
 
 var ArrayLikeTypes = (typeObj) => {
-    typeObj.Ar = {
+    typeObj.A = {
         _systemName: 'Array',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);
         },
@@ -290,8 +333,9 @@ var ArrayLikeTypes = (typeObj) => {
         },
     };
 
-    typeObj.rg = {
+    typeObj.Q = {
         _systemName: 'Arguments',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([attachments._indices], attachments);
         },
@@ -309,9 +353,10 @@ var ArrayLikeTypes = (typeObj) => {
     return typeObj;
 };
 
-var genPrimitive = (type) => {
+var genPrimitive = (type, compressionType) => {
     return {
         _systemName: getSystemName(type('')),
+        _compressionType: compressionType || 0,
         _encodeValue: (reference) => {
             return String(reference);
         },
@@ -323,9 +368,9 @@ var genPrimitive = (type) => {
 };
 
 var BasePrimitiveTypes = (typeObj) => {
-    typeObj.St = genPrimitive(String);
+    typeObj.S = genPrimitive(String);
 
-    typeObj.Nu = genPrimitive(Number);
+    typeObj.N = genPrimitive(Number, 1);
 
     return typeObj;
 };
@@ -350,7 +395,7 @@ var genTypedArray = (type) => {
 var BigIntType = (typeObj) => {
     /* istanbul ignore else */
     if (typeof BigInt === 'function') {
-        typeObj.Bi = genPrimitive(BigInt);
+        typeObj._ = genPrimitive(BigInt, 1);
     }
 
     /* istanbul ignore else */
@@ -370,6 +415,7 @@ var BigIntType = (typeObj) => {
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             // Skip the decoding of the main value for now
             return encodeWithAttachments([[void 0].concat(propertiesKeys.map((property) => {
@@ -405,7 +451,7 @@ var BlobTypes = (typeObj) => {
     // Supported back to IE10
     /* istanbul ignore if */
     if (typeof Blob === 'function') {
-        typeObj.Bl = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
+        typeObj.Y = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
             return new Blob(buffer, {
                 type: decodePointer(store, dataArray[1]),
             });
@@ -415,7 +461,7 @@ var BlobTypes = (typeObj) => {
     // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
     /* istanbul ignore if */
     if (typeof File === 'function') {
-        typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
+        typeObj.Z = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
             try {
                 return new File(buffer, decodePointer(store, dataArray[2]), {
                     type: decodePointer(store, dataArray[1]),
@@ -445,8 +491,9 @@ var BlobTypes = (typeObj) => {
 };
 
 var DateType = (typeObj) => {
-    typeObj.Da = {
+    typeObj.D = {
         _systemName: 'Date',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[reference.valueOf()]], attachments);
         },
@@ -471,8 +518,9 @@ const standardErrors = {
 };
 
 var ErrorType = (typeObj) => {
-    typeObj.Er = {
+    typeObj.E = {
         _systemName: 'Error',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[
                 standardErrors[reference.name] ? reference.name : 'Error',
@@ -500,8 +548,9 @@ var KeyedCollectionTypes = (typeObj) => {
     // If Set is supported, Map is also supported
     /* istanbul ignore else */
     if (typeof Set === 'function') {
-        typeObj.Se = {
+        typeObj.U = {
             _systemName: 'Set',
+            _compressionType: 2,
             _encodeValue: (reference, attachments) => {
                 const data = [];
                 reference.forEach((value) => {
@@ -522,9 +571,9 @@ var KeyedCollectionTypes = (typeObj) => {
             },
         };
 
-        typeObj.Ma = {
+        typeObj.V = {
             _systemName: 'Map',
-            _deepValue: 1,
+            _compressionType: 2,
             _encodeValue: (reference, attachments) => {
                 const keys = [];
                 const values = [];
@@ -552,8 +601,9 @@ var KeyedCollectionTypes = (typeObj) => {
 };
 
 var ObjectType = (typeObj) => {
-    typeObj.Ob = {
+    typeObj.O = {
         _systemName: 'Object',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([], attachments);
         },
@@ -579,8 +629,9 @@ const getFlags = (reference) => {
 };
 
 var RegExpType = (typeObj) => {
-    typeObj.Re = {
+    typeObj.R = {
         _systemName: 'RegExp',
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[
                 reference.source,
@@ -603,14 +654,14 @@ var RegExpType = (typeObj) => {
 };
 
 var SimpleTypes = (typeObj) => {
-    typeObj.un = { _value: void 0 };
-    typeObj.nl = { _value: null };
-    typeObj.tr = { _value: true };
-    typeObj.fa = { _value: false };
-    typeObj.pI = { _value: Infinity };
-    typeObj.nI = { _value: -Infinity };
-    typeObj.Na = { _value: NaN };
-    typeObj.n0 = { _value: -0 };
+    typeObj.K = { _value: void 0 };
+    typeObj.L = { _value: null };
+    typeObj.T = { _value: true };
+    typeObj.F = { _value: false };
+    typeObj.I = { _value: Infinity };
+    typeObj.J = { _value: -Infinity };
+    typeObj.C = { _value: NaN };
+    typeObj.M = { _value: -0 };
 
     return typeObj;
 };
@@ -618,16 +669,17 @@ var SimpleTypes = (typeObj) => {
 var SymbolType = (typeObj) => {
     /* istanbul ignore else */
     if (typeof Symbol === 'function') {
-        typeObj.Sy = {
+        typeObj.P = {
             _systemName: 'Symbol',
+            _compressionType: 0,
             _encodeValue: (reference) => {
                 const symbolStringKey = Symbol.keyFor(reference);
                 const isRegistered = symbolStringKey !== void 0;
 
-                return isRegistered ? `R${symbolStringKey}` : ` ${String(reference).slice(7, -1)}`;
+                return isRegistered ? `r${symbolStringKey}` : `s${String(reference).slice(7, -1)}`;
             },
             _generateReference: (store, decodedString) => {
-                return decodedString[0] === 'R' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
+                return decodedString[0] === 'r' ? Symbol.for(decodedString.slice(1)) : Symbol(decodedString.slice(1));
             },
             _build: () => {}, // Symbols do not allow attachments, no-op
         };
@@ -640,27 +692,27 @@ var TypedArrayTypes = (typeObj) => {
     // If an environment supports Int8Array, it will support most of the TypedArray types
     /* istanbul ignore else */
     if (typeof Int8Array === 'function') {
-        typeObj.I1 = genTypedArray(Int8Array);
-        typeObj.I2 = genTypedArray(Int16Array);
-        typeObj.I3 = genTypedArray(Int32Array);
-        typeObj.U1 = genTypedArray(Uint8Array);
-        typeObj.U2 = genTypedArray(Uint16Array);
-        typeObj.U3 = genTypedArray(Uint32Array);
-        typeObj.F3 = genTypedArray(Float32Array);
+        typeObj.IE = genTypedArray(Int8Array);
+        typeObj.IS = genTypedArray(Int16Array);
+        typeObj.IT = genTypedArray(Int32Array);
+        typeObj.$ = genTypedArray(Uint8Array);
+        typeObj.US = genTypedArray(Uint16Array);
+        typeObj.UT = genTypedArray(Uint32Array);
+        typeObj.FT = genTypedArray(Float32Array);
     }
 
     // IE10 and IE Mobile do not support Uint8ClampedArray
     // https://caniuse.com/#feat=typedarrays
     /* istanbul ignore else */
     if (typeof Uint8ClampedArray === 'function') {
-        typeObj.C1 = genTypedArray(Uint8ClampedArray);
+        typeObj.UC = genTypedArray(Uint8ClampedArray);
     }
 
     // Safari versions prior to 5.1 might not support the Float64ArrayType, even as they support other TypeArray types
     // https://caniuse.com/#feat=typedarrays
     /* istanbul ignore else */
     if (typeof Float64Array === 'function') {
-        typeObj.F4 = genTypedArray(Float64Array);
+        typeObj.FS = genTypedArray(Float64Array);
     }
 
     return typeObj;
@@ -670,6 +722,7 @@ const genWrappedPrimitive = (type) => {
     return {
         // Prefix of _ is used to differenciate the Wrapped Primitive vs the Primitive Type
         _systemName: `_${getSystemName(new type(''))}`,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([[reference.valueOf()]], attachments);
         },
@@ -683,11 +736,11 @@ const genWrappedPrimitive = (type) => {
 };
 
 var WrappedPrimitiveTypes = (typeObj) => {
-    typeObj.Bo = genWrappedPrimitive(Boolean);
+    typeObj.B = genWrappedPrimitive(Boolean);
 
-    typeObj.NU = genWrappedPrimitive(Number);
+    typeObj.G = genWrappedPrimitive(String);
 
-    typeObj.ST = genWrappedPrimitive(String);
+    typeObj.H = genWrappedPrimitive(Number);
 
     return typeObj;
 };
@@ -721,7 +774,7 @@ const getPointerKey = (store, item) => {
     }
 
     // In compat mode, Unsupported types are stored as plain, empty objects, so that they retain their referential integrity, but can still handle attachments
-    return pointerKey ? pointerKey : 'Ob';
+    return pointerKey ? pointerKey : 'O';
 };
 
 const encounterItem = (store, item) => {
@@ -784,16 +837,10 @@ const encodeAll = (store, resumeFromIndex) => {
 };
 
 const prepOutput = (store, root) => {
-    store._output.r = root;
-    store._output.v = '1.0.0';
-
     // Convert the output object form to an output array form
-    const output = JSON.stringify(Object.keys(store._output).map((key) => {
-        return [
-            key,
-            store._output[key],
-        ];
-    }));
+    const output = JSON.stringify([root, '1.0.2'].concat(Object.keys(store._output).map((key) => {
+        return [key, compressValues(key, store._output[key], store._types)];
+    })));
 
     if (typeof store._onFinish === 'function') {
         store._onFinish(output);
@@ -873,6 +920,43 @@ var encode = (value, options) => {
     return prepOutput(store, rootPointerKey);
 };
 
+const radix$1 = alphabet.length;
+
+var fromBase63 = (base63) => {
+    return base63.split('').reduce((character, index) => {
+        return character * radix$1 + alphabet.indexOf(index);
+    }, 0);
+};
+
+var decompressValues = (key, value, types) => {
+    // Unrecognized Types, Strings, and Symbols get no additional decompression
+    if (!types[key] || types[key]._compressionType === 0) {
+        return value;
+    }
+
+    // Join Numbers and BigInts using comma, strings need to stay in Array form
+    if (types[key]._compressionType === 1) {
+        return value.split(',');
+    }
+
+    // Split items into Pointer data sets, and split Pointer data sets into individual Pointers
+    // Convert each pointer from Base63 indies, and account for simple types having no index
+    return value.split(',').map((valueItems) => {
+        return valueItems.split(' ').map((pointerCombinedString) => {
+            const parts = pointerCombinedString.split(/([A-Z$_]+)/).slice(1);
+
+            const pointers = [];
+            for (let p = 0; p < parts.length; p += 2) {
+                const key = parts[p];
+                const isSimple = types[key] && !types[key]._systemName;
+
+                pointers.push(isSimple ? key : key + fromBase63(parts[p + 1]));
+            }
+            return pointers;
+        });
+    });
+};
+
 // Recursively look at the reference set for exploration values
 // This handles both pair arrays and individual values
 // This recursion is fine because it has a maximum depth of around 3
@@ -932,18 +1016,21 @@ const explorePointer = (store, pointer) => {
 var decode = (encoded, options) => {
     options = options || {};
 
+    const parsed = JSON.parse(encoded);
+    const formatted = parsed.slice(2).reduce((accumulator, e) => {
+        accumulator[e[0]] = decompressValues(e[0], e[1], types$1);
+        return accumulator;
+    }, {});
+
+    const rootPointerKey = parsed[0];
+
     const store = {
         _compat: options.compat,
         _types: types$1,
-        _encoded: JSON.parse(encoded).reduce((accumulator, e) => {
-            accumulator[e[0]] = e[1];
-            return accumulator;
-        }, {}),
+        _encoded: formatted,
         _decoded: {},
         _explore: [],
     };
-
-    const rootPointerKey = store._encoded.r;
 
     // Simple pointer, return value
     if (types$1[rootPointerKey]) {

@@ -63,26 +63,12 @@ if (typeof Int8Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            I1: [
-                [
-                    [
-                        'Nu0',
-                    ],
-                    [
-                        'St0',
-                    ],
-                    [
-                        'fa',
-                    ],
-                ],
-            ],
-            Nu: [
-                '1',
-            ],
-            St: [
+            IE: 'N0 S0 F0',
+            N: '1',
+            S: [
                 'a',
             ],
-            r: 'I10',
+            r: 'IE0',
         });
     });
 }

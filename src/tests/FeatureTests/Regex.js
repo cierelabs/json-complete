@@ -84,29 +84,13 @@ test('Regex: Encoding Expected', (t) => {
     source.b = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        Re: [
-            [
-                [
-                    'St0',
-                    'St1',
-                    'Nu0',
-                ],
-                [
-                    'St2',
-                ],
-                [
-                    'fa',
-                ],
-            ],
-        ],
-        Nu: [
-            '0',
-        ],
-        St: [
+        R: 'S0S1N0 S2 F0',
+        N: '0',
+        S: [
             '\\s+',
             'g',
             'b',
         ],
-        r: 'Re0',
+        r: 'R0',
     });
 });

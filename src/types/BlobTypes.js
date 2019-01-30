@@ -7,6 +7,7 @@ import extractPointer from '/utils/extractPointer.js';
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             // Skip the decoding of the main value for now
             return encodeWithAttachments([[void 0].concat(propertiesKeys.map((property) => {
@@ -42,7 +43,7 @@ export default (typeObj) => {
     // Supported back to IE10
     /* istanbul ignore if */
     if (typeof Blob === 'function') {
-        typeObj.Bl = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
+        typeObj.Y = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
             return new Blob(buffer, {
                 type: decodePointer(store, dataArray[1]),
             });
@@ -52,7 +53,7 @@ export default (typeObj) => {
     // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
     /* istanbul ignore if */
     if (typeof File === 'function') {
-        typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
+        typeObj.Z = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
             try {
                 return new File(buffer, decodePointer(store, dataArray[2]), {
                     type: decodePointer(store, dataArray[1]),
