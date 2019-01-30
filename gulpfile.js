@@ -47,6 +47,7 @@ function onError(e) {
 
 const babelModern = (stream) => {
     stream = stream.pipe(gulpBabel({
+        sourceType: 'script', // Prevents adding of strict mode automatically, which can break some require declarations
         presets: [
             ['@babel/env', {
                 targets: {
@@ -166,6 +167,10 @@ gulp.task('test-browser-js-tests', () => {
             'babel-plugin-transform-esm-to-cjs',
         ],
     });
+
+    // Forces older v4 version of Buffer to be used
+    // https://github.com/browserify/browserify/pull/1678
+    b.require(require.resolve('buffer/'), { expose: 'buffer' });
 
     let stream = b.bundle();
     stream = stream.on('error', onError);
