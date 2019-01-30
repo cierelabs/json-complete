@@ -32,5 +32,5 @@ if (typeof Blob === 'function' && typeof Map === 'function') {
     });
 }
 else {
-    console.warn('Tests for Deferred Types Inside Keyed Collection skipped because both Blob and Map are not supported in the current environment.'); // eslint-disable-line no-console
+    console.warn('Tests for Deferred Types Inside Keyed Collection skipped because either Blob or Map is not supported in the current environment.'); // eslint-disable-line no-console
 }
