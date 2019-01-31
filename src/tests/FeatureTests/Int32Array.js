@@ -71,5 +71,5 @@ if (typeof Int32Array === 'function') {
     });
 }
 else {
-    console.warn('Tests for Int32Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Int32Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

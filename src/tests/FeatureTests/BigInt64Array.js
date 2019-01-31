@@ -71,5 +71,5 @@ if (typeof BigInt64Array === 'function') {
     });
 }
 else {
-    console.warn('Tests for BigInt64Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for BigInt64Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

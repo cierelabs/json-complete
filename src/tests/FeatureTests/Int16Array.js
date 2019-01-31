@@ -71,5 +71,5 @@ if (typeof Int16Array === 'function') {
     });
 }
 else {
-    console.warn('Tests for Int16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Int16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

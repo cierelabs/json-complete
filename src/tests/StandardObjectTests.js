@@ -52,9 +52,6 @@ module.exports = (name, expectedSystemName, generater, compatMode) => {
             }, options);
         });
     }
-    else {
-        console.warn(`Test for ${name} Arbitrary Attachment Data with Symbol Key skipped because Symbols are not supported in the current environment.`); // eslint-disable-line no-console
-    }
 
     test(`${name}: Self-Containment`, (t) => {
         t.plan(1);

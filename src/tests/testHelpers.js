@@ -131,7 +131,16 @@ const mapSupportsDistinctNegativeZeroKeys = () => {
 
 const regexSupportsSticky = () => {
     try {
-        const value = /abc. /y;
+        const value = new RegExp('a', 'y');
+        return typeof value.source === 'string';
+    } catch(e) {
+        return false;
+    }
+};
+
+const regexSupportsUnicode = () => {
+    try {
+        const value = new RegExp('a', 'u');
         return typeof value.source === 'string';
     } catch(e) {
         return false;
@@ -161,5 +170,6 @@ module.exports = {
     setSupportsDistinctNegativeZero: setSupportsDistinctNegativeZero,
     mapSupportsDistinctNegativeZeroKeys: mapSupportsDistinctNegativeZeroKeys,
     regexSupportsSticky: regexSupportsSticky,
+    regexSupportsUnicode: regexSupportsUnicode,
     getAllKeys: getAllKeys,
 };

@@ -54,17 +54,18 @@ if (testHelpers.regexSupportsSticky()) {
 
 // Decoding sticky encoded RegExp objects should either be an error, or graceful in compat mode
 if (!testHelpers.regexSupportsSticky()) {
-    // encode(/abc./y);
-    const encodedSticky = '["R0","1.0.2",["R","S0S1N0"],["S",["abc.","y"]],["N","0"]]';
+    console.log('Regex: Extra tests for Unsupported Sticky RegExp Decoding tests were run because Sticky RegExp Flags are not supported in the current environment.'); // eslint-disable-line no-console
+
+    // encode(/abc/y);
+    const encodedSticky = '["R0","1.0.2",["R","S0S1N0"],["S",["abc","y"]],["N","0"]]';
 
     test('Regex: Sticky RegExp Decoding When Not Supported', (t) => {
         t.plan(2);
 
         try {
-            const decodedRegex = decode(encodedSticky);
-            const flags = decodedRegex.flags === void 0 ? decodedRegex.options : decodedRegex.flags;
-            t.notEqual(decodedRegex.source, 'abc.');
-            t.notEqual(flags, '');
+            decode(encodedSticky);
+            t.ok(false);
+            t.ok(false);
         } catch(e) {
             t.equal('Cannot decode recognized pointer type "R".', e.message);
             t.ok(true);
@@ -79,7 +80,44 @@ if (!testHelpers.regexSupportsSticky()) {
                 compat: true,
             });
             const flags = decodedRegex.flags === void 0 ? decodedRegex.options : decodedRegex.flags;
-            t.equal(decodedRegex.source, 'abc.');
+            t.equal(decodedRegex.source, 'abc');
+            t.equal(flags, '');
+        } catch(e) {
+            t.ok(false);
+            t.ok(false);
+        }
+    });
+}
+
+// Decoding unicode encoded RegExp objects should either be an error, or graceful in compat mode
+if (!testHelpers.regexSupportsUnicode()) {
+    console.log('Regex: Extra tests for Unsupported Unicode RegExp Decoding tests were run because Unicode RegExp Flags are not supported in the current environment.'); // eslint-disable-line no-console
+
+    // encode(/abc/u);
+    const encodedUnicode = '["R0","1.0.2",["R","S0S1N0"],["S",["abc","u"]],["N","0"]]';
+
+    test('Regex: Unicode RegExp Decoding When Not Supported', (t) => {
+        t.plan(2);
+
+        try {
+            decode(encodedUnicode);
+            t.ok(false);
+            t.ok(false);
+        } catch(e) {
+            t.equal('Cannot decode recognized pointer type "R".', e.message);
+            t.ok(true);
+        }
+    });
+
+    test('Regex: Unicode RegExp Decoding When Not Supported in Compat Mode', (t) => {
+        t.plan(2);
+
+        try {
+            const decodedRegex = decode(encodedUnicode, {
+                compat: true,
+            });
+            const flags = decodedRegex.flags === void 0 ? decodedRegex.options : decodedRegex.flags;
+            t.equal(decodedRegex.source, 'abc');
             t.equal(flags, '');
         } catch(e) {
             t.ok(false);

@@ -73,5 +73,5 @@ if (typeof Int8Array === 'function') {
     });
 }
 else {
-    console.warn('Tests for Int8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Int8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

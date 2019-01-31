@@ -69,5 +69,5 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Object Symbol Keys skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Object Symbol Keys skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
 }

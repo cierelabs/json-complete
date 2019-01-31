@@ -405,7 +405,7 @@ The table below illustrates the primary feature support differences on various p
 
 | Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 | IE9 |                                                |
 |:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
-| 727         | 671         | 659          | 659         | 634       | 507   | 424  | 261 | Tests Runnable                                 |
+| 727         | 671         | 659          | 659         | 634       | 511   | 428  | 265 | Tests Runnable                                 |
 | ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | undefined                                      |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | null                                           |

@@ -23,10 +23,9 @@ if (typeof Symbol === 'function') {
         globalThis.Symbol = void 0;
 
         try {
-            const decoded = decode(encodedSymbolKeyObject, {
-                compat: false,
+            decode(encodedSymbolKeyObject, {
+                compat: false
             });
-            console.log(decoded); // eslint-disable-line no-console
             t.ok(false);
         } catch (e) {
             t.equal(e.message, 'Cannot decode recognized pointer type "P".');

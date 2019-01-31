@@ -29,5 +29,5 @@ if (typeof WeakMap === 'function') {
     }, true);
 }
 else {
-    console.warn('Tests for WeakMap type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for WeakMap type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }
