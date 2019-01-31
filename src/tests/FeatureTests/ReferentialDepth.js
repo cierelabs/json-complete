@@ -66,7 +66,7 @@ if (typeof Set === 'function' && typeof Map === 'function') {
     });
 }
 else {
-    console.warn('"Referential Depth: Deep Reference Mixing Stress Test" was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Referential Depth: Deep Reference Mixing Stress Test was skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
 test('Referential Depth: Extreme Array Depth Stress Test', (t) => {

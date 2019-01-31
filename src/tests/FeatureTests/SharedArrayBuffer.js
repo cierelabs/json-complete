@@ -107,5 +107,5 @@ if (typeof SharedArrayBuffer === 'function') {
     });
 }
 else {
-    console.warn('Tests for SharedArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for SharedArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

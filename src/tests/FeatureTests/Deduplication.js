@@ -33,7 +33,7 @@ if (typeof BigInt === 'function') {
     });
 }
 else {
-    console.warn('Tests for BigInt Deduplication skipped because BigInt is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for BigInt Deduplication skipped because BigInt is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
 if (typeof Symbol === 'function') {
@@ -51,7 +51,7 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Symbol Deduplication skipped because Symbol is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Symbol Deduplication skipped because Symbol is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
 test('Deduplication: Objects', (t) => {

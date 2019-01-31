@@ -102,5 +102,5 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Built-In Symbols skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Built-In Symbols skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
 }

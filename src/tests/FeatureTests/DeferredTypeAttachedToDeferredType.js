@@ -32,5 +32,5 @@ if (typeof Blob === 'function') {
     });
 }
 else {
-    console.warn('Tests for Deferred Type Attached To Deferred Type skipped because Blob type is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Deferred Type Attached To Deferred Type skipped because Blob type is not supported in the current environment.'); // eslint-disable-line no-console
 }

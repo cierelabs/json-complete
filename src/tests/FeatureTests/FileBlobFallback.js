@@ -36,7 +36,7 @@ if (typeof Blob === 'function') {
         };
 
         try {
-            const decoded = decode(encodedFileInArray); // eslint-disable-line
+            decode(encodedFileInArray);
             t.ok(false);
         } catch (e) {
             t.equal(e.message, 'Cannot decode recognized pointer type "Z".');
@@ -81,5 +81,5 @@ if (typeof Blob === 'function') {
     });
 }
 else {
-    console.warn('Tests for File Blob Fallback skipped because Blobs are not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for File Blob Fallback skipped because Blobs are not supported in the current environment.'); // eslint-disable-line no-console
 }

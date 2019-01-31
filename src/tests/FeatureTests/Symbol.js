@@ -80,5 +80,5 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Symbol type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Symbol type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

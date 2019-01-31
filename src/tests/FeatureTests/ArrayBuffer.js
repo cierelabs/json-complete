@@ -91,5 +91,5 @@ if (typeof ArrayBuffer === 'function') {
     });
 }
 else {
-    console.warn('Tests for ArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for ArrayBuffer type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

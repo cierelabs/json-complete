@@ -60,5 +60,5 @@ if (typeof BigInt === 'function') {
     });
 }
 else {
-    console.warn('Tests for BigInt type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for BigInt type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

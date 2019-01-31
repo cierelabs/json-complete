@@ -71,5 +71,5 @@ if (typeof Uint16Array === 'function') {
     });
 }
 else {
-    console.warn('Tests for Uint16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Uint16Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

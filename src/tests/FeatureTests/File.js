@@ -188,5 +188,5 @@ if (typeof File === 'function' && supportsFileCreation()) {
     });
 }
 else {
-    console.warn('Tests for File type skipped because the File type or the File Constructor is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for File type skipped because the File type or the File Constructor is not supported in the current environment.'); // eslint-disable-line no-console
 }
