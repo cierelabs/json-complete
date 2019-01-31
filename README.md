@@ -401,26 +401,53 @@ In an extremely rare edge case, which should be avoided, built-in Symbols can be
 
 ## Platform Support
 
-The table below illustrates the primary feature support differences on various platforms. Below that, more detailed explainations of specific limitations, beyond simply not supporting a type, are explained. If a Type or Feature is not listed, that means it is supported by all tested platforms.
+The table below illustrates the primary feature support differences on various platforms. Below that, more detailed explainations of specific limitations, beyond simply not supporting a type, are explained.
 
-| Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 |                              |
-|:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|------------------------------|
-| 727         | 671         | 659          | 659         | 634       | 507   | 424  | Tests Runnable               |
-| ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | Faster Reference Encoder     |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigInt                       |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigInt64Array                |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | BigUint64Array               |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | SharedArrayBuffer            |
-| ✅           | ❌           | ✅            | ✅           | ✅         | ✅     | ✅    | Blob                         |
-| ✅           | ❌           | ✅            | ✅           | ⚠ `1`     | ⚠ `1` | ⚠ `1` | File                        |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Regex Sticky Flag            |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Regex Unicode Flag           |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | Symbol                       |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | WeakSet Tests                |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Set                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Map                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | Uint8ClampedArray            |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | WeakMap Tests                |
+| Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 | IE9 |                                                |
+|:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
+| 727         | 671         | 659          | 659         | 634       | 507   | 424  | 261 | Tests Runnable                                 |
+| ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | undefined                                      |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | null                                           |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Booleans                                       |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Booleans: Object-Wrapped                       |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Numbers: Normal                                |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: NaN                                    |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: -Infinity                              |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: Infinity                               |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: -0                                     |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Numbers: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings                                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Regex                                          |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Sticky Flag                              |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Unicode Flag                             |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates                                          |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Symbol                                         |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Objects                                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Arrays                                         |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Arguments Object                               |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | ArrayBuffer                                    |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | SharedArrayBuffer                              |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int8Array                                      |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint8Array                                     |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Uint8ClampedArray                              |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int16Array                                     |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint16Array                                    |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int32Array                                     |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint32Array                                    |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Float32Array                                   |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Float64Array                                   |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Set                                            |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Map                                            |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | WeakSet Tests                                  |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | WeakMap Tests                                  |
+| ✅           | ❌           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Blob                                           |
+| ✅           | ❌           | ✅            | ✅           | ⚠ `1`     | ⚠ `1` | ⚠ `1` | ❌   | File                                          |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigInt                                         |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigInt64Array                                  |
+| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigUint64Array                                 |
 
 * `1` - Cannot construct a native File type. In compat mode, encoded File objects will be decoded as duck-typed Blobs.
 
@@ -453,7 +480,8 @@ The table below illustrates the primary feature support differences on various p
 
 #### Internet Explorer 9 Limitations
 
-Not yet supported.
+* **Slower Reference Encoder** - IE10 does not support Map, so it falls back to a slower, list-based implementation.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 8 Limitations
@@ -552,6 +580,7 @@ Not yet supported.
 - [x] Explore String compressed form for internal arrays.
 - [x] Support IE11
 - [x] Support IE10
+- [x] Support IE9
 
 
 ## Future Plans
@@ -559,7 +588,7 @@ Not yet supported.
 - [ ] Write script that will convert 2.0.0 data to 1.0.0 data.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
-- [ ] Support IE9
+- [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey.
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
 - [ ] Support IE8 with legacy version
 - [ ] Support IE7 with legacy version
