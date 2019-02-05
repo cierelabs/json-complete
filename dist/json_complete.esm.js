@@ -903,7 +903,7 @@ const encodeAll = (store, resumeFromIndex) => {
 
 const prepOutput = (store, root) => {
     // Convert the output object form to an output array form
-    const output = JSON.stringify([root, '1.0.2'].concat(Object.keys(store._output).map((key) => {
+    const output = JSON.stringify([root, '2.0.0'].concat(Object.keys(store._output).map((key) => {
         return [key, compressValues(key, store._output[key], store._types)];
     })));
 

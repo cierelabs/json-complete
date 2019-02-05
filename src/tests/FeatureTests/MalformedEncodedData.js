@@ -9,7 +9,7 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
 
     const malformedEncoded = JSON.stringify([
         'R0',
-        '1.0.2',
+        '2.0.0',
         [
             'R', 'S0S1N0',
         ],

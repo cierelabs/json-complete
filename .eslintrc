@@ -12,7 +12,9 @@
     },
     "globals": {
         "SharedArrayBuffer": true,
-        "BigInt": true
+        "BigInt": true,
+        "BigInt64Array": true,
+        "BigUint64Array": true
     },
     "rules": {
         "indent": [
