@@ -340,7 +340,7 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 ## Tests
 
-There are currently 727 tests, constituting 100% code coverage when tested across all platforms. Some codepath branches may not be testable on a given platform, however.
+There are currently over 730 tests, with some tests and branches only applying to some platforms. All code paths should be covered by at least one test.
 
 Only Google Chrome is currently able to run all of the primary tests due to differences in Type support across various browser and Node platforms.
 
@@ -351,6 +351,8 @@ The library and all its supportable tests have been tested on:
 * Safari (12)
 * Edge (17)
 * Internet Explorer 11
+* Internet Explorer 10
+* Internet Explorer 9
 * Node (11.4.0)
 
 
@@ -405,7 +407,7 @@ The table below illustrates the primary feature support differences on various p
 
 | Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 | IE9 |                                                |
 |:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
-| 734         | 678         | 665          | 665         | 634       | 511   | 428  | 265 | Tests Runnable                                 |
+| 734         | 678         | 665          | 665         | 640       | 517   | 434  | 271 | Tests Runnable                                 |
 | ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | undefined                                      |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | null                                           |
@@ -582,11 +584,10 @@ Not yet supported.
 - [x] Support IE11
 - [x] Support IE10
 - [x] Support IE9
+- [x] Write script that will convert between different data versions.
 
 
 ## Future Plans
-- [ ] Write script that will convert 1.0.0 data to 2.0.0 data.
-- [ ] Write script that will convert 2.0.0 data to 1.0.0 data.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
 - [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey.
