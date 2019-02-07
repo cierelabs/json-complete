@@ -591,6 +591,7 @@ Not yet supported.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
 - [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey.
+- [ ] Explore simple numerical compression for Number and BigInt types (Base91 encoding for '0-9', '.', 'e', '-', '+')
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
 - [ ] Support IE8 with legacy version
 - [ ] Support IE7 with legacy version
