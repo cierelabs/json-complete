@@ -62,7 +62,7 @@ input.circular = input;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","2.0.0",["O","S0S1S2S3S4 N0_0O0C0U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["_","81129638414606663681390495662081"],["U","N0N1N2"]]
+// ["O0","2",["O","S0S1S2S3S4 N0_0O0C0U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["_","81129638414606663681390495662081"],["U","N0N1N2"]]
 
 console.log(jsonComplete.decode(encoded));
 // Exact same structure and value as input
@@ -79,7 +79,7 @@ var input = false;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["F","2.0.0"]
+// ["F","2"]
 
 console.log(jsonComplete.decode(encoded));
 // false
@@ -101,7 +101,7 @@ var encodedWithSymbolKeys = jsonComplete.encode(input, {
     encodeSymbolKeys: true,
 });
 console.log(encodedWithSymbolKeys);
-// ["O0","2.0.0",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
+// ["O0","2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
 
 var decodeWithSymbolKeys = jsonComplete.decode(encodedWithSymbolKeys);
 console.log(decodeWithSymbolKeys);
@@ -109,7 +109,7 @@ console.log(decodeWithSymbolKeys);
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","2.0.0",["O","S0 N0"],["S",["a"]],["N","1"]]
+// ["O0","2",["O","S0 N0"],["S",["a"]],["N","1"]]
 
 console.log(jsonComplete.decode(encoded));
 // {a: 1}
@@ -129,7 +129,7 @@ var encoded = jsonComplete.encode(badIdea, {
     compat: true,
 });
 console.log(encoded);
-// ["O0","2.0.0",["O","S0 F0"],["S",["a"]]]
+// ["O0","2",["O","S0 F0"],["S",["a"]]]
 // Because compat mode was used, the Math object is encoded as an empty object
 
 console.log(jsonComplete.decode(encoded));
@@ -148,7 +148,7 @@ var input = [new Blob(['data'], { type: 'application/json' }), 1];
 var encoded = jsonComplete.encode(input, {
     onFinish: function(encoded) {
         console.log(encoded);
-        // ["A0","2.0.0",["A","Y0N0"],["Y","$0S0"],["N","1,100,97,116"],["S",["application/json"]],["$","N1N2N3N2"]]
+        // ["A0","2",["A","Y0N0"],["Y","$0S0"],["N","1,100,97,116"],["S",["application/json"]],["$","N1N2N3N2"]]
 
         console.log(jsonComplete.decode(encoded));
         // [(BLOB: content is "data", type is "application/json"), 1]
@@ -169,7 +169,7 @@ var encoded = jsonComplete.encode(input, {
     compat: true,
 });
 console.log(encoded);
-// ["A0","2.0.0",["A","Y0N0"],["Y","K0S0"],["N","1"],["S",["application/json"]]]
+// ["A0","2",["A","Y0N0"],["Y","K0S0"],["N","1"],["S",["application/json"]]]
 // [(BLOB: content is empty, type is "application/json"), 1]
 ```
 
@@ -332,10 +332,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8810 bytes | 9959 bytes |
-| gzip        | 3469 bytes | 3469 bytes |
-| zopfli      | 3394 bytes | 3398 bytes |
-| brotli      | 3135 bytes | 3135 bytes |
+| Minified    | 8806 bytes | 9955 bytes |
+| gzip        | 3466 bytes | 3465 bytes |
+| zopfli      | 3391 bytes | 3395 bytes |
+| brotli      | 3132 bytes | 3135 bytes |
 
 
 ## Tests

@@ -8,7 +8,7 @@ test('Unknown Pointer Key: Inner Data', (t) => {
 
     const innerData = JSON.stringify([
         'Q0',
-        '2.0.0',
+        '2',
         ['Q', 'NOTUSED0'],
         ['NOTUSED', ['a']],
     ]);
@@ -23,7 +23,7 @@ test('Unknown Pointer Key: Root Value', (t) => {
 
     const valueData = JSON.stringify([
         'NOTUSED0',
-        '2.0.0',
+        '2',
         ['NOTUSED', ['a']],
     ]);
 
@@ -37,7 +37,7 @@ test('Unknown Pointer Key: Key Data', (t) => {
 
     const objectKeyData = JSON.stringify([
         'O0',
-        '2.0.0',
+        '2',
         ['O', 'NOTUSED0 S0'],
         ['S', ['1']],
         ['NOTUSED', ['a']],
@@ -56,7 +56,7 @@ test('Unknown Pointer Key: Non-Compat Mode', (t) => {
 
     const innerData = JSON.stringify([
         'Q0',
-        '2.0.0',
+        '2',
         ['Q', 'NOTUSED0'],
         ['NOTUSED', ['a']],
     ]);
@@ -76,7 +76,7 @@ test('Unknown Pointer Key: Root Value Non-Compat Mode', (t) => {
 
     const valueData = JSON.stringify([
         'NOTUSED0',
-        '2.0.0',
+        '2',
         ['NOTUSED', ['a']],
     ]);
 
