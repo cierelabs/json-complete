@@ -134,7 +134,7 @@ if (typeof Set === 'function') {
         source.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            U: 'T0 S0 F0',
+            U: '$2 S0 $3',
             S: [
                 'b',
             ],

@@ -1,12 +1,12 @@
 import compressValues from '/utils/compression/compressValues.js';
-import findItemKey from '/utils/getItemKey.js';
+import getItemKey from '/utils/getItemKey.js';
 import genReferenceTracker from '/utils/genReferenceTracker.js';
 import getAttachments from '/utils/getAttachments.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
 
 const getPointerKey = (store, item) => {
-    const pointerKey = findItemKey(store, item);
+    const pointerKey = getItemKey(store, item);
 
     if (!pointerKey && !store._compat) {
         const type = getSystemName(item);
@@ -84,7 +84,7 @@ const encodeAll = (store, resumeFromIndex) => {
 
 const prepOutput = (store, root) => {
     // Convert the output object form to an output array form
-    const output = JSON.stringify([root, '2'].concat(Object.keys(store._output).map((key) => {
+    const output = JSON.stringify([`${root},2`].concat(Object.keys(store._output).map((key) => {
         return [key, compressValues(key, store._output[key], store._types)];
     })));
 
@@ -99,17 +99,21 @@ const prepOutput = (store, root) => {
 export default (value, options) => {
     options = options || {};
 
+    let simpleTypes = [];
     let typeMap = {};
     let wrappedTypeMap = {};
 
     Object.keys(types).forEach((key) => {
-        const systemName = types[key]._systemName;
-
-        if (systemName) {
-            typeMap[systemName] = key;
+        if (key[0] === '$') {
+            simpleTypes.push([types[key]._identify, key]);
+            return;
         }
 
-        if ((systemName || '')[0] === '_') {
+        const systemName = types[key]._systemName;
+
+        typeMap[systemName] = key;
+
+        if (systemName[0] === '_') {
             wrappedTypeMap[systemName.slice(1)] = systemName;
         }
     });
@@ -118,6 +122,7 @@ export default (value, options) => {
         _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
+        _simpleTypes: simpleTypes,
         _types: types,
         _typeMap: typeMap,
         _wrappedTypeMap: wrappedTypeMap,

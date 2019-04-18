@@ -28,8 +28,8 @@ if (typeof BigInt === 'function') {
 
         const encoded = testHelpers.simplifyEncoded(encode([BigInt(1), BigInt(2), BigInt(1), BigInt(0), BigInt(-1), BigInt(0)]));
 
-        t.equal(encoded._.split(',').length, 4);
-        t.deepEqual(encoded._.split(','), ['1', '2', '0', '-1']);
+        t.equal(encoded.I.split(',').length, 4);
+        t.deepEqual(encoded.I.split(','), ['1', '2', '0', '-1']);
     });
 }
 else {

@@ -20,7 +20,7 @@ export default (typeObj) => {
 
     /* istanbul ignore else */
     if (typeof Uint8Array === 'function') {
-        typeObj.$ = genTypedArray(Uint8Array);
+        typeObj.UE = genTypedArray(Uint8Array);
     }
 
     /* istanbul ignore else */

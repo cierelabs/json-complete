@@ -61,12 +61,12 @@ if (typeof Uint8Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            $: 'N0 S0 F0',
+            UE: 'N0 S0 $3',
             N: '1',
             S: [
                 'a',
             ],
-            r: '$0',
+            r: 'UE0',
         });
     });
 }

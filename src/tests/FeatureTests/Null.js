@@ -21,6 +21,6 @@ test('Null: Encoding Expected', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(null)), {
-        r: 'L',
+        r: '$1',
     });
 });

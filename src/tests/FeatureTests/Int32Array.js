@@ -61,7 +61,7 @@ if (typeof Int32Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            IT: 'N0 S0 F0',
+            IT: 'N0 S0 $3',
             N: '1',
             S: [
                 'a',

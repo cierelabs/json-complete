@@ -1,5 +1,8 @@
+// Custom Base64 Alphabet
+var alphabet = "0123456789abcdefghijklmnopqrstuvwxyz!#%&'()*+-./:;<=>?@[]^_`{|}~"; // eslint-disable-line quotes
+
 var splitPointers = (pointerString) => {
-    return pointerString.split(/([A-Z$_]+)/);
+    return pointerString.split(/([A-Z$]+)/);
 };
 
 var extractPointer = (pointer) => {
@@ -10,12 +13,9 @@ var extractPointer = (pointer) => {
     };
 };
 
-var alphabet = '0123456789abcdefghijklmnopqrstuvwxyz!#%&\'()*+-./:;<=>?@[]^`{|}~';
-
-const radix = alphabet.length;
-
-var toBase63 = (number) => {
+var toBase = (number, alphabet) => {
     let result = '';
+    const radix = alphabet.length;
 
     do {
         result = alphabet[number % radix] + result;
@@ -36,12 +36,12 @@ var compressValues = (key, value, types) => {
         return value.join(',');
     }
 
-    // Convert all indices to Base63 notation, separate item parts with comma, and separate items with space
+    // Convert all indices to Base string notation, separate item parts with comma, and separate items with space
     return value.map((outerArray) => {
         return outerArray.map((innerArray) => {
             return innerArray.map((pointer) => {
                 const parts = extractPointer(pointer);
-                return parts._key + toBase63(parts._index);
+                return parts._key + toBase(parts._index, alphabet);
             }).join('');
         }).join(' ');
     }).join(',');
@@ -51,40 +51,11 @@ var getSystemName = (v) => {
     return Object.prototype.toString.call(v).slice(8, -1);
 };
 
-var findItemKey = (store, item) => {
-    if (item === void 0) {
-        return 'K';
-    }
-
-    if (item === null) {
-        return 'L';
-    }
-
-    if (item === true) {
-        return 'T';
-    }
-
-    if (item === false) {
-        return 'F';
-    }
-
-    if (typeof item === 'number') {
-        if (item === Infinity) {
-            return 'I';
-        }
-
-        if (item === -Infinity) {
-            return 'J';
-        }
-
-        // NaN
-        if (item !== item) {
-            return 'C';
-        }
-
-        // -0
-        if (item === 0 && (1 / item) === -Infinity) {
-            return 'M';
+var getItemKey = (store, item) => {
+    // Simple Types
+    for (let t = 0; t < store._simpleTypes.length; t += 1) {
+        if (store._simpleTypes[t][0](item)) {
+            return store._simpleTypes[t][1];
         }
     }
 
@@ -407,7 +378,7 @@ var genTypedArray = (type) => {
 var BigIntType = (typeObj) => {
     /* istanbul ignore else */
     if (typeof BigInt === 'function') {
-        typeObj._ = genPrimitive(BigInt, 1);
+        typeObj.I = genPrimitive(BigInt, 1);
     }
 
     /* istanbul ignore else */
@@ -690,15 +661,49 @@ var RegExpType = (typeObj) => {
     return typeObj;
 };
 
+const genIsEqual = (comparedTo) => {
+    return (value) => {
+        return value === comparedTo;
+    };
+};
+
 var SimpleTypes = (typeObj) => {
-    typeObj.K = { _value: void 0 };
-    typeObj.L = { _value: null };
-    typeObj.T = { _value: true };
-    typeObj.F = { _value: false };
-    typeObj.I = { _value: Infinity };
-    typeObj.J = { _value: -Infinity };
-    typeObj.C = { _value: NaN };
-    typeObj.M = { _value: -0 };
+    typeObj.$0 = {
+        _identify: genIsEqual(void 0),
+        _value: void 0,
+    };
+    typeObj.$1 = {
+        _identify: genIsEqual(null),
+        _value: null,
+    };
+    typeObj.$2 = {
+        _identify: genIsEqual(true),
+        _value: true,
+    };
+    typeObj.$3 = {
+        _identify: genIsEqual(false),
+        _value: false,
+    };
+    typeObj.$4 = {
+        _identify: genIsEqual(Infinity),
+        _value: Infinity,
+    };
+    typeObj.$5 = {
+        _identify: genIsEqual(-Infinity),
+        _value: -Infinity,
+    };
+    typeObj.$6 = {
+        _identify: (value) => {
+            return value !== value;
+        },
+        _value: NaN,
+    };
+    typeObj.$7 = {
+        _identify: (value) => {
+            return value === 0 && (1 / value) === -Infinity;
+        },
+        _value: -0,
+    };
 
     return typeObj;
 };
@@ -746,7 +751,7 @@ var TypedArrayTypes = (typeObj) => {
 
     /* istanbul ignore else */
     if (typeof Uint8Array === 'function') {
-        typeObj.$ = genTypedArray(Uint8Array);
+        typeObj.UE = genTypedArray(Uint8Array);
     }
 
     /* istanbul ignore else */
@@ -825,7 +830,7 @@ types = BigIntType(types);
 var types$1 = types;
 
 const getPointerKey = (store, item) => {
-    const pointerKey = findItemKey(store, item);
+    const pointerKey = getItemKey(store, item);
 
     if (!pointerKey && !store._compat) {
         const type = getSystemName(item);
@@ -903,7 +908,7 @@ const encodeAll = (store, resumeFromIndex) => {
 
 const prepOutput = (store, root) => {
     // Convert the output object form to an output array form
-    const output = JSON.stringify([root, '2'].concat(Object.keys(store._output).map((key) => {
+    const output = JSON.stringify([`${root},2`].concat(Object.keys(store._output).map((key) => {
         return [key, compressValues(key, store._output[key], store._types)];
     })));
 
@@ -918,17 +923,21 @@ const prepOutput = (store, root) => {
 var encode = (value, options) => {
     options = options || {};
 
+    let simpleTypes = [];
     let typeMap = {};
     let wrappedTypeMap = {};
 
     Object.keys(types$1).forEach((key) => {
-        const systemName = types$1[key]._systemName;
-
-        if (systemName) {
-            typeMap[systemName] = key;
+        if (key[0] === '$') {
+            simpleTypes.push([types$1[key]._identify, key]);
+            return;
         }
 
-        if ((systemName || '')[0] === '_') {
+        const systemName = types$1[key]._systemName;
+
+        typeMap[systemName] = key;
+
+        if (systemName[0] === '_') {
             wrappedTypeMap[systemName.slice(1)] = systemName;
         }
     });
@@ -937,6 +946,7 @@ var encode = (value, options) => {
         _compat: options.compat,
         _encodeSymbolKeys: options.encodeSymbolKeys,
         _onFinish: options.onFinish,
+        _simpleTypes: simpleTypes,
         _types: types$1,
         _typeMap: typeMap,
         _wrappedTypeMap: wrappedTypeMap,
@@ -985,11 +995,11 @@ var encode = (value, options) => {
     return prepOutput(store, rootPointerKey);
 };
 
-const radix$1 = alphabet.length;
+var fromBase = (numberString, alphabet) => {
+    const radix = alphabet.length;
 
-var fromBase63 = (base63) => {
-    return base63.split('').reduce((character, index) => {
-        return character * radix$1 + alphabet.indexOf(index);
+    return numberString.split('').reduce((character, index) => {
+        return character * radix + alphabet.indexOf(index);
     }, 0);
 };
 
@@ -1005,7 +1015,7 @@ var decompressValues = (key, value, types) => {
     }
 
     // Split items into Pointer data sets, and split Pointer data sets into individual Pointers
-    // Convert each pointer from Base63 indies, and account for simple types having no index
+    // Convert each pointer from Base string indices, and account for simple types having no index
     return value.split(',').map((valueItems) => {
         return valueItems.split(' ').map((pointerCombinedString) => {
             const parts = splitPointers(pointerCombinedString).slice(1);
@@ -1013,9 +1023,7 @@ var decompressValues = (key, value, types) => {
             const pointers = [];
             for (let p = 0; p < parts.length; p += 2) {
                 const key = parts[p];
-                const isSimple = types[key] && !types[key]._systemName;
-
-                pointers.push(isSimple ? key : key + fromBase63(parts[p + 1]));
+                pointers.push(key + fromBase(parts[p + 1], alphabet));
             }
             return pointers;
         });
@@ -1037,6 +1045,11 @@ const exploreParts = (store, parts) => {
 };
 
 const explorePointer = (store, pointer) => {
+    // If a simple pointer or an already explored pointer, ignore
+    if (types$1[pointer] || store._decoded[pointer] !== void 0) {
+        return;
+    }
+
     const p = extractPointer(pointer);
 
     // Unknown pointer type
@@ -1047,11 +1060,6 @@ const explorePointer = (store, pointer) => {
         }
 
         throw new Error(`Cannot decode unrecognized pointer type "${p._key}".`);
-    }
-
-    // If a simple pointer or an already explored pointer, ignore
-    if (types$1[pointer] || store._decoded[pointer] !== void 0) {
-        return;
     }
 
     store._decoded[pointer] = {
@@ -1082,12 +1090,12 @@ var decode = (encoded, options) => {
     options = options || {};
 
     const parsed = JSON.parse(encoded);
-    const formatted = parsed.slice(2).reduce((accumulator, e) => {
+    const formatted = parsed.slice(1).reduce((accumulator, e) => {
         accumulator[e[0]] = decompressValues(e[0], e[1], types$1);
         return accumulator;
     }, {});
 
-    const rootPointerKey = parsed[0];
+    const rootPointerKey = parsed[0].split(',')[0];
 
     const store = {
         _compat: options.compat,
