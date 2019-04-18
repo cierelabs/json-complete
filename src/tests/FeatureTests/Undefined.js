@@ -21,6 +21,6 @@ test('Undefined: Encoding Expected', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(void 0)), {
-        r: 'K',
+        r: '$0',
     });
 });

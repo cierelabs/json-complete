@@ -1,39 +1,41 @@
-## Pointers
+# Pointers
 
 Each Pointer is a reference to something else in the data. It is made of two parts: the Key (type) and the Index where that type is in the data.
 
-### Key (type)
+## Key (type)
 
-The Key is a string that defines which type is used. It is encoded as one or more capital letters (A-Z), an underscore (_), or a dollar sign ($). Underscore and dollar sign can be used as object keys in JS, which is why they are used in addition to capital letters. The type layout is as follows.
+The Key is a string that defines which type is used. It is encoded as one or more capital letters (A-Z), as well as dollar ($) for Simple Types.
+
+Any number of letters can be used to refer to the type, but most single characters are reserved as follows:
 
 * A - Array
 * B - Wrapped Boolean
-* C - NaN
+* C - RESERVED FOR FUTURE USE
 * D - Date
 * E - Error
-* F - false
+* F - RESERVED FOR FUTURE USE
 * G - Wrapped String
 * H - Wrapped Number
-* I - Infinity
-* J - -Infinity
-* K - undefined
-* L - null
-* M - -0
+* I - BigInt
+* J - RESERVED FOR FUTURE USE
+* K - RESERVED FOR FUTURE USE
+* L - RESERVED FOR FUTURE USE
+* M - RESERVED FOR FUTURE USE
 * N - Number
 * O - Object
 * P - Symbol
 * Q - Arguments
 * R - Regexp
 * S - String
-* T - true
+* T - RESERVED FOR FUTURE USE
 * U - Set
 * V - Map
 * W - ArrayBuffer
 * X - SharedArrayBuffer
 * Y - Blob
 * Z - File
-* _ - BigInt
-* $ - Uint8Array
+* I - BigInt
+* UE - Uint8Array
 * UC - Uint8ClampedArray
 * US - Uint16Array
 * UT - Uint32Array
@@ -45,19 +47,39 @@ The Key is a string that defines which type is used. It is encoded as one or mor
 * BI - BigInt64Array
 * BU - BigUint64Array
 
-### Index
+* **All other sequences that start with a capital letter (not $), are RESERVED FOR FUTURE USE.**
 
-The index is a number, stored in Base63, which uses the digits (0-9), lowercase letters (a-z), and several standard punctuation characters.
+
+### Simple Type Keys
+
+Some types are unique value types or special case numbers. These are encoded separately using an underscore for the overall type and a digit to indicate which one. Future Simple Types may use higher digits. Future Simple Types may also be made user-definable.
+
+* $0 - `undefined`
+* $1 - `null`
+* $2 - `true`
+* $3 - `false`
+* $4 - `Infinity`
+* $5 - `-Infinity`
+* $6 - `NaN`
+* $7 - `-0`
+
+
+
+## Index
+
+The index is a number, stored in a custom Base64 form, which uses the digits (0-9), lowercase letters (a-z), and several standard punctuation characters:
 
 ```
-!#%&'()*+-./:;<=>?@[]^`{|}~
+!#%&'()*+-./:;<=>?@[]^_`{|}~
 ```
 
-The encoding to Base63 was adapted from [here](https://stackoverflow.com/a/47896183).
+This results in the first 64 indices of a given Type will only use a single digit to store the index, rather than 2. This cost savings adds up the more Pointers are used. The encoding to Base64 was adapted from [here](https://stackoverflow.com/a/47896183).
 
-### Combination
 
-Using the above encoding of Keys and Indices, Pointers are effectively stored using Base91 encoding.
+
+## Combination
+
+Using the above encoding of Keys and Indices, Pointers are stored very efficiently.
 
 The characters backslash (\), double quote ("), comma (,), and space ( ) are not used in either the Key or the Index portion. Double quotes signify the boundaries of a JSON string component, and to use them as a value would require escaping, adding an extra character. Backslash would also require an extra escape character. These values are therefore avoided to keep the encoded size down to single characters as much as possible.
 

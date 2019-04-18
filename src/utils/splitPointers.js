@@ -1,3 +1,3 @@
 export default (pointerString) => {
-    return pointerString.split(/([A-Z$_]+)/);
+    return pointerString.split(/([A-Z$]+)/);
 };

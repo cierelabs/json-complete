@@ -61,7 +61,7 @@ if (typeof Uint16Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            US: 'N0 S0 F0',
+            US: 'N0 S0 $3',
             N: '1',
             S: [
                 'a',

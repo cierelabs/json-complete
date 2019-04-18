@@ -18,6 +18,11 @@ const exploreParts = (store, parts) => {
 };
 
 const explorePointer = (store, pointer) => {
+    // If a simple pointer or an already explored pointer, ignore
+    if (types[pointer] || store._decoded[pointer] !== void 0) {
+        return;
+    }
+
     const p = extractPointer(pointer);
 
     // Unknown pointer type
@@ -28,11 +33,6 @@ const explorePointer = (store, pointer) => {
         }
 
         throw new Error(`Cannot decode unrecognized pointer type "${p._key}".`);
-    }
-
-    // If a simple pointer or an already explored pointer, ignore
-    if (types[pointer] || store._decoded[pointer] !== void 0) {
-        return;
     }
 
     store._decoded[pointer] = {
@@ -63,12 +63,12 @@ export default (encoded, options) => {
     options = options || {};
 
     const parsed = JSON.parse(encoded);
-    const formatted = parsed.slice(2).reduce((accumulator, e) => {
+    const formatted = parsed.slice(1).reduce((accumulator, e) => {
         accumulator[e[0]] = decompressValues(e[0], e[1], types);
         return accumulator;
     }, {});
 
-    const rootPointerKey = parsed[0];
+    const rootPointerKey = parsed[0].split(',')[0];
 
     const store = {
         _compat: options.compat,

@@ -136,7 +136,7 @@ test('Array: Encoding Expected', (t) => {
     arr.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(arr)), {
-        A: 'T0 S0 F0',
+        A: '$2 S0 $3',
         S: [
             'a',
         ],

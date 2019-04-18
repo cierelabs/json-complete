@@ -63,7 +63,7 @@ if (typeof Int8Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            IE: 'N0 S0 F0',
+            IE: 'N0 S0 $3',
             N: '1',
             S: [
                 'a',

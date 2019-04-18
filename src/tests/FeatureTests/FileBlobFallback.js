@@ -10,8 +10,8 @@ const encodedFileInArray = JSON.stringify([
     'A0',
     '2',
     ['A','Z0'],
-    ['Z', '$0S0S1N0'],
-    ['$', 'N1'],
+    ['Z', 'UE0S0S1N0'],
+    ['UE', 'N1'],
     [
         'S',
         [

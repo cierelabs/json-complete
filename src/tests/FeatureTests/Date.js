@@ -40,7 +40,7 @@ test('Date: Encoding Expected', (t) => {
     date.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
-        D: 'N0 S0 F0',
+        D: 'N0 S0 $3',
         S: [
             'a',
         ],
