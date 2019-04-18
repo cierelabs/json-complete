@@ -8,7 +8,7 @@ const time = 1522558801000;
 
 const encodedFileInArray = JSON.stringify([
     'A0',
-    '2.0.0',
+    '2',
     ['A','Z0'],
     ['Z', '$0S0S1N0'],
     ['$', 'N1'],
