@@ -27,6 +27,7 @@ require('/tests/FeatureTests/MalformedEncodedData.js');
 require('/tests/FeatureTests/Map.js');
 require('/tests/FeatureTests/Null.js');
 require('/tests/FeatureTests/Number.js');
+require('/tests/FeatureTests/NumberCompression.js');
 require('/tests/FeatureTests/Object.js');
 require('/tests/FeatureTests/ObjectSymbolKeys.js');
 require('/tests/FeatureTests/ObjectWrappedBoolean.js');

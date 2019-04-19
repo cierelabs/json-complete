@@ -13,6 +13,9 @@ var extractPointer = (pointer) => {
     };
 };
 
+// First character is empty to account for "empty" data in the encoded form
+var numberEncoding = ' 1234567890.-e+,';
+
 var toBase = (number, alphabet) => {
     let result = '';
     const radix = alphabet.length;
@@ -31,9 +34,36 @@ var compressValues = (key, value, types) => {
         return value;
     }
 
-    // Join Numbers and BigInts using comma, strings need to stay in Array form
+    // Join Numbers and BigInts using comma, then compress the string taking into account that Numbers and BigInts can only use up to 14 characters as strings (0-9, ., -, +, e) plus the comma separator
     if (types[key]._compressionType === 1) {
-        return value.join(',');
+        // Join the numbers with commas (also converting all values to string form), lowercase the exponential part (if applicable), then break up into individual characters
+        const characters = value.join(',').replace(/E/g, 'e').split('');
+
+        let previous = 0;
+        const encoded = [];
+        for (let c = 0; c < characters.length; c += 1) {
+            const index = numberEncoding.indexOf(characters[c]);
+
+            if (c % 3 === 0) {
+                previous = index << 2;
+            }
+            else if (c % 3 === 1) {
+                previous |= index >>> 2;
+                encoded.push(toBase(previous, alphabet));
+                previous = (index & 3) << 4;
+            }
+            else {
+                previous |= index;
+                encoded.push(toBase(previous, alphabet));
+            }
+        }
+
+        // Add remaining bit data
+        if (characters.length % 3 !== 0) {
+            encoded.push(toBase(previous, alphabet));
+        }
+
+        return encoded.join('');
     }
 
     // Convert all indices to Base string notation, separate item parts with comma, and separate items with space
@@ -661,37 +691,22 @@ var RegExpType = (typeObj) => {
     return typeObj;
 };
 
-const genIsEqual = (comparedTo) => {
-    return (value) => {
-        return value === comparedTo;
+const genEqualitySimpleType = (value) => {
+    return {
+        _identify: (comparedTo) => {
+            return value === comparedTo;
+        },
+        _value: value,
     };
 };
 
 var SimpleTypes = (typeObj) => {
-    typeObj.$0 = {
-        _identify: genIsEqual(void 0),
-        _value: void 0,
-    };
-    typeObj.$1 = {
-        _identify: genIsEqual(null),
-        _value: null,
-    };
-    typeObj.$2 = {
-        _identify: genIsEqual(true),
-        _value: true,
-    };
-    typeObj.$3 = {
-        _identify: genIsEqual(false),
-        _value: false,
-    };
-    typeObj.$4 = {
-        _identify: genIsEqual(Infinity),
-        _value: Infinity,
-    };
-    typeObj.$5 = {
-        _identify: genIsEqual(-Infinity),
-        _value: -Infinity,
-    };
+    typeObj.$0 = genEqualitySimpleType(void 0);
+    typeObj.$1 = genEqualitySimpleType(null);
+    typeObj.$2 = genEqualitySimpleType(true);
+    typeObj.$3 = genEqualitySimpleType(false);
+    typeObj.$4 = genEqualitySimpleType(Infinity);
+    typeObj.$5 = genEqualitySimpleType(-Infinity);
     typeObj.$6 = {
         _identify: (value) => {
             return value !== value;
@@ -1011,7 +1026,31 @@ var decompressValues = (key, value, types) => {
 
     // Join Numbers and BigInts using comma, strings need to stay in Array form
     if (types[key]._compressionType === 1) {
-        return value.split(',');
+        let decoded = [];
+
+        // Decode two characters per loop
+        const valueLength = value.length;
+        for (let i = 0; i < valueLength - 1; i += 2) {
+            decoded = decoded.concat([
+                numberEncoding[(fromBase(value[i], alphabet) & 60) >>> 2],
+                numberEncoding[((fromBase(value[i], alphabet) & 3) << 2) | ((fromBase(value[i + 1], alphabet) & 48) >> 4)],
+                numberEncoding[fromBase(value[i + 1], alphabet) & 15],
+            ]);
+        }
+
+        // Account for uneven numbers of characters
+        if (valueLength % 2 !== 0) {
+            decoded = decoded.concat([
+                numberEncoding[fromBase(value[valueLength - 1], alphabet) >>> 2],
+            ]);
+        }
+
+        // Last item is not a real value, remove
+        if (decoded.length && decoded[decoded.length - 1] === ' ') {
+            decoded = decoded.slice(0, -1);
+        }
+
+        return decoded.join('').split(',');
     }
 
     // Split items into Pointer data sets, and split Pointer data sets into individual Pointers
@@ -1022,8 +1061,7 @@ var decompressValues = (key, value, types) => {
 
             const pointers = [];
             for (let p = 0; p < parts.length; p += 2) {
-                const key = parts[p];
-                pointers.push(key + fromBase(parts[p + 1], alphabet));
+                pointers.push(parts[p] + fromBase(parts[p + 1], alphabet));
             }
             return pointers;
         });

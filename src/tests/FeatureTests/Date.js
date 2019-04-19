@@ -6,10 +6,12 @@ const testHelpers = require('/tests/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
+const testDate = 954583260000;
+const testDateEncodedNumber = '#km39)))';
+
 test('Date: Normal', (t) => {
     t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode([new Date(now)]))[0].getTime(), now);
+    t.equal(decode(encode([new Date(testDate)]))[0].getTime(), testDate);
 });
 
 test('Date: Invalid Date', (t) => {
@@ -19,8 +21,7 @@ test('Date: Invalid Date', (t) => {
 
 test('Date: Root Value Normal', (t) => {
     t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode(new Date(now))).getTime(), now);
+    t.equal(decode(encode(new Date(testDate))).getTime(), testDate);
 });
 
 test('Date: Root Value Invalid Date', (t) => {
@@ -35,8 +36,7 @@ StandardObjectTests('Date', 'Date', () => {
 test('Date: Encoding Expected', (t) => {
     t.plan(1);
 
-    const now = Date.now();
-    const date = new Date(now);
+    const date = new Date(testDate);
     date.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
@@ -44,7 +44,7 @@ test('Date: Encoding Expected', (t) => {
         S: [
             'a',
         ],
-        N: String(now),
+        N: testDateEncodedNumber,
         r: 'D0',
     });
 });

@@ -20,7 +20,7 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
 
     t.deepEqual(testHelpers.simplifyEncoded(encoded), {
         A: 'N0N1N0',
-        N: '1,2',
+        N: '7<',
         r: 'A0',
     });
 

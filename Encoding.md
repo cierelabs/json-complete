@@ -84,3 +84,9 @@ Using the above encoding of Keys and Indices, Pointers are stored very efficient
 The characters backslash (\), double quote ("), comma (,), and space ( ) are not used in either the Key or the Index portion. Double quotes signify the boundaries of a JSON string component, and to use them as a value would require escaping, adding an extra character. Backslash would also require an extra escape character. These values are therefore avoided to keep the encoded size down to single characters as much as possible.
 
 Seperate sections of a given type object will be separated by a space, while seperate instances of each type will be separated by a comma, including Number and BigInt types. Symbols and Strings retain their Array encoding, because they can potentially contain a comma or space character naturally.
+
+
+
+## Numbers
+
+Number and BigInt types are further encoded by joining all instances together as strings with a comma separator, then encoding the string with bitwise operators to be in Base64 like the Pointers Indices. This is possible because there are 14 possible characters a Number or BigInt can contain: `0-9, ., e, +, and -`. The capital E variation of the exponential part is handled by making it lowercase. Combined with the comma character for 15 unique symbols, it's just small enough to be stored in 4 bits, with the final value used for indicating the buffered "empty" value. As a result, Numbers and BigInts are stored at approximately 66% of their normal string size.

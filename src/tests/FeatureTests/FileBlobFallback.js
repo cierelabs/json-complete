@@ -4,7 +4,8 @@ const jsonComplete = require('/main.js');
 
 const decode = jsonComplete.decode;
 
-const time = 1522558801000;
+const testDate = 954583260000;
+const testDateEncodedNumber = '#km39)))';
 
 const encodedFileInArray = JSON.stringify([
     'A0',
@@ -19,7 +20,7 @@ const encodedFileInArray = JSON.stringify([
             '1.txt'
         ]
     ],
-    ['N', `${String(time)},49`],
+    ['N', `${testDateEncodedNumber}|9`],
 ]);
 
 
@@ -67,7 +68,7 @@ if (typeof Blob === 'function') {
         t.equal(testHelpers.systemName(obj), '[object Blob]');
         t.equal(obj.name, '1.txt');
         t.equal(obj.type, 'text/plain');
-        t.equal(obj.lastModified, time);
+        t.equal(obj.lastModified, testDate);
 
         const reader = new FileReader();
         reader.addEventListener('loadend', () => {

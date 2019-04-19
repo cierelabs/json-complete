@@ -6,6 +6,9 @@ const testHelpers = require('/tests/testHelpers.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
+const testDate = 954583260000;
+const testDateEncodedNumber = '#km39)))';
+
 const supportsFileCreation = () => {
     try {
         const file = new File([''], 'empty.txt', {
@@ -22,7 +25,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
     test('File: Normal', (t) => {
         t.plan(5);
 
-        const now = Date.now() + 1000;
+        const now = testDate + 1000;
 
         const obj = { a: 1 };
         const blob = new Blob([JSON.stringify(obj)]);
@@ -105,7 +108,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
     test('File: Root Value', (t) => {
         t.plan(5);
 
-        const now = Date.now() + 1000;
+        const now = testDate + 1000;
 
         const obj = { a: 1 };
         const blob = new Blob([JSON.stringify(obj)]);
@@ -135,7 +138,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
     test('Blob: Missing onFinish Option', (t) => {
         t.plan(1);
 
-        const now = Date.now() + 1000;
+        const now = testDate + 1000;
 
         const obj = { a: 1 };
         const blob = new Blob([JSON.stringify(obj)]);
@@ -161,7 +164,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
     test('File: Encoding Expected', (t) => {
         t.plan(1);
 
-        const now = Date.now();
+        const now = testDate;
 
         const blob = new Blob([JSON.stringify(1)], { type: 'application/json' });
         const file = new File([blob], 'test.json', {
@@ -180,7 +183,7 @@ if (typeof File === 'function' && supportsFileCreation()) {
                         'a',
                     ],
                     UE: 'N1',
-                    N: `${String(now)},49`,
+                    N: `${testDateEncodedNumber}|9`,
                     r: 'Z0',
                 });
             },
