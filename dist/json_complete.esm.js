@@ -1024,7 +1024,7 @@ var decompressValues = (key, value, types) => {
         return value;
     }
 
-    // Join Numbers and BigInts using comma, strings need to stay in Array form
+    // Numbers and BigInts must be decoded by first uncompressing them, then splitting them by comma
     if (types[key]._compressionType === 1) {
         let decoded = [];
 
