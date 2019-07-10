@@ -8,6 +8,7 @@ require('/tests/FeatureTests/BigInt64Array.js');
 require('/tests/FeatureTests/BigUint64Array.js');
 require('/tests/FeatureTests/Blob.js');
 require('/tests/FeatureTests/Boolean.js');
+require('/tests/FeatureTests/ConvertTo.js');
 require('/tests/FeatureTests/Date.js');
 require('/tests/FeatureTests/DecodingSymbolKeyWhenSymbolsNotSupported.js');
 require('/tests/FeatureTests/Deduplication.js');

@@ -62,7 +62,7 @@ input.circular = input;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","1.0.2",["O","S0S1S2S3S4 N0_0O0C0U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["_","81129638414606663681390495662081"],["U","N0N1N2"]]
+// ["O0","2",["O","S0S1S2S3S4 N0_0O0C0U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["_","81129638414606663681390495662081"],["U","N0N1N2"]]
 
 console.log(jsonComplete.decode(encoded));
 // Exact same structure and value as input
@@ -79,7 +79,7 @@ var input = false;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["F","1.0.2"]
+// ["F","2"]
 
 console.log(jsonComplete.decode(encoded));
 // false
@@ -101,7 +101,7 @@ var encodedWithSymbolKeys = jsonComplete.encode(input, {
     encodeSymbolKeys: true,
 });
 console.log(encodedWithSymbolKeys);
-// ["O0","1.0.2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
+// ["O0","2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
 
 var decodeWithSymbolKeys = jsonComplete.decode(encodedWithSymbolKeys);
 console.log(decodeWithSymbolKeys);
@@ -109,7 +109,7 @@ console.log(decodeWithSymbolKeys);
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","1.0.2",["O","S0 N0"],["S",["a"]],["N","1"]]
+// ["O0","2",["O","S0 N0"],["S",["a"]],["N","1"]]
 
 console.log(jsonComplete.decode(encoded));
 // {a: 1}
@@ -129,7 +129,7 @@ var encoded = jsonComplete.encode(badIdea, {
     compat: true,
 });
 console.log(encoded);
-// ["O0","1.0.2",["O","S0 F0"],["S",["a"]]]
+// ["O0","2",["O","S0 F0"],["S",["a"]]]
 // Because compat mode was used, the Math object is encoded as an empty object
 
 console.log(jsonComplete.decode(encoded));
@@ -148,7 +148,7 @@ var input = [new Blob(['data'], { type: 'application/json' }), 1];
 var encoded = jsonComplete.encode(input, {
     onFinish: function(encoded) {
         console.log(encoded);
-        // ["A0","1.0.2",["A","Y0N0"],["Y","$0S0"],["N","1,100,97,116"],["S",["application/json"]],["$","N1N2N3N2"]]
+        // ["A0","2",["A","Y0N0"],["Y","$0S0"],["N","1,100,97,116"],["S",["application/json"]],["$","N1N2N3N2"]]
 
         console.log(jsonComplete.decode(encoded));
         // [(BLOB: content is "data", type is "application/json"), 1]
@@ -169,7 +169,7 @@ var encoded = jsonComplete.encode(input, {
     compat: true,
 });
 console.log(encoded);
-// ["A0","1.0.2",["A","Y0N0"],["Y","K0S0"],["N","1"],["S",["application/json"]]]
+// ["A0","2",["A","Y0N0"],["Y","K0S0"],["N","1"],["S",["application/json"]]]
 // [(BLOB: content is empty, type is "application/json"), 1]
 ```
 
@@ -194,10 +194,11 @@ console.log(encoded);
 | ❌     | ✅             | Numbers: Object-Wrapped (NaN, +/-Infinity, -0)       |
 | ✅     | ✅             | Strings                                              |
 | ❌     | ✅             | Strings: Object-Wrapped                              |
-| ❌     | ✅             | Regex                                                |
-| ❌     | ✅             | Regex: Retained lastIndex                            |
 | ❌     | ✅             | Dates                                                |
 | ❌     | ✅             | Dates: Invalid Dates                                 |
+| ❌     | ✅             | Error (built-in Error objects)                       |
+| ❌     | ✅             | Regex                                                |
+| ❌     | ✅             | Regex: Retained lastIndex                            |
 | ❌     | ✅             | Symbols                                              |
 | ❌     | ✅             | Symbols: Retained Identifiers                        |
 | ❌     | ✅             | Symbols: Registered Symbols                          |
@@ -331,16 +332,15 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8696 bytes | 9845 bytes |
-| gzip        | 3450 bytes | 3453 bytes |
-| zopfli      | 3375 bytes | 3375 bytes |
-| brotli      | 3110 bytes | 3123 bytes |
-
+| Minified    | 8806 bytes | 9955 bytes |
+| gzip        | 3466 bytes | 3465 bytes |
+| zopfli      | 3391 bytes | 3395 bytes |
+| brotli      | 3132 bytes | 3135 bytes |
 
 
 ## Tests
 
-There are currently 727 tests, constituting 100% code coverage when tested across all platforms. Some codepath branches may not be testable on a given platform, however.
+There are currently over 730 tests, with some tests and branches only applying to some platforms. All code paths should be covered by at least one test.
 
 Only Google Chrome is currently able to run all of the primary tests due to differences in Type support across various browser and Node platforms.
 
@@ -351,6 +351,8 @@ The library and all its supportable tests have been tested on:
 * Safari (12)
 * Edge (17)
 * Internet Explorer 11
+* Internet Explorer 10
+* Internet Explorer 9
 * Node (11.4.0)
 
 
@@ -405,7 +407,7 @@ The table below illustrates the primary feature support differences on various p
 
 | Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 | IE9 |                                                |
 |:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
-| 727         | 671         | 659          | 659         | 634       | 511   | 428  | 265 | Tests Runnable                                 |
+| 734         | 678         | 665          | 665         | 640       | 517   | 434  | 271 | Tests Runnable                                 |
 | ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | undefined                                      |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | null                                           |
@@ -419,11 +421,12 @@ The table below illustrates the primary feature support differences on various p
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Numbers: Object-Wrapped                        |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings                                        |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates                                          |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
+| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Error                                          |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Regex                                          |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Sticky Flag                              |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Unicode Flag                             |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates                                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Symbol                                         |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Objects                                        |
 | ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Arrays                                         |
@@ -581,11 +584,10 @@ Not yet supported.
 - [x] Support IE11
 - [x] Support IE10
 - [x] Support IE9
+- [x] Write script that will convert between different data versions.
 
 
 ## Future Plans
-- [ ] Write script that will convert 1.0.0 data to 2.0.0 data.
-- [ ] Write script that will convert 2.0.0 data to 1.0.0 data.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
 - [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey.

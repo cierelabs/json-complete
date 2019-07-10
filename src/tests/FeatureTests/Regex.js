@@ -57,7 +57,7 @@ if (!testHelpers.regexSupportsSticky()) {
     console.log('Regex: Extra tests for Unsupported Sticky RegExp Decoding tests were run because Sticky RegExp Flags are not supported in the current environment.'); // eslint-disable-line no-console
 
     // encode(/abc/y);
-    const encodedSticky = '["R0","1.0.2",["R","S0S1N0"],["S",["abc","y"]],["N","0"]]';
+    const encodedSticky = '["R0","2",["R","S0S1N0"],["S",["abc","y"]],["N","0"]]';
 
     test('Regex: Sticky RegExp Decoding When Not Supported', (t) => {
         t.plan(2);
@@ -94,7 +94,7 @@ if (!testHelpers.regexSupportsUnicode()) {
     console.log('Regex: Extra tests for Unsupported Unicode RegExp Decoding tests were run because Unicode RegExp Flags are not supported in the current environment.'); // eslint-disable-line no-console
 
     // encode(/abc/u);
-    const encodedUnicode = '["R0","1.0.2",["R","S0S1N0"],["S",["abc","u"]],["N","0"]]';
+    const encodedUnicode = '["R0","2",["R","S0S1N0"],["S",["abc","u"]],["N","0"]]';
 
     test('Regex: Unicode RegExp Decoding When Not Supported', (t) => {
         t.plan(2);
