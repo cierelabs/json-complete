@@ -1,9 +1,6 @@
-import alphabet from '/utils/base63/alphabet.js';
-
-const radix = alphabet.length;
-
-export default (number) => {
+export default (number, alphabet) => {
     let result = '';
+    const radix = alphabet.length;
 
     do {
         result = alphabet[number % radix] + result;

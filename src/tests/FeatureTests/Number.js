@@ -88,7 +88,7 @@ test('Number: Encoding Expected Infinity', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(Infinity)), {
-        r: 'I',
+        r: '$4',
     });
 });
 
@@ -96,7 +96,7 @@ test('Number: Encoding Expected -Infinity', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(-Infinity)), {
-        r: 'J',
+        r: '$5',
     });
 });
 
@@ -104,7 +104,7 @@ test('Number: Encoding Expected NaN', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(NaN)), {
-        r: 'C',
+        r: '$6',
     });
 });
 
@@ -112,6 +112,6 @@ test('Number: Encoding Expected -0', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(-0)), {
-        r: 'M',
+        r: '$7',
     });
 });

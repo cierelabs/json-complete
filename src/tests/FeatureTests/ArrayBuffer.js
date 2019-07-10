@@ -81,7 +81,7 @@ if (typeof ArrayBuffer === 'function') {
         a.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(a)), {
-            W: 'N0 S0 F0',
+            W: 'N0 S0 $3',
             N: '1',
             S: [
                 'b',

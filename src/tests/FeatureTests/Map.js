@@ -217,7 +217,7 @@ if (typeof Map === 'function') {
         source.b = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            V: 'F0 T0 S0 F0',
+            V: '$3 $2 S0 $3',
             S: [
                 'b',
             ],

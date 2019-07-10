@@ -28,11 +28,11 @@ const isArray = (v) => {
 
 const simplifyEncoded = (encoded) => {
     const parsed = JSON.parse(encoded);
-    const objectForm = parsed.slice(2).reduce((accumulator, e) => {
+    const objectForm = parsed.slice(1).reduce((accumulator, e) => {
         accumulator[e[0]] = e[1];
         return accumulator;
     }, {});
-    objectForm.r = parsed[0];
+    objectForm.r = parsed[0].split(',')[0];
     return objectForm;
 };
 

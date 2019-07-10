@@ -161,7 +161,7 @@ test('Regex: Encoding Expected', (t) => {
     source.b = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        R: 'S0S1N0 S2 F0',
+        R: 'S0S1N0 S2 $3',
         N: '0',
         S: [
             '\\s+',

@@ -61,7 +61,7 @@ if (typeof Uint8ClampedArray === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            UC: 'N0 S0 F0',
+            UC: 'N0 S0 $3',
             N: '1',
             S: [
                 'a',

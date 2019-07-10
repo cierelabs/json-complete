@@ -61,8 +61,8 @@ if (typeof BigInt64Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            BI: '_0 S0 F0',
-            _: '1',
+            BI: 'I0 S0 $3',
+            I: '1',
             S: [
                 'a',
             ],

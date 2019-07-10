@@ -62,7 +62,7 @@ input.circular = input;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","2",["O","S0S1S2S3S4 N0_0O0C0U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["_","81129638414606663681390495662081"],["U","N0N1N2"]]
+// ["O0,2",["O","S0S1S2S3S4 N0I0O0$6U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["I","81129638414606663681390495662081"],["U","N0N1N2"]]
 
 console.log(jsonComplete.decode(encoded));
 // Exact same structure and value as input
@@ -79,7 +79,7 @@ var input = false;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["F","2"]
+// ["$3,2"]
 
 console.log(jsonComplete.decode(encoded));
 // false
@@ -101,7 +101,7 @@ var encodedWithSymbolKeys = jsonComplete.encode(input, {
     encodeSymbolKeys: true,
 });
 console.log(encodedWithSymbolKeys);
-// ["O0","2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
+// ["O0,2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
 
 var decodeWithSymbolKeys = jsonComplete.decode(encodedWithSymbolKeys);
 console.log(decodeWithSymbolKeys);
@@ -109,7 +109,7 @@ console.log(decodeWithSymbolKeys);
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0","2",["O","S0 N0"],["S",["a"]],["N","1"]]
+// ["O0,2",["O","S0 N0"],["S",["a"]],["N","1"]]
 
 console.log(jsonComplete.decode(encoded));
 // {a: 1}
@@ -129,7 +129,7 @@ var encoded = jsonComplete.encode(badIdea, {
     compat: true,
 });
 console.log(encoded);
-// ["O0","2",["O","S0 F0"],["S",["a"]]]
+// ["O0,2",["O","S0 $3"],["S",["a"]]]
 // Because compat mode was used, the Math object is encoded as an empty object
 
 console.log(jsonComplete.decode(encoded));
@@ -148,7 +148,7 @@ var input = [new Blob(['data'], { type: 'application/json' }), 1];
 var encoded = jsonComplete.encode(input, {
     onFinish: function(encoded) {
         console.log(encoded);
-        // ["A0","2",["A","Y0N0"],["Y","$0S0"],["N","1,100,97,116"],["S",["application/json"]],["$","N1N2N3N2"]]
+        // ["A0,2",["A","Y0N0"],["Y","UE0S0"],["N","1,100,97,116"],["S",["application/json"]],["UE","N1N2N3N2"]]
 
         console.log(jsonComplete.decode(encoded));
         // [(BLOB: content is "data", type is "application/json"), 1]
@@ -169,7 +169,7 @@ var encoded = jsonComplete.encode(input, {
     compat: true,
 });
 console.log(encoded);
-// ["A0","2",["A","Y0N0"],["Y","K0S0"],["N","1"],["S",["application/json"]]]
+// ["A0,2",["A","Y0N0"],["Y","$0S0"],["N","1"],["S",["application/json"]]]
 // [(BLOB: content is empty, type is "application/json"), 1]
 ```
 
@@ -332,10 +332,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8806 bytes | 9955 bytes |
-| gzip        | 3466 bytes | 3465 bytes |
-| zopfli      | 3391 bytes | 3395 bytes |
-| brotli      | 3132 bytes | 3135 bytes |
+| Minified    | 8757 bytes | 9951 bytes |
+| gzip        | 3475 bytes | 3474 bytes |
+| zopfli      | 3397 bytes | 3404 bytes |
+| brotli      | 3142 bytes | 3170 bytes |
 
 
 ## Tests
@@ -346,9 +346,9 @@ Only Google Chrome is currently able to run all of the primary tests due to diff
 
 The library and all its supportable tests have been tested on:
 
-* Google Chrome (70)
-* Firefox (65)
-* Safari (12)
+* Google Chrome (72)
+* Firefox (66)
+* Safari (12.1)
 * Edge (17)
 * Internet Explorer 11
 * Internet Explorer 10
@@ -405,52 +405,52 @@ In an extremely rare edge case, which should be avoided, built-in Symbols can be
 
 The table below illustrates the primary feature support differences on various platforms. Below that, more detailed explainations of specific limitations, beyond simply not supporting a type, are explained.
 
-| Chrome (70) | Node (11.4) | Firefox (65) | Safari (12) | Edge (17) | IE11  | IE10 | IE9 |                                                |
-|:-----------:|:-----------:|:------------:|:-----------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
-| 734         | 678         | 665          | 665         | 640       | 517   | 434  | 271 | Tests Runnable                                 |
-| ✅           | ✅           | ✅            | ✅           | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | undefined                                      |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | null                                           |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Booleans                                       |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Booleans: Object-Wrapped                       |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Numbers: Normal                                |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: NaN                                    |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: -Infinity                              |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: Infinity                               |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Number: -0                                     |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Numbers: Object-Wrapped                        |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings                                        |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Strings: Object-Wrapped                        |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates                                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Error                                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Regex                                          |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Sticky Flag                              |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Regex Unicode Flag                             |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | Symbol                                         |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Objects                                        |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Arrays                                         |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ✅   | Arguments Object                               |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | ArrayBuffer                                    |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | SharedArrayBuffer                              |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int8Array                                      |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint8Array                                     |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Uint8ClampedArray                              |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int16Array                                     |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint16Array                                    |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Int32Array                                     |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Uint32Array                                    |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Float32Array                                   |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Float64Array                                   |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Set                                            |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | Map                                            |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ❌     | ❌    | ❌   | WeakSet Tests                                  |
-| ✅           | ✅           | ✅            | ✅           | ✅         | ✅     | ❌    | ❌   | WeakMap Tests                                  |
-| ✅           | ❌           | ✅            | ✅           | ✅         | ✅     | ✅    | ❌   | Blob                                           |
-| ✅           | ❌           | ✅            | ✅           | ⚠ `1`     | ⚠ `1` | ⚠ `1` | ❌   | File                                          |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigInt                                         |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigInt64Array                                  |
-| ✅           | ✅           | ❌            | ❌           | ❌         | ❌     | ❌    | ❌   | BigUint64Array                                 |
+| Chrome (72) | Node (11.4) | Firefox (66) | Safari (12.1) | Edge (17) | IE11  | IE10 | IE9 |                                                |
+|:-----------:|:-----------:|:------------:|:-------------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
+| 737         | 681         | 668          | 668           | 643       | 520   | 437  | 274 | Tests Runnable                                 |
+| ✅           | ✅           | ✅            | ✅             | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | undefined                                      |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | null                                           |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Booleans                                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Booleans: Object-Wrapped                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Numbers: Normal                                |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: NaN                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: -Infinity                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: Infinity                               |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: -0                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Numbers: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Strings                                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Strings: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Dates                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Error                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Regex                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Regex Sticky Flag                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Regex Unicode Flag                             |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Symbol                                         |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Objects                                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Arrays                                         |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Arguments Object                               |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | ArrayBuffer                                    |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | SharedArrayBuffer                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int8Array                                      |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint8Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Uint8ClampedArray                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int16Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint16Array                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int32Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint32Array                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Float32Array                                   |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Float64Array                                   |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Set                                            |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Map                                            |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | WeakSet Tests                                  |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | WeakMap Tests                                  |
+| ✅           | ❌           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Blob                                           |
+| ✅           | ❌           | ✅            | ✅             | ⚠ `1`     | ⚠ `1` | ⚠ `1` | ❌   | File                                          |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigInt                                         |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigInt64Array                                  |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigUint64Array                                 |
 
 * `1` - Cannot construct a native File type. In compat mode, encoded File objects will be decoded as duck-typed Blobs.
 
@@ -585,12 +585,17 @@ Not yet supported.
 - [x] Support IE10
 - [x] Support IE9
 - [x] Write script that will convert between different data versions.
+- [x] Reserve several key characters for future use and make all simple types use the same key character.
+- [x] Normalize the key character usage across types, prepping for making allowing custom types.
+- [x] Reduced size of intro data by using comma-separated values.
+- [x] Generalize Simple Type identification.
 
 
 ## Future Plans
+- [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey. Generalize all remaining types Types to do the same.
+- [ ] Support custom types.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
-- [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey.
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
 - [ ] Support IE8 with legacy version
 - [ ] Support IE7 with legacy version
