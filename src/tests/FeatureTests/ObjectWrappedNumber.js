@@ -103,7 +103,7 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
         H: 'N0 S0 $3',
-        N: '1',
+        N: '4',
         S: [
             'a',
         ],

@@ -1,6 +1,6 @@
 # json-complete
 
-json-complete can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3.5KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
+json-complete can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3.7KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
 
 
 
@@ -62,7 +62,7 @@ input.circular = input;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0,2",["O","S0S1S2S3S4 N0I0O0$6U0"],["S",["a","b","circular","nan","set"]],["N","1,2,3"],["I","81129638414606663681390495662081"],["U","N0N1N2"]]
+// ["O0,2",["O","S0S1S2S3S4 N0I0O0$6U0"],["S",["a","b","circular","nan","set"]],["N","7<{:"],["I","whame456(%o@wj%!#mo)wg"],["U","N0N1N2"]]
 
 console.log(jsonComplete.decode(encoded));
 // Exact same structure and value as input
@@ -101,7 +101,7 @@ var encodedWithSymbolKeys = jsonComplete.encode(input, {
     encodeSymbolKeys: true,
 });
 console.log(encodedWithSymbolKeys);
-// ["O0,2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","1,2"]]
+// ["O0,2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","7<"]]
 
 var decodeWithSymbolKeys = jsonComplete.decode(encodedWithSymbolKeys);
 console.log(decodeWithSymbolKeys);
@@ -109,7 +109,7 @@ console.log(decodeWithSymbolKeys);
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// ["O0,2",["O","S0 N0"],["S",["a"]],["N","1"]]
+// ["O0,2",["O","S0 N0"],["S",["a"]],["N","4"]]
 
 console.log(jsonComplete.decode(encoded));
 // {a: 1}
@@ -148,7 +148,7 @@ var input = [new Blob(['data'], { type: 'application/json' }), 1];
 var encoded = jsonComplete.encode(input, {
     onFinish: function(encoded) {
         console.log(encoded);
-        // ["A0,2",["A","Y0N0"],["Y","UE0S0"],["N","1,100,97,116"],["S",["application/json"]],["UE","N1N2N3N2"]]
+        // ["A0,2",["A","Y0N0"],["Y","UE0S0"],["N","7;)/#~4m"],["S",["application/json"]],["UE","N1N2N3N2"]]
 
         console.log(jsonComplete.decode(encoded));
         // [(BLOB: content is "data", type is "application/json"), 1]
@@ -169,7 +169,7 @@ var encoded = jsonComplete.encode(input, {
     compat: true,
 });
 console.log(encoded);
-// ["A0,2",["A","Y0N0"],["Y","$0S0"],["N","1"],["S",["application/json"]]]
+// ["A0,2",["A","Y0N0"],["Y","$0S0"],["N","4"],["S",["application/json"]]]
 // [(BLOB: content is empty, type is "application/json"), 1]
 ```
 
@@ -266,6 +266,13 @@ Symbols are an exception, since they are both a Primitive and Referential Type. 
 In contrast, JSON will simply duplicate the data multiple times.
 
 
+#### Simple Compression
+
+Number and BigInt type values are compressed automatically by approximately 33%.
+
+JSON performs no compression, though it was designed explicitly without that intent.
+
+
 #### Arbitrarily Deep Nesting
 
 json-complete does not primarily use recursion to do encoding or decoding. As a result, it can support arbitrarily deep nesting of objects, such as encoding an array containing an array containing an array... and so on, for 50,000 times or more.
@@ -332,10 +339,10 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 8757 bytes | 9951 bytes |
-| gzip        | 3475 bytes | 3474 bytes |
-| zopfli      | 3397 bytes | 3404 bytes |
-| brotli      | 3142 bytes | 3170 bytes |
+| Minified    | 9244 bytes | 10391 bytes |
+| gzip        | 3681 bytes | 3697 bytes |
+| zopfli      | 3598 bytes | 3623 bytes |
+| brotli      | 3332 bytes | 3360 bytes |
 
 
 ## Tests
@@ -407,7 +414,7 @@ The table below illustrates the primary feature support differences on various p
 
 | Chrome (72) | Node (11.4) | Firefox (66) | Safari (12.1) | Edge (17) | IE11  | IE10 | IE9 |                                                |
 |:-----------:|:-----------:|:------------:|:-------------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
-| 737         | 681         | 668          | 668           | 643       | 520   | 437  | 274 | Tests Runnable                                 |
+| 757         | 701         | 688          | 688           | 663       | 540   | 457  | 294 | Tests Runnable                                 |
 | ✅           | ✅           | ✅            | ✅             | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
 | ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | undefined                                      |
 | ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | null                                           |
@@ -589,6 +596,7 @@ Not yet supported.
 - [x] Normalize the key character usage across types, prepping for making allowing custom types.
 - [x] Reduced size of intro data by using comma-separated values.
 - [x] Generalize Simple Type identification.
+- [x] Explore simple numerical compression for Number and BigInt types (Base91 encoding for '0-9', '.', 'e', '-', '+')
 
 
 ## Future Plans

@@ -5,12 +5,11 @@ const jsonComplete = require('/main.js');
 const encode = jsonComplete.encode;
 
 test('Deduplication: Numbers', (t) => {
-    t.plan(2);
+    t.plan(1);
 
     const encoded = testHelpers.simplifyEncoded(encode([1, 2, 1, 3.14, 4, 3.14]));
 
-    t.equal(encoded.N.split(',').length, 4);
-    t.deepEqual(encoded.N.split(','), ['1', '2', '3.14', '4']);
+    t.deepEqual(encoded.N, '7<{`5fg');
 });
 
 test('Deduplication: Strings', (t) => {
@@ -24,12 +23,11 @@ test('Deduplication: Strings', (t) => {
 
 if (typeof BigInt === 'function') {
     test('Deduplication: BigInt', (t) => {
-        t.plan(2);
+        t.plan(1);
 
         const encoded = testHelpers.simplifyEncoded(encode([BigInt(1), BigInt(2), BigInt(1), BigInt(0), BigInt(-1), BigInt(0)]));
 
-        t.equal(encoded.I.split(',').length, 4);
-        t.deepEqual(encoded.I.split(','), ['1', '2', '0', '-1']);
+        t.deepEqual(encoded.I, '7<}/:g');
     });
 }
 else {

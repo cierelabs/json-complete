@@ -62,7 +62,7 @@ if (typeof BigUint64Array === 'function') {
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
             BU: 'I0 S0 $3',
-            I: '1',
+            I: '4',
             S: [
                 'a',
             ],

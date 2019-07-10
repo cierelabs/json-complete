@@ -62,7 +62,7 @@ if (typeof Uint32Array === 'function') {
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
             UT: 'N0 S0 $3',
-            N: '1',
+            N: '4',
             S: [
                 'a',
             ],
