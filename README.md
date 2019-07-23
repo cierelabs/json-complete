@@ -601,6 +601,12 @@ Not yet supported.
 
 ## Future Plans
 - [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey. Generalize all remaining types Types to do the same.
+- [ ] Switch from custom comparison functions with an Object.is polyfill.
+- [ ] Support saving property metadata like configurable and writable.
+- [ ] Support saving object metadata like seal and freeze.
+- [ ] Make it clear that only enumerable properties and Symbols will be saved.
+- [ ] Share no-ops across objects.
+- [ ] Change the 'Ignore built-in Symbols' code to work more natually using `propertyIsEnumerable`.
 - [ ] Support custom types.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
 - [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
@@ -609,4 +615,5 @@ Not yet supported.
 - [ ] Support IE7 with legacy version
 - [ ] Support IE6 with legacy version
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await.
+- [ ] Create webpage for converting between versions and visually showing the difference between JSON output and json-complete output.
 - [ ] Move tests to [BrowserStack](https://www.browserstack.com/) to provide more coverage of available environments.
