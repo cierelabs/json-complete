@@ -25,7 +25,7 @@
         "babel-plugin-module-resolver": "3.1.1",
         "babel-plugin-transform-esm-to-cjs": "0.0.0",
         "babelify": "10.0.0",
-        "browser-sync": "2.26.3",
+        "browser-sync": "2.26.7",
         "browserify": "16.2.3",
         "del": "3.0.0",
         "eslint": "5.9.0",
