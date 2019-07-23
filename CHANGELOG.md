@@ -1,4 +1,4 @@
-## 2.0.0 (February ??th, 2019)
+## 2.0.0 (July 23rd, 2019)
 
 * Breaking Change: Completely reworked the encoded data format to greatly increase compression of data. It now rivals the size of the equivalent JSON encoded data, in spite of storing more information.
   - Part of the rework reserves some keys for future use such as custom types and new primitives in JS.
@@ -12,6 +12,7 @@
 * Improved testing support for Node.
 * Reduced code duplication and improved compatibility in tests.
 * Updated documentation with encoded format definition, type and feature support per environment, and other changes from above changes to the codebase.
+* Identified several improvements to be made and added them to the Future Plans section.
 
 
 ## 1.0.2 (December 11th, 2018)
