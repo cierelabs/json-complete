@@ -7,6 +7,7 @@ import extractPointer from '/utils/extractPointer.js';
 const genBlobLike = (systemName, propertiesKeys, create) => {
     return {
         _systemName: systemName,
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             // Skip the decoding of the main value for now
             return encodeWithAttachments([[void 0].concat(propertiesKeys.map((property) => {
@@ -26,7 +27,7 @@ const genBlobLike = (systemName, propertiesKeys, create) => {
 
             // If we are decoding a Deferred Type that wasn't properly deferred, then the Uint8Array would never have gotten encoded
             // This will result in an empty Blob or File
-            const dataArray = p._key === 'un' ? [] : store._encoded[p._key][p._index][0];
+            const dataArray = p._key === 'K' ? [] : store._encoded[p._key][p._index][0];
 
             return create(store, [new Uint8Array(dataArray.map((pointer) => {
                 return decodePointer(store, pointer);
@@ -42,24 +43,21 @@ export default (typeObj) => {
     // Supported back to IE10
     /* istanbul ignore if */
     if (typeof Blob === 'function') {
-        typeObj.Bl = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
+        typeObj.Y = genBlobLike('Blob', ['type'], (store, buffer, dataArray) => {
             return new Blob(buffer, {
                 type: decodePointer(store, dataArray[1]),
             });
         });
-    }
 
-    // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor
-    /* istanbul ignore if */
-    if (typeof File === 'function') {
-        typeObj.Fi = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
+        // Supported back to IE10, but IE10, IE11, and (so far) Edge do not support the File constructor, so they will use the fallback in compat mode
+        typeObj.Z = genBlobLike('File', ['type', 'name', 'lastModified'], (store, buffer, dataArray) => {
             try {
                 return new File(buffer, decodePointer(store, dataArray[2]), {
                     type: decodePointer(store, dataArray[1]),
                     lastModified: decodePointer(store, dataArray[3])
                 });
             } catch (e) {
-                // IE10, IE11, and Edge does not support the File constructor
+                // IE10, IE11, and Edge do not support the File constructor
                 // In compat mode, decoding an encoded File object results in a Blob that is duck-typed to be like a File object
                 // Such a Blob will still report its System Name as "Blob" instead of "File"
                 if (store._compat) {

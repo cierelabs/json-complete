@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -87,7 +88,7 @@ test('Array: Sparse Array', (t) => {
 });
 
 test('Array: Non-Index Keys', (t) => {
-    t.plan(7);
+    t.plan(5);
 
     const sharedObj = {
         a: 1,
@@ -98,7 +99,6 @@ test('Array: Non-Index Keys', (t) => {
     ];
     arr['x'] = 5;
     arr['obj'] = sharedObj;
-    arr[Symbol()] = 6;
 
     const decodedArray = decode(encode(arr, {
         encodeSymbolKeys: true,
@@ -108,8 +108,6 @@ test('Array: Non-Index Keys', (t) => {
     t.equal(decodedArray[0], 1);
     t.equal(decodedArray['x'], 5);
     t.deepEqual(decodedArray[1], sharedObj);
-    t.equal(Object.getOwnPropertySymbols(decodedArray).length, 1);
-    t.equal(decodedArray[Object.getOwnPropertySymbols(decodedArray)[0]], 6);
     t.equal(decodedArray[1], decodedArray['obj']);
 });
 
@@ -127,46 +125,8 @@ test('Array: Direct Self-Containment', (t) => {
     t.equal(decoded[1], decoded);
 });
 
-test('Array: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-
-    const array = [];
-    array.x = 2;
-    array[Symbol.for('arr')] = 'test';
-
-    const decodedArray = decode(encode({
-        a: array,
-    }, {
-        encodeSymbolKeys: true,
-    })).a;
-
-    t.equal(decodedArray.length, 0);
-    t.equal(decodedArray.x, 2);
-    t.equal(decodedArray[Symbol.for('arr')], 'test');
-});
-
-test('Array: Self-Containment', (t) => {
-    t.plan(1);
-
-    const array = [];
-    array.me = array;
-    const decodedArray = decode(encode([array]))[0];
-
-    t.equal(decodedArray.me, decodedArray);
-});
-
-test('Array: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = [];
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
+StandardObjectTests('Array', 'Array', () => {
+    return [];
 });
 
 test('Array: Encoding Expected', (t) => {
@@ -176,22 +136,10 @@ test('Array: Encoding Expected', (t) => {
     arr.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(arr)), {
-        Ar: [
-            [
-                [
-                    'tr',
-                ],
-                [
-                    'St0',
-                ],
-                [
-                    'fa',
-                ]
-            ],
-        ],
-        St: [
+        A: '$2 S0 $3',
+        S: [
             'a',
         ],
-        r: 'Ar0',
+        r: 'A0',
     });
 });

@@ -27,12 +27,13 @@ const isArray = (v) => {
 };
 
 const simplifyEncoded = (encoded) => {
-    return JSON.parse(encoded).filter((i) => {
-        return i[0] !== 'v';
-    }).reduce((accumulator, e) => {
+    const parsed = JSON.parse(encoded);
+    const objectForm = parsed.slice(1).reduce((accumulator, e) => {
         accumulator[e[0]] = e[1];
         return accumulator;
     }, {});
+    objectForm.r = parsed[0].split(',')[0];
+    return objectForm;
 };
 
 const getGlobal = () => {
@@ -100,6 +101,60 @@ const getGlobal = () => {
     return global;
 };
 
+const getOnlyKeyFromCollection = (collection) => {
+    let key;
+    collection.forEach((v, k) => {
+        key = k;
+    });
+    return key;
+};
+
+const getOnlyValueFromCollection = (collection) => {
+    let value;
+    collection.forEach((v) => {
+        value = v;
+    });
+    return value;
+};
+
+const setSupportsDistinctNegativeZero = () => {
+    const test = new Set();
+    test.add(-0);
+    return isNegativeZero(getOnlyValueFromCollection(test));
+};
+
+const mapSupportsDistinctNegativeZeroKeys = () => {
+    const test = new Map();
+    test.set(-0, 1);
+    return isNegativeZero(getOnlyKeyFromCollection(test));
+};
+
+const regexSupportsSticky = () => {
+    try {
+        const value = new RegExp('a', 'y');
+        return typeof value.source === 'string';
+    } catch(e) {
+        return false;
+    }
+};
+
+const regexSupportsUnicode = () => {
+    try {
+        const value = new RegExp('a', 'u');
+        return typeof value.source === 'string';
+    } catch(e) {
+        return false;
+    }
+};
+
+const getAllKeys = (obj) => {
+    let keys = Object.keys(obj);
+    if (typeof Symbol === 'function') {
+        keys = keys.concat(Object.getOwnPropertySymbols(obj));
+    }
+    return keys;
+};
+
 module.exports = {
     systemName: systemName,
     isNanValue: isNanValue,
@@ -110,4 +165,11 @@ module.exports = {
     isArray: isArray,
     simplifyEncoded: simplifyEncoded,
     getGlobal: getGlobal,
+    getOnlyKeyFromCollection: getOnlyKeyFromCollection,
+    getOnlyValueFromCollection: getOnlyValueFromCollection,
+    setSupportsDistinctNegativeZero: setSupportsDistinctNegativeZero,
+    mapSupportsDistinctNegativeZeroKeys: mapSupportsDistinctNegativeZeroKeys,
+    regexSupportsSticky: regexSupportsSticky,
+    regexSupportsUnicode: regexSupportsUnicode,
+    getAllKeys: getAllKeys,
 };

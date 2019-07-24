@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -23,53 +24,10 @@ if (typeof WeakSet === 'function') {
         t.equal(decoded.has, void 0);
     });
 
-    test('WeakSet: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-
-        const weakSet = new WeakSet([{ a: { b: 2 } }]);
-        weakSet.x = 2;
-        weakSet[Symbol.for('weakSet')] = 'test';
-
-        const decodedWeakSet = decode(encode([weakSet], {
-            compat: true,
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(testHelpers.isObject(decodedWeakSet));
-        t.equal(decodedWeakSet.x, 2);
-        t.equal(decodedWeakSet[Symbol.for('weakSet')], 'test');
-    });
-
-    test('WeakSet: Self-Containment', (t) => {
-        t.plan(2);
-
-        const weakSet = new WeakSet([{ a: { b: 2 } }]);
-        weakSet.me = weakSet;
-
-        const decodedWeakSet = decode(encode([weakSet], {
-            compat: true,
-        }))[0];
-
-        t.ok(testHelpers.isObject(decodedWeakSet));
-        t.equal(decodedWeakSet.me, decodedWeakSet);
-    });
-
-    test('WeakSet: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new WeakSet([{ a: 1 }]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }, {
-            compat: true,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
-    });
+    StandardObjectTests('WeakSet', 'Object', () => {
+        return new WeakSet([{ a: { b: 2 } }]);
+    }, true);
 }
 else {
-    console.warn('Tests for WeakSet type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for WeakSet type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

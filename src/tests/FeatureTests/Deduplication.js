@@ -5,12 +5,11 @@ const jsonComplete = require('/main.js');
 const encode = jsonComplete.encode;
 
 test('Deduplication: Numbers', (t) => {
-    t.plan(2);
+    t.plan(1);
 
     const encoded = testHelpers.simplifyEncoded(encode([1, 2, 1, 3.14, 4, 3.14]));
 
-    t.equal(encoded.Nu.length, 4);
-    t.deepEqual(encoded.Nu, ['1', '2', '3.14', '4']);
+    t.deepEqual(encoded.N, '7<{`5fg');
 });
 
 test('Deduplication: Strings', (t) => {
@@ -18,22 +17,21 @@ test('Deduplication: Strings', (t) => {
 
     const encoded = testHelpers.simplifyEncoded(encode(['a', 'b', 'a', '', 'c', '']));
 
-    t.equal(encoded.St.length, 4);
-    t.deepEqual(encoded.St, ['a', 'b', '', 'c']);
+    t.equal(encoded.S.length, 4);
+    t.deepEqual(encoded.S, ['a', 'b', '', 'c']);
 });
 
 if (typeof BigInt === 'function') {
     test('Deduplication: BigInt', (t) => {
-        t.plan(2);
+        t.plan(1);
 
         const encoded = testHelpers.simplifyEncoded(encode([BigInt(1), BigInt(2), BigInt(1), BigInt(0), BigInt(-1), BigInt(0)]));
 
-        t.equal(encoded.Bi.length, 4);
-        t.deepEqual(encoded.Bi, ['1', '2', '0', '-1']);
+        t.deepEqual(encoded.I, '7<}/:g');
     });
 }
 else {
-    console.warn('Tests for BigInt Deduplication skipped because BigInt is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for BigInt Deduplication skipped because BigInt is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
 if (typeof Symbol === 'function') {
@@ -43,15 +41,15 @@ if (typeof Symbol === 'function') {
         const sharedSymbol = Symbol('shared');
         const encoded = testHelpers.simplifyEncoded(encode([sharedSymbol, Symbol.for('unshared'), sharedSymbol]));
 
-        t.equal(encoded.Sy.length, 2);
-        t.deepEqual(encoded.Sy, [
-            ' shared',
-            'Runshared',
+        t.equal(encoded.P.length, 2);
+        t.deepEqual(encoded.P, [
+            'sshared',
+            'runshared',
         ]);
     });
 }
 else {
-    console.warn('Tests for Symbol Deduplication skipped because Symbol is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Symbol Deduplication skipped because Symbol is not supported in the current environment.'); // eslint-disable-line no-console
 }
 
 test('Deduplication: Objects', (t) => {
@@ -62,8 +60,8 @@ test('Deduplication: Objects', (t) => {
     };
     const encoded = testHelpers.simplifyEncoded(encode([sharedObj, {}, sharedObj]));
 
-    t.equal(encoded.Ob.length, 2);
-    t.deepEqual(encoded.Ob, [[['St0'], ['Nu0']], []]);
+    t.equal(encoded.O.split(',').length, 2);
+    t.deepEqual(encoded.O.split(',')[0].split(' '), ['S0', 'N0']);
 });
 
 test('Deduplication: Array', (t) => {
@@ -76,6 +74,6 @@ test('Deduplication: Array', (t) => {
         c: sharedArr,
     }));
 
-    t.equal(encoded.Ar.length, 2);
-    t.deepEqual(encoded.Ar, [[['Nu0']], [['Nu1']]]);
+    t.equal(encoded.A.split(',').length, 2);
+    t.deepEqual(encoded.A.split(','), ['N0', 'N1']);
 });

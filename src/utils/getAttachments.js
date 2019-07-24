@@ -14,7 +14,7 @@ export default (item, encodeSymbolKeys) => {
         return !indexObj[key];
     });
 
-    if (encodeSymbolKeys) {
+    if (encodeSymbolKeys && typeof Symbol === 'function') {
         keys = keys.concat(Object.getOwnPropertySymbols(item).filter((symbol) => {
             // Ignore built-in Symbols
             // If the Symbol ID that is part of the Symbol global is not equal to the tested Symbol, then it is NOT a built-in Symbol

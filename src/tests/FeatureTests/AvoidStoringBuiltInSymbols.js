@@ -45,10 +45,10 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         });
 
-        JSON.parse(encoded).forEach((types) => {
-            if (types[0] === 'rg') {
-                t.equal(types[1][0][1].length, 5);
-                t.equal(types[1][0][2].length, 5);
+        JSON.parse(encoded).slice(1).forEach((types) => {
+            if (types[0] === 'Q') {
+                t.equal(types[1].split(' ')[1].length, 10);
+                t.equal(types[1].split(' ')[2].length, 10);
             }
         });
 
@@ -76,10 +76,10 @@ if (typeof Symbol === 'function') {
             encodeSymbolKeys: true,
         });
 
-        JSON.parse(encoded).forEach((types) => {
-            if (types[0] === 'rg') {
-                t.equal(types[1][0][1].length, 1);
-                t.equal(types[1][0][2].length, 1);
+        JSON.parse(encoded).slice(1).forEach((types) => {
+            if (types[0] === 'Q') {
+                t.equal(types[1].split(' ')[1].length, 2);
+                t.equal(types[1].split(' ')[2].length, 2);
             }
         });
 
@@ -102,5 +102,5 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Built-In Symbols skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Built-In Symbols skipped because they are not supported in the current environment.'); // eslint-disable-line no-console
 }

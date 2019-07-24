@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -48,44 +49,8 @@ if (typeof Uint8Array === 'function') {
         t.deepEqual(decode(encode(new Uint8Array([1]))), new Uint8Array([1]));
     });
 
-    test('Uint8Array: Arbitrary Attached Data', (t) => {
-        t.plan(2);
-
-        const a = new Uint8Array(2);
-        a.x = 2;
-        a[Symbol.for('Uint8Array')] = 'test';
-
-        const decoded = decode(encode([a], {
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.equal(decoded.x, 2);
-        t.equal(decoded[Symbol.for('Uint8Array')], 'test');
-    });
-
-    test('Uint8Array: Self-Containment', (t) => {
-        t.plan(1);
-
-        const a = new Uint8Array(2);
-        a.me = a;
-
-        const decoded = decode(encode([a]))[0];
-
-        t.equal(decoded.me, decoded);
-    });
-
-    test('Uint8Array: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new Uint8Array(1);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
+    StandardObjectTests('Uint8Array', 'Uint8Array', () => {
+        return new Uint8Array(2);
     });
 
     test('Uint8Array: Encoding Expected', (t) => {
@@ -96,29 +61,15 @@ if (typeof Uint8Array === 'function') {
         source.a = false;
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-            U1: [
-                [
-                    [
-                        'Nu0',
-                    ],
-                    [
-                        'St0',
-                    ],
-                    [
-                        'fa',
-                    ],
-                ],
-            ],
-            Nu: [
-                '1',
-            ],
-            St: [
+            UE: 'N0 S0 $3',
+            N: '4',
+            S: [
                 'a',
             ],
-            r: 'U10',
+            r: 'UE0',
         });
     });
 }
 else {
-    console.warn('Tests for Uint8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Uint8Array type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

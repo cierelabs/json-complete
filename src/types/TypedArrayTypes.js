@@ -1,49 +1,51 @@
-import attachIndices from '/utils/attachIndices.js';
-import attachKeys from '/utils/attachKeys.js';
-import encodeWithAttachments from '/utils/encodeWithAttachments.js';
-import getSystemName from '/utils/getSystemName.js';
+import genTypedArray from '/utils/genTypedArray.js';
 
-const genTypedArray = (type) => {
-    return {
-        _systemName: getSystemName(new type()),
-        _encodeValue: (reference, attachments) => {
-            return encodeWithAttachments([attachments._indices], attachments);
-        },
-        _generateReference: (store, dataItems) => {
-            return new type(dataItems[0].length);
-        },
-        _build: (store, dataItem) => {
-            attachIndices(store, dataItem);
-            attachKeys(store, dataItem, 1, 2);
-        },
-    };
-};
-
+// Some TypedArray types are not supported by some browsers, so test for all
+// https://caniuse.com/#feat=typedarrays
 export default (typeObj) => {
-    // If an environment supports Int8Array, it will support most of the TypedArray types
     /* istanbul ignore else */
     if (typeof Int8Array === 'function') {
-        typeObj.I1 = genTypedArray(Int8Array);
-        typeObj.I2 = genTypedArray(Int16Array);
-        typeObj.I3 = genTypedArray(Int32Array);
-        typeObj.U1 = genTypedArray(Uint8Array);
-        typeObj.U2 = genTypedArray(Uint16Array);
-        typeObj.U3 = genTypedArray(Uint32Array);
-        typeObj.F3 = genTypedArray(Float32Array);
+        typeObj.IE = genTypedArray(Int8Array);
     }
 
-    // IE10 and IE Mobile do not support Uint8ClampedArray
-    // https://caniuse.com/#feat=typedarrays
+    /* istanbul ignore else */
+    if (typeof Int16Array === 'function') {
+        typeObj.IS = genTypedArray(Int16Array);
+    }
+
+    /* istanbul ignore else */
+    if (typeof Int32Array === 'function') {
+        typeObj.IT = genTypedArray(Int32Array);
+    }
+
+    /* istanbul ignore else */
+    if (typeof Uint8Array === 'function') {
+        typeObj.UE = genTypedArray(Uint8Array);
+    }
+
     /* istanbul ignore else */
     if (typeof Uint8ClampedArray === 'function') {
-        typeObj.C1 = genTypedArray(Uint8ClampedArray);
+        typeObj.UC = genTypedArray(Uint8ClampedArray);
     }
 
-    // Safari versions prior to 5.1 might not support the Float64ArrayType, even as they support other TypeArray types
-    // https://caniuse.com/#feat=typedarrays
+    /* istanbul ignore else */
+    if (typeof Uint16Array === 'function') {
+        typeObj.US = genTypedArray(Uint16Array);
+    }
+
+    /* istanbul ignore else */
+    if (typeof Uint32Array === 'function') {
+        typeObj.UT = genTypedArray(Uint32Array);
+    }
+
+    /* istanbul ignore else */
+    if (typeof Float32Array === 'function') {
+        typeObj.FT = genTypedArray(Float32Array);
+    }
+
     /* istanbul ignore else */
     if (typeof Float64Array === 'function') {
-        typeObj.F4 = genTypedArray(Float64Array);
+        typeObj.FS = genTypedArray(Float64Array);
     }
 
     return typeObj;

@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -80,59 +81,9 @@ if (typeof Blob === 'function') {
         }
     });
 
-    test('Blob: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-
+    StandardObjectTests('Blob', 'Blob', () => {
         const obj = { a: 1 };
-        const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-        source.x = 2;
-        source[Symbol.for('Blob')] = 'test';
-
-        encode([source], {
-            encodeSymbolKeys: true,
-            onFinish: (encoded) => {
-                const decoded = decode(encoded)[0];
-
-                t.equal(testHelpers.systemName(decoded), '[object Blob]');
-                t.equal(decoded.x, 2);
-                t.equal(decoded[Symbol.for('Blob')], 'test');
-            },
-        });
-    });
-
-    test('Blob: Self-Containment', (t) => {
-        t.plan(1);
-
-        const obj = { a: 1 };
-        const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-        source.me = source;
-
-        encode([source], {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded)[0];
-
-                t.equal(decoded.me, decoded);
-            },
-        });
-    });
-
-    test('Blob: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const obj = { a: 1 };
-        const source = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-
-        encode({
-            x: source,
-            y: source,
-        }, {
-            onFinish: (encoded) => {
-                const decoded = decode(encoded);
-
-                t.equal(decoded.x, decoded.y);
-                t.notEqual(decoded.x, source);
-            },
-        });
+        return new Blob([JSON.stringify(obj)], { type: 'application/json' });
     });
 
     test('Blob: Encoding Expected', (t) => {
@@ -144,40 +95,19 @@ if (typeof Blob === 'function') {
         encode(blob, {
             onFinish: (encoded) => {
                 t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-                    Bl: [
-                        [
-                            [
-                                'U10',
-                                'St0',
-                            ],
-                            [
-                                'St1',
-                            ],
-                            [
-                                'fa',
-                            ],
-                        ],
-                    ],
-                    St: [
+                    Y: 'UE0S0 S1 $3',
+                    S: [
                         'application/json',
                         'a',
                     ],
-                    U1: [
-                        [
-                            [
-                                'Nu0',
-                            ],
-                        ],
-                    ],
-                    Nu: [
-                        '49',
-                    ],
-                    r: 'Bl0',
+                    UE: 'N0',
+                    N: 'ig',
+                    r: 'Y0',
                 });
             },
         });
     });
 }
 else {
-    console.warn('Tests for Blob type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Blob type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

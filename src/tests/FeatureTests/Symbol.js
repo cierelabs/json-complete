@@ -61,10 +61,10 @@ if (typeof Symbol === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol.for('a'))), {
-            Sy: [
-                'Ra',
+            P: [
+                'ra',
             ],
-            r: 'Sy0',
+            r: 'P0',
         });
     });
 
@@ -72,13 +72,13 @@ if (typeof Symbol === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(Symbol())), {
-            Sy: [
-                ' ',
+            P: [
+                's',
             ],
-            r: 'Sy0',
+            r: 'P0',
         });
     });
 }
 else {
-    console.warn('Tests for Symbol type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Symbol type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

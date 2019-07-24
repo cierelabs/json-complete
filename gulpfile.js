@@ -5,6 +5,7 @@ const fs = require('fs');
 const gulp = require('gulp');
 const gulpBabel = require('gulp-babel');
 const gulpBrotli = require('gulp-brotli');
+const gulpFile = require('gulp-file');
 const gulpGzip = require('gulp-gzip');
 const gulpRename = require('gulp-rename');
 const gulpTape = require('gulp-tape');
@@ -13,7 +14,6 @@ const gulpZopfliGreen = require('gulp-zopfli-green');
 const path = require('path');
 const rollup = require('rollup');
 const rollupPluginRootImport = require('rollup-plugin-root-import');
-const rollupStream = require('rollup-stream');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
 
@@ -47,6 +47,7 @@ function onError(e) {
 
 const babelModern = (stream) => {
     stream = stream.pipe(gulpBabel({
+        sourceType: 'script', // Prevents adding of strict mode automatically, which can break some require declarations
         presets: [
             ['@babel/env', {
                 targets: {
@@ -66,7 +67,7 @@ const babelModern = (stream) => {
 const js = (options) => {
     const format = options.format || 'esm';
 
-    let stream = rollupStream({
+    return rollup.rollup({
         input: options.entry,
         plugins: [
             rollupPluginRootImport({
@@ -77,55 +78,61 @@ const js = (options) => {
             // rollupPluginNodeResolve(),
             // rollupPluginCommonjs(),
         ],
-        rollup: rollup,
-        output: {
-            format: options.format,
-        },
+    }).then((bundler) => {
+        return bundler.generate({
+            format: format,
+        });
+    }).then((bundlerOutput) => {
+        const { output } = bundlerOutput;
+
+        // Can't just return the stream in this case
+        return new Promise((resolve) => {
+            let stream = gulpFile('json_complete.js', output[0].code, { src: true });
+
+            stream = stream.pipe(gulpRename({
+                suffix: `.${options.format}`,
+            }));
+
+            if (format !== 'esm') {
+                stream = babelModern(stream);
+            }
+
+            if (options.unminify && !options.stopExport) {
+                stream = stream.pipe(gulp.dest(options.destination));
+            }
+
+            if (options.minify) {
+                stream = stream.pipe(gulpTerser({
+                    mangle: {
+                        toplevel: true,
+                        properties: {
+                            regex: /_\w+/, // Compress all properties that start with _, but contain more than just an underscore
+                        },
+                    },
+                    compress: {
+                        inline: true,
+                    },
+                    output: {
+                        preamble: '/* @license BSL-1.0 https://git.io/fpQEc */',
+                    },
+                }));
+
+                stream = stream.on('error', onError);
+
+                stream = stream.pipe(gulpRename({
+                    suffix: '.min',
+                }));
+
+                if (!options.stopExport) {
+                    stream = stream.pipe(gulp.dest(options.destination));
+                }
+            }
+
+            stream = stream.on('end', resolve);
+
+            return stream;
+        });
     });
-    stream = stream.on('error', onError);
-    stream = stream.pipe(vinylSourceStream(options.filename));
-    stream = stream.pipe(vinylBuffer());
-
-    stream = stream.pipe(gulpRename({
-        suffix: `.${options.format}`,
-    }));
-
-    if (format !== 'esm') {
-        stream = babelModern(stream);
-    }
-
-    if (options.unminify && !options.stopExport) {
-        stream = stream.pipe(gulp.dest(options.destination));
-    }
-
-    if (options.minify) {
-        stream = stream.pipe(gulpTerser({
-            mangle: {
-                toplevel: true,
-                properties: {
-                    regex: /_\w+/, // Compress all properties that start with _
-                },
-            },
-            compress: {
-                inline: true,
-            },
-            output: {
-                preamble: '/* @license BSL-1.0 https://git.io/fpQEc */',
-            },
-        }));
-
-        stream = stream.on('error', onError);
-
-        stream = stream.pipe(gulpRename({
-            suffix: '.min',
-        }));
-
-        if (!options.stopExport) {
-            stream = stream.pipe(gulp.dest(options.destination));
-        }
-    }
-
-    return stream;
 };
 
 
@@ -166,6 +173,10 @@ gulp.task('test-browser-js-tests', () => {
             'babel-plugin-transform-esm-to-cjs',
         ],
     });
+
+    // Forces older v4 version of Buffer to be used
+    // https://github.com/browserify/browserify/pull/1678
+    b.require(require.resolve('buffer/'), { expose: 'buffer' });
 
     let stream = b.bundle();
     stream = stream.on('error', onError);

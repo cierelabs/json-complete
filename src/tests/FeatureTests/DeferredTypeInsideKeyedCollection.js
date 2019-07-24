@@ -5,13 +5,14 @@ const jsonComplete = require('/main.js');
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-if (typeof Blob === 'function' && typeof Set === 'function') {
+if (typeof Blob === 'function' && typeof Map === 'function') {
     test('Deferred Types Inside Keyed Collection: Works', (t) => {
         t.plan(3);
 
         const obj = { a: 1 };
         const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
-        const source = new Map([[1, blob]]);
+        const source = new Map();
+        source.set(1, blob);
 
         encode(source, {
             onFinish: (encoded) => {
@@ -31,5 +32,5 @@ if (typeof Blob === 'function' && typeof Set === 'function') {
     });
 }
 else {
-    console.warn('Tests for Deferred Types Inside Keyed Collection skipped because both Blob and Set are not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Deferred Types Inside Keyed Collection skipped because either Blob or Map is not supported in the current environment.'); // eslint-disable-line no-console
 }

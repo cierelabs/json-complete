@@ -1,3 +1,4 @@
+import decompressValues from '/utils/compression/decompressValues.js';
 import extractPointer from '/utils/extractPointer.js';
 import getSystemName from '/utils/getSystemName.js';
 import types from '/types.js';
@@ -17,6 +18,11 @@ const exploreParts = (store, parts) => {
 };
 
 const explorePointer = (store, pointer) => {
+    // If a simple pointer or an already explored pointer, ignore
+    if (types[pointer] || store._decoded[pointer] !== void 0) {
+        return;
+    }
+
     const p = extractPointer(pointer);
 
     // Unknown pointer type
@@ -27,11 +33,6 @@ const explorePointer = (store, pointer) => {
         }
 
         throw new Error(`Cannot decode unrecognized pointer type "${p._key}".`);
-    }
-
-    // If a simple pointer or an already explored pointer, ignore
-    if (types[pointer] || store._decoded[pointer] !== void 0) {
-        return;
     }
 
     store._decoded[pointer] = {
@@ -61,18 +62,21 @@ const explorePointer = (store, pointer) => {
 export default (encoded, options) => {
     options = options || {};
 
+    const parsed = JSON.parse(encoded);
+    const formatted = parsed.slice(1).reduce((accumulator, e) => {
+        accumulator[e[0]] = decompressValues(e[0], e[1], types);
+        return accumulator;
+    }, {});
+
+    const rootPointerKey = parsed[0].split(',')[0];
+
     const store = {
         _compat: options.compat,
         _types: types,
-        _encoded: JSON.parse(encoded).reduce((accumulator, e) => {
-            accumulator[e[0]] = e[1];
-            return accumulator;
-        }, {}),
+        _encoded: formatted,
         _decoded: {},
         _explore: [],
     };
-
-    const rootPointerKey = store._encoded.r;
 
     // Simple pointer, return value
     if (types[rootPointerKey]) {
@@ -97,7 +101,9 @@ export default (encoded, options) => {
     }
 
     // Having explored all of the data structure, fill out data and references
-    Object.values(store._decoded).forEach((dataItem) => {
+    // IE11 and lower do not support Object.values
+    Object.keys(store._decoded).forEach((key) => {
+        const dataItem = store._decoded[key];
         types[dataItem._key]._build(store, dataItem);
     });
 

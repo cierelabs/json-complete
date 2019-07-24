@@ -10,31 +10,21 @@ test('Fallback Reference Tracker: Generates Same Output', (t) => {
     const globalThis = testHelpers.getGlobal();
 
     const oldMap = globalThis.Map;
+    const oldMapSystemName = testHelpers.systemName(globalThis.Map);
 
-    globalThis.Map = {};
+    globalThis.Map = void 0;
 
-    t.equal(testHelpers.systemName(globalThis.Map), '[object Object]');
+    t.equal(testHelpers.systemName(globalThis.Map), '[object Undefined]');
 
     const encoded = encode([1, 2, 1]);
 
     t.deepEqual(testHelpers.simplifyEncoded(encoded), {
-        Ar: [
-            [
-                [
-                    'Nu0',
-                    'Nu1',
-                    'Nu0',
-                ],
-            ],
-        ],
-        Nu: [
-            '1',
-            '2',
-        ],
-        r: 'Ar0',
+        A: 'N0N1N0',
+        N: '7<',
+        r: 'A0',
     });
 
     globalThis.Map = oldMap;
 
-    t.equal(testHelpers.systemName(globalThis.Map), '[object Function]');
+    t.equal(testHelpers.systemName(globalThis.Map), oldMapSystemName);
 });

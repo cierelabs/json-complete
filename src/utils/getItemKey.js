@@ -1,38 +1,20 @@
 import getSystemName from '/utils/getSystemName.js';
 
 export default (store, item) => {
-    if (item === void 0) {
-        return 'un';
+    // Simple Types
+    for (let t = 0; t < store._simpleTypes.length; t += 1) {
+        if (store._simpleTypes[t][0](item)) {
+            return store._simpleTypes[t][1];
+        }
     }
 
-    if (item === null) {
-        return 'nl';
+    // In IE11, Set and Map are supported, but they do not have the expected System Name
+    if (typeof Set === 'function' && item instanceof Set) {
+        return 'U';
     }
 
-    if (item === true) {
-        return 'tr';
-    }
-
-    if (item === false) {
-        return 'fa';
-    }
-
-    if (typeof item === 'number') {
-        if (item === Infinity) {
-            return 'pI';
-        }
-
-        if (item === -Infinity) {
-            return 'nI';
-        }
-
-        if (item !== item) {
-            return 'Na';
-        }
-
-        if (item === 0 && (1 / item) === -Infinity) {
-            return 'n0';
-        }
+    if (typeof Map === 'function' && item instanceof Map) {
+        return 'V';
     }
 
     let systemName = getSystemName(item);

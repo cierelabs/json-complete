@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -90,46 +91,8 @@ test('Object-Wrapped Number: Root Value -0', (t) => {
     t.ok(testHelpers.isNegativeZero(decode(encode(new Number(-0))).valueOf()));
 });
 
-test('Object-Wrapped Number: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-
-    const num = new Number(1);
-    num.x = 2;
-    num[Symbol.for('number')] = 'test';
-
-    const decodedNumberObj = decode(encode([num], {
-        encodeSymbolKeys: true,
-    }))[0];
-
-    t.equal(decodedNumberObj.valueOf(), 1);
-    t.equal(decodedNumberObj.x, 2);
-    t.equal(decodedNumberObj[Symbol.for('number')], 'test');
-});
-
-test('Object-Wrapped Number: Self-Containment', (t) => {
-    t.plan(2);
-
-    const num = new Number(1);
-    num.me = num;
-
-    const decodedNumberObj = decode(encode([num]))[0];
-
-    t.equal(decodedNumberObj.valueOf(), 1);
-    t.equal(decodedNumberObj.me, decodedNumberObj);
-});
-
-test('Object-Wrapped Number: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = new Number(1);
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
+StandardObjectTests('Object-Wrapped Number', 'Number', () => {
+    return new Number(1);
 });
 
 test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
@@ -139,26 +102,12 @@ test('Object-Wrapped Number: Encoding Expected Normal', (t) => {
     source.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'Nu0',
-                ],
-                [
-                    'St0',
-                ],
-                [
-                    'fa',
-                ],
-            ],
-        ],
-        Nu: [
-            '1',
-        ],
-        St: [
+        H: 'N0 S0 $3',
+        N: '4',
+        S: [
             'a',
         ],
-        r: 'NU0',
+        r: 'H0',
     });
 });
 
@@ -168,14 +117,8 @@ test('Object-Wrapped Number: Encoding Expected Infinity', (t) => {
     const source = new Number(Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'pI',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: '$4',
+        r: 'H0',
     });
 });
 
@@ -185,14 +128,8 @@ test('Object-Wrapped Number: Encoding Expected -Infinity', (t) => {
     const source = new Number(-Infinity);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'nI',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: '$5',
+        r: 'H0',
     });
 });
 
@@ -202,14 +139,8 @@ test('Object-Wrapped Number: Encoding Expected NaN', (t) => {
     const source = new Number(NaN);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'Na',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: '$6',
+        r: 'H0',
     });
 });
 
@@ -219,13 +150,7 @@ test('Object-Wrapped Number: Encoding Expected -0', (t) => {
     const source = new Number(-0);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(source)), {
-        NU: [
-            [
-                [
-                    'n0',
-                ],
-            ],
-        ],
-        r: 'NU0',
+        H: '$7',
+        r: 'H0',
     });
 });

@@ -29,9 +29,9 @@ test('String: Encoding Expected', (t) => {
     t.plan(1);
 
     t.deepEqual(testHelpers.simplifyEncoded(encode('a')), {
-        St: [
+        S: [
             'a',
         ],
-        r: 'St0',
+        r: 'S0',
     });
 });

@@ -1,9 +1,9 @@
 import genPrimitive from '/utils/genPrimitive.js';
 
 export default (typeObj) => {
-    typeObj.St = genPrimitive(String);
+    typeObj.S = genPrimitive(String);
 
-    typeObj.Nu = genPrimitive(Number);
+    typeObj.N = genPrimitive(Number, 1);
 
     return typeObj;
 };

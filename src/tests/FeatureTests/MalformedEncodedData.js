@@ -8,38 +8,20 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
     t.plan(1);
 
     const malformedEncoded = JSON.stringify([
+        'R0',
+        '2',
         [
-            'Re',
-            [
-                [
-                    [
-                        'St0',
-                        'St1',
-                        'Nu0',
-                    ],
-                ],
-            ],
+            'R', 'S0S1N0',
         ],
         [
-            'St',
+            'S',
             [
                 '\\s+',
                 '6', // Invalid Regex flag
             ],
         ],
         [
-            'Nu',
-            [
-                '0',
-            ],
-        ],
-        [
-            'r',
-            'Re0',
-        ],
-        [
-            'v',
-            '1.0.0',
+            'N', '0',
         ],
     ]);
 
@@ -47,6 +29,6 @@ test('Malformed Encoded Data: Invalid Regex', (t) => {
         decode(malformedEncoded);
         t.ok(false);
     } catch (e) {
-        t.equal(e.message, 'Cannot decode recognized pointer type "Re".');
+        t.equal(e.message, 'Cannot decode recognized pointer type "R".');
     }
 });

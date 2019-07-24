@@ -6,6 +6,7 @@ const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
 const extremeSizeNumber = '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890';
+const encodedExtremeSizeNumber = '4zhmu9\'id5p]%x8>l&yq4zhmu9\'id5p]%x8>l&yq4zhmu9\'id5p]%x8>l&yq4zhmu9\'';
 
 if (typeof BigInt === 'function') {
     test('BigInt: Normal', (t) => {
@@ -54,13 +55,11 @@ if (typeof BigInt === 'function') {
         t.plan(1);
 
         t.deepEqual(testHelpers.simplifyEncoded(encode(BigInt(extremeSizeNumber))), {
-            Bi: [
-                extremeSizeNumber,
-            ],
-            r: 'Bi0',
+            I: encodedExtremeSizeNumber,
+            r: 'I0',
         });
     });
 }
 else {
-    console.warn('Tests for BigInt type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for BigInt type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

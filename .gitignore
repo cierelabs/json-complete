@@ -1,5 +1,4 @@
 node_modules/
-.nyc_output/
+dist/
 _testing/
-dist/*.png
-dist/*.gz
+.DS_Store

@@ -1,12 +1,31 @@
+const genEqualitySimpleType = (value) => {
+    return {
+        _identify: (comparedTo) => {
+            return value === comparedTo;
+        },
+        _value: value,
+    };
+};
+
 export default (typeObj) => {
-    typeObj.un = { _value: void 0 };
-    typeObj.nl = { _value: null };
-    typeObj.tr = { _value: true };
-    typeObj.fa = { _value: false };
-    typeObj.pI = { _value: Infinity };
-    typeObj.nI = { _value: -Infinity };
-    typeObj.Na = { _value: NaN };
-    typeObj.n0 = { _value: -0 };
+    typeObj.$0 = genEqualitySimpleType(void 0);
+    typeObj.$1 = genEqualitySimpleType(null);
+    typeObj.$2 = genEqualitySimpleType(true);
+    typeObj.$3 = genEqualitySimpleType(false);
+    typeObj.$4 = genEqualitySimpleType(Infinity);
+    typeObj.$5 = genEqualitySimpleType(-Infinity);
+    typeObj.$6 = {
+        _identify: (value) => {
+            return value !== value;
+        },
+        _value: NaN,
+    };
+    typeObj.$7 = {
+        _identify: (value) => {
+            return value === 0 && (1 / value) === -Infinity;
+        },
+        _value: -0,
+    };
 
     return typeObj;
 };

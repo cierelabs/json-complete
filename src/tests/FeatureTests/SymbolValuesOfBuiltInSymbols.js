@@ -24,5 +24,5 @@ if (typeof Symbol === 'function') {
     });
 }
 else {
-    console.warn('Tests for Symbol Values of Built-In Symbols type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for Symbol Values of Built-In Symbols type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

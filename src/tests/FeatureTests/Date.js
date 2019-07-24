@@ -1,14 +1,17 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
+const testDate = 954583260000;
+const testDateEncodedNumber = '#km39)))';
+
 test('Date: Normal', (t) => {
     t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode([new Date(now)]))[0].getTime(), now);
+    t.equal(decode(encode([new Date(testDate)]))[0].getTime(), testDate);
 });
 
 test('Date: Invalid Date', (t) => {
@@ -18,8 +21,7 @@ test('Date: Invalid Date', (t) => {
 
 test('Date: Root Value Normal', (t) => {
     t.plan(1);
-    const now = Date.now();
-    t.equal(decode(encode(new Date(now))).getTime(), now);
+    t.equal(decode(encode(new Date(testDate))).getTime(), testDate);
 });
 
 test('Date: Root Value Invalid Date', (t) => {
@@ -27,71 +29,22 @@ test('Date: Root Value Invalid Date', (t) => {
     t.ok(testHelpers.isNanValue(decode(encode(new Date(''))).getTime()));
 });
 
-test('Date: Arbitrary Attached Data', (t) => {
-    t.plan(3);
-    const now = Date.now();
-    const date = new Date(now);
-    date.x = 2;
-    date[Symbol.for('date')] = 'test';
-    const decodedDate = decode(encode([date], {
-        encodeSymbolKeys: true,
-    }))[0];
-    t.equal(decodedDate.getTime(), now);
-    t.equal(decodedDate.x, 2);
-    t.equal(decodedDate[Symbol.for('date')], 'test');
-});
-
-test('Date: Self-Containment', (t) => {
-    t.plan(2);
-    const now = Date.now();
-    const date = new Date(now);
-    date.me = date;
-    const decodedDate = decode(encode([date]))[0];
-    t.equal(decodedDate.getTime(), now);
-    t.equal(decodedDate.me, decodedDate);
-});
-
-test('Date: Referential Integrity', (t) => {
-    t.plan(2);
-
-    const source = new Date('2018-04-01');
-
-    const decoded = decode(encode({
-        x: source,
-        y: source,
-    }));
-
-    t.equal(decoded.x, decoded.y);
-    t.notEqual(decoded.x, source);
+StandardObjectTests('Date', 'Date', () => {
+    return new Date();
 });
 
 test('Date: Encoding Expected', (t) => {
     t.plan(1);
 
-    const now = Date.now();
-    const date = new Date(now);
+    const date = new Date(testDate);
     date.a = false;
 
     t.deepEqual(testHelpers.simplifyEncoded(encode(date)), {
-        Da: [
-            [
-                [
-                    'Nu0',
-                ],
-                [
-                    'St0',
-                ],
-                [
-                    'fa',
-                ],
-            ],
-        ],
-        St: [
+        D: 'N0 S0 $3',
+        S: [
             'a',
         ],
-        Nu: [
-            String(now),
-        ],
-        r: 'Da0',
+        N: testDateEncodedNumber,
+        r: 'D0',
     });
 });

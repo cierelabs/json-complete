@@ -4,64 +4,23 @@ const jsonComplete = require('/main.js');
 
 const decode = jsonComplete.decode;
 
-const time = 1522558801000;
+const testDate = 954583260000;
+const testDateEncodedNumber = '#km39)))';
 
 const encodedFileInArray = JSON.stringify([
+    'A0',
+    '2',
+    ['A','Z0'],
+    ['Z', 'UE0S0S1N0'],
+    ['UE', 'N1'],
     [
-        'Ar',
-        [
-            [
-                [
-                    'Fi0'
-                ]
-            ]
-        ]
-    ],
-    [
-        'Fi',
-        [
-            [
-                [
-                    'U10',
-                    'St0',
-                    'St1',
-                    'Nu0'
-                ]
-            ]
-        ]
-    ],
-    [
-        'U1',
-        [
-            [
-                [
-                    'Nu1'
-                ]
-            ]
-        ]
-    ],
-    [
-        'St',
+        'S',
         [
             'text/plain',
             '1.txt'
         ]
     ],
-    [
-        'Nu',
-        [
-            String(time),
-            '49'
-        ]
-    ],
-    [
-        'r',
-        'Ar0'
-    ],
-    [
-        'v',
-        '1.0.0'
-    ]
+    ['N', `${testDateEncodedNumber}|9`],
 ]);
 
 
@@ -78,10 +37,10 @@ if (typeof Blob === 'function') {
         };
 
         try {
-            const decoded = decode(encodedFileInArray); // eslint-disable-line
+            decode(encodedFileInArray);
             t.ok(false);
         } catch (e) {
-            t.equal(e.message, 'Cannot decode recognized pointer type "Fi".');
+            t.equal(e.message, 'Cannot decode recognized pointer type "Z".');
         }
 
         globalThis.File = oldFile;
@@ -109,7 +68,7 @@ if (typeof Blob === 'function') {
         t.equal(testHelpers.systemName(obj), '[object Blob]');
         t.equal(obj.name, '1.txt');
         t.equal(obj.type, 'text/plain');
-        t.equal(obj.lastModified, time);
+        t.equal(obj.lastModified, testDate);
 
         const reader = new FileReader();
         reader.addEventListener('loadend', () => {
@@ -123,5 +82,5 @@ if (typeof Blob === 'function') {
     });
 }
 else {
-    console.warn('Tests for File Blob Fallback skipped because Blobs are not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for File Blob Fallback skipped because Blobs are not supported in the current environment.'); // eslint-disable-line no-console
 }

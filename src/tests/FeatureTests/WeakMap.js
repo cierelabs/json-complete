@@ -1,6 +1,7 @@
 const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
 const jsonComplete = require('/main.js');
+const StandardObjectTests = require('/tests/StandardObjectTests.js');
+const testHelpers = require('/tests/testHelpers.js');
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -23,53 +24,10 @@ if (typeof WeakMap === 'function') {
         t.equal(decoded.has, void 0);
     });
 
-    test('WeakMap: Arbitrary Attached Data', (t) => {
-        t.plan(3);
-
-        const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
-        weakMap.x = 2;
-        weakMap[Symbol.for('weakMap')] = 'test';
-
-        const decodedWeakMap = decode(encode([weakMap], {
-            compat: true,
-            encodeSymbolKeys: true,
-        }))[0];
-
-        t.ok(testHelpers.isObject(decodedWeakMap));
-        t.equal(decodedWeakMap.x, 2);
-        t.equal(decodedWeakMap[Symbol.for('weakMap')], 'test');
-    });
-
-    test('WeakMap: Self-Containment', (t) => {
-        t.plan(2);
-
-        const weakMap = new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
-        weakMap.me = weakMap;
-
-        const decodedWeakMap = decode(encode([weakMap], {
-            compat: true,
-        }))[0];
-
-        t.ok(testHelpers.isObject(decodedWeakMap));
-        t.equal(decodedWeakMap.me, decodedWeakMap);
-    });
-
-    test('WeakMap: Referential Integrity', (t) => {
-        t.plan(2);
-
-        const source = new WeakMap([[{ a: 1 }, { b: 2 }]]);
-
-        const decoded = decode(encode({
-            x: source,
-            y: source,
-        }, {
-            compat: true,
-        }));
-
-        t.equal(decoded.x, decoded.y);
-        t.notEqual(decoded.x, source);
-    });
+    StandardObjectTests('WeakMap', 'Object', () => {
+        return new WeakMap([[{ a: { b: 2 } }, { a: { b: 2 } }]]);
+    }, true);
 }
 else {
-    console.warn('Tests for WeakMap type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
+    console.log('Tests for WeakMap type skipped because it is not supported in the current environment.'); // eslint-disable-line no-console
 }

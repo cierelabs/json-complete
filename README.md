@@ -1,6 +1,6 @@
 # json-complete
 
-json-complete can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
+json-complete can turn almost any standard JavaScript data object or value into a JSON-compatible serialized form, and back again. It supports Dates, RegExp, Symbols, Sets, Maps, BigInts, Blobs, and most other built-in JavaScript types! It preserves internal referential integrity, handles circular references, handles arbitrarily deep nesting, and it cannot cause data collisions. json-complete has no dependencies and is less than 3.7KB when min-zipped. json-complete is distributed with both ES Module and CommonJS support.
 
 
 
@@ -26,8 +26,8 @@ jsonComplete.encode(value, [options={}]);
 
 * `value` - (any type) Some value to encode.
 * `options` - (Object) Optional. Option definitions:
-  - `options.compat` - (truthy or falsy) Optional. Makes the encoder more forgiving of unknown or incompatible Types. See **Option: Compat Mode** below.
-  - `options.encodeSymbolKeys` - (truthy or falsy) Optional. Turns on the encoder's ability to encode Symbol keys on Types, at the cost of lost information. See **Option: Symbol Key Encoding** below.
+  - `options.compat` - (truthy or falsy) Optional. Makes the encoder more forgiving of unknown or incompatible Types, at the cost of lost information. See **Option: Compat Mode** below.
+  - `options.encodeSymbolKeys` - (truthy or falsy) Optional. Turns on the encoder's ability to encode Symbol keys on Types. See **Option: Symbol Key Encoding** below.
   - `options.onFinish` - (Function) Optional, except when using a Deferred Type. If specified, the encoder will call the provided function with the encoded String as an argument, rather than returning it from the `encode` function. This option can be useful for creating a Promise-based wrapper. This option is **required** if the `value` contains a Deferred Type, since Deferred Types cannot be synchronously encoded.
 * *return value* - (String) - The encoded String form of `value`. If `options.onFinish` is specified, the return value is `undefined`.
 
@@ -62,7 +62,7 @@ input.circular = input;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// [["Ob",[[["St0","St1","St2","St3","St4"],["Nu0","Bi0","Ob0","Na","Se0"]]]],["St",["a","b","circular","nan","set"]],["Nu",["1","2","3"]],["Bi",["81129638414606663681390495662081"]],["Se",[[["Nu0","Nu1","Nu2"]]]],["r","Ob0"],["v","1.0.0"]]
+// ["O0,2",["O","S0S1S2S3S4 N0I0O0$6U0"],["S",["a","b","circular","nan","set"]],["N","7<{:"],["I","whame456(%o@wj%!#mo)wg"],["U","N0N1N2"]]
 
 console.log(jsonComplete.decode(encoded));
 // Exact same structure and value as input
@@ -79,7 +79,7 @@ var input = false;
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// [["r","fa"],["v","1.0.0"]]
+// ["$3,2"]
 
 console.log(jsonComplete.decode(encoded));
 // false
@@ -101,7 +101,7 @@ var encodedWithSymbolKeys = jsonComplete.encode(input, {
     encodeSymbolKeys: true,
 });
 console.log(encodedWithSymbolKeys);
-// [["Ob",[[["St0","Sy0"],["Nu0","Nu1"]]]],["St",["a"]],["Sy",[" "]],["Nu",["1","2"]],["r","Ob0"],["v","1.0.0"]]
+// ["O0,2",["O","S0P0 N0N1"],["S",["a"]],["P",["s"]],["N","7<"]]
 
 var decodeWithSymbolKeys = jsonComplete.decode(encodedWithSymbolKeys);
 console.log(decodeWithSymbolKeys);
@@ -109,7 +109,7 @@ console.log(decodeWithSymbolKeys);
 
 var encoded = jsonComplete.encode(input);
 console.log(encoded);
-// [["Ob",[[["St0"],["Nu0"]]]],["St",["a"]],["Nu",["1"]],["r","Ob0"],["v","1.0.0"]]
+// ["O0,2",["O","S0 N0"],["S",["a"]],["N","4"]]
 
 console.log(jsonComplete.decode(encoded));
 // {a: 1}
@@ -129,7 +129,7 @@ var encoded = jsonComplete.encode(badIdea, {
     compat: true,
 });
 console.log(encoded);
-// [["Ob",[[["St0"],["fa"]]]],["St",["a"]],["r","Ob0"],["v","1.0.0"]]
+// ["O0,2",["O","S0 $3"],["S",["a"]]]
 // Because compat mode was used, the Math object is encoded as an empty object
 
 console.log(jsonComplete.decode(encoded));
@@ -148,14 +148,13 @@ var input = [new Blob(['data'], { type: 'application/json' }), 1];
 var encoded = jsonComplete.encode(input, {
     onFinish: function(encoded) {
         console.log(encoded);
-        // [["Ar",[[["Bl0","Nu0"]]]],["Bl",[[["U10","St0"]]]],["Nu",["1","100","97","116"]],["St",["application/json"]],["U1",[[["Nu1","Nu2","Nu3","Nu2"]]]],["r","Ar0"],["v","1.0.0"]]
+        // ["A0,2",["A","Y0N0"],["Y","UE0S0"],["N","7;)/#~4m"],["S",["application/json"]],["UE","N1N2N3N2"]]
 
         console.log(jsonComplete.decode(encoded));
         // [(BLOB: content is "data", type is "application/json"), 1]
     },
 });
 ```
-
 
 
 #### Example: Deferred Type and onFinish Option Not Provided
@@ -170,7 +169,7 @@ var encoded = jsonComplete.encode(input, {
     compat: true,
 });
 console.log(encoded);
-// [["Ar",[[["Bl0","Nu0"]]]],["Bl",[[["un","St0"]]]],["Nu",["1"]],["St",["application/json"]],["r","Ar0"],["v","1.0.0"]]
+// ["A0,2",["A","Y0N0"],["Y","$0S0"],["N","4"],["S",["application/json"]]]
 // [(BLOB: content is empty, type is "application/json"), 1]
 ```
 
@@ -195,10 +194,11 @@ console.log(encoded);
 | ❌     | ✅             | Numbers: Object-Wrapped (NaN, +/-Infinity, -0)       |
 | ✅     | ✅             | Strings                                              |
 | ❌     | ✅             | Strings: Object-Wrapped                              |
-| ❌     | ✅             | Regex                                                |
-| ❌     | ✅             | Regex: Retained lastIndex                            |
 | ❌     | ✅             | Dates                                                |
 | ❌     | ✅             | Dates: Invalid Dates                                 |
+| ❌     | ✅             | Error (built-in Error objects)                       |
+| ❌     | ✅             | Regex                                                |
+| ❌     | ✅             | Regex: Retained lastIndex                            |
 | ❌     | ✅             | Symbols                                              |
 | ❌     | ✅             | Symbols: Retained Identifiers                        |
 | ❌     | ✅             | Symbols: Registered Symbols                          |
@@ -224,6 +224,8 @@ console.log(encoded);
 | ❌     | ✅ `3`         | Blob                                                 |
 | ❌     | ✅ `3`         | File                                                 |
 | ❌     | ✅             | BigInt                                               |
+| ❌     | ✅             | BigInt64Array                                        |
+| ❌     | ✅             | BigUint64Array                                       |
 
 * `1` - JSON will encode sparse Arrays by injecting null values into the unassigned indices.
 * `2` - JSON will encode Arguments Objects as an Object where the indices are converted to String keys, and will not retain other non-integer keys.
@@ -262,6 +264,13 @@ Any time two or more references point to the same place in memory, the value at 
 Symbols are an exception, since they are both a Primitive and Referential Type. Though an individual Symbol reference will not be stored more than once, other Symbols with the same signature will not be deduplicated.
 
 In contrast, JSON will simply duplicate the data multiple times.
+
+
+#### Simple Compression
+
+Number and BigInt type values are compressed automatically by approximately 33%.
+
+JSON performs no compression, though it was designed explicitly without that intent.
 
 
 #### Arbitrarily Deep Nesting
@@ -310,6 +319,7 @@ If the `compat` option is set to a truthy value, the library attempts to do its 
   - If the Pointer type is not recognized, the Pointer string itself will be decoded in its place, rather than attempt to get its value.
   - If a given Type cannot be constructed due to malformed encoded data or the environment does not support a given Type, the Type will be ignored and skipped over, remaining undefined.
   - If the environment does not support Symbols, but the encoded data defines a Symbol key, that particular key-value pair will be skipped.
+  - If the environment does not support the Sticky or Unicode flags in RegExp objects, but the encoded data defines such a flag, the RegExp object will be created without either of those flags.
   - If attempting to decode a File object in an environment that supports Files but doesn't support the File Constructor (IE10, IE11, and Edge), the File will be decoded as a Blob type, with the `name` and `lastModified` values simply attached as properties.
 
 Compat Mode will **NOT** prevent throws related to significantly malformed encoded data when decoding.
@@ -324,30 +334,33 @@ By default, json-complete will ignore Symbol keys. By setting the `encodeSymbolK
 On the other hand, Symbols stored in value positions, not key positions, will not be ignored regardless of the `encodeSymbolKeys` setting.
 
 
-#### Library Size
+
+## Library Size
 
 | Compression | ES Module  | CommonJS |
 |-------------|------------|----------|
-| Minified    | 7343 bytes | 8396 bytes |
-| gzip        | 2924 bytes | 2947 bytes |
-| zopfli      | 2871 bytes | 2895 bytes |
-| brotli      | 2681 bytes | 2706 bytes |
-
+| Minified    | 9244 bytes | 10391 bytes |
+| gzip        | 3681 bytes | 3697 bytes |
+| zopfli      | 3598 bytes | 3623 bytes |
+| brotli      | 3332 bytes | 3360 bytes |
 
 
 ## Tests
 
-There are currently 670 tests, constituting 100% code coverage across all platforms.
+There are currently over 730 tests, with some tests and branches only applying to some platforms. All code paths should be covered by at least one test.
 
-Only Google Chrome is currently able to run all of them due to differences in Type support across various browser and Node platforms.
+Only Google Chrome is currently able to run all of the primary tests due to differences in Type support across various browser and Node platforms.
 
 The library and all its supportable tests have been tested on:
 
-* Google Chrome
-* Firefox
-* Safari (Desktop)
+* Google Chrome (72)
+* Firefox (66)
+* Safari (12.1)
 * Edge (17)
-* Node (8.11.3)
+* Internet Explorer 11
+* Internet Explorer 10
+* Internet Explorer 9
+* Node (11.4.0)
 
 
 
@@ -355,7 +368,11 @@ The library and all its supportable tests have been tested on:
 
 #### Relative JSON Size
 
-In very unscientific testing, for a large, non-circular object, the output length of both the JSON encoded string and the json-complete encoded string were compared. The json-complete string was approximately 25% larger than the JSON string.
+In very unscientific testing, for a large, non-circular object [generated here](https://www.json-generator.com/), the output length of both the JSON encoded string and the json-complete encoded string were compared. The json-complete string was actually 18% smaller than the JSON string. The reduction almost certainly has to do with string and number deduplication. Indeed, when compressing them, the gzipped json-complete output became 8% larger than the gzipped json output. Thus, roughly speaking, the absolute cost of storing referencial data in addition to the information content is about 8%.
+
+For a much smaller object, with less duplication of data, the resulting comparion saw the json-complete encoded file being about 15% larger than the equivalent JSON string. When gzipped, the difference remained about the same.
+
+In conclusion, the relative size of a json-complete string, with all it's additional data and support, is roughly equivalent to a JSON string with the same data. Some types of data will be more or less efficient, mileage will vary. However, expect to have an overhead of about 8% if gzipping json-complete data versus JSON data.
 
 
 #### Unsupported Types
@@ -390,26 +407,91 @@ For some specific examples:
 In an extremely rare edge case, which should be avoided, built-in Symbols can be stored as values on other Objects, since the Symbol is a Reference Type like most other types. When encoding these values, the Symbol is converted to the String form, which removes the reference to the original built-in Symbol. When decoding them, the Symbol will be unique, but it won't be the same kind of Symbol.
 
 
-#### Microsoft Edge Limitations
 
-Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in the references Map. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native Map.
+## Platform Support
 
-Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+The table below illustrates the primary feature support differences on various platforms. Below that, more detailed explainations of specific limitations, beyond simply not supporting a type, are explained.
+
+| Chrome (72) | Node (11.4) | Firefox (66) | Safari (12.1) | Edge (17) | IE11  | IE10 | IE9 |                                                |
+|:-----------:|:-----------:|:------------:|:-------------:|:---------:|:-----:|:----:|:---:|------------------------------------------------|
+| 757         | 701         | 688          | 688           | 663       | 540   | 457  | 294 | Tests Runnable                                 |
+| ✅           | ✅           | ✅            | ✅             | ❌         | ❌     | ❌    | ❌   | Faster Reference Encoder                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | undefined                                      |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | null                                           |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Booleans                                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Booleans: Object-Wrapped                       |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Numbers: Normal                                |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: NaN                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: -Infinity                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: Infinity                               |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Number: -0                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Numbers: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Strings                                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Strings: Object-Wrapped                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Dates                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Dates: Invalid Dates                           |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Error                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Regex                                          |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Regex Sticky Flag                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Regex Unicode Flag                             |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | Symbol                                         |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Objects                                        |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Arrays                                         |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ✅   | Arguments Object                               |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | ArrayBuffer                                    |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | SharedArrayBuffer                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int8Array                                      |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint8Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Uint8ClampedArray                              |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int16Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint16Array                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Int32Array                                     |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Uint32Array                                    |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Float32Array                                   |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Float64Array                                   |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Set                                            |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | Map                                            |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ❌     | ❌    | ❌   | WeakSet Tests                                  |
+| ✅           | ✅           | ✅            | ✅             | ✅         | ✅     | ❌    | ❌   | WeakMap Tests                                  |
+| ✅           | ❌           | ✅            | ✅             | ✅         | ✅     | ✅    | ❌   | Blob                                           |
+| ✅           | ❌           | ✅            | ✅             | ⚠ `1`     | ⚠ `1` | ⚠ `1` | ❌   | File                                          |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigInt                                         |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigInt64Array                                  |
+| ✅           | ✅           | ❌            | ❌             | ❌         | ❌     | ❌    | ❌   | BigUint64Array                                 |
+
+* `1` - Cannot construct a native File type. In compat mode, encoded File objects will be decoded as duck-typed Blobs.
+
+
+#### Node (11.4.0) Limitations
+
+* **No Blob or File Support** - Node supports `Buffer` instead. In the future, the ability to encode or decode between these types will be provided through extra utility functions.
+
+
+#### Microsoft Edge (17) Limitations
+
+* **Slower Reference Encoder** - Some versions of Microsoft Edge prior to version 18 can support Symbols and Map. However, they have a race condition of some sort that can sometimes allow Symbols used as Object keys to be duplicated in an ES2015 Map collection. A special test is performed to detect this, and if such an issue is detected, the library will fall back to a list-based implementation, rather than using native ES2015 Map.
+* **Limited File Decoding** - Microsoft Edge supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
 
 
 #### Internet Explorer 11 Limitations
 
-Not yet supported.
+* **Slower Reference Encoder** - Even though IE11 supports a Map type, it differs slightly from other implementations. To be safe, it is not used internally. As a result, the performance of the encoder can be significantly worse than in other browsers.
+* **Limited File Decoding** - Internet Explorer 11 supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+* **Distinct Negative Zero Keyed Collections** - The keys in Maps and the values in Set can support negative zero (-0) as a distinct value separate from 0. This is allowed, but users should be aware of this in case they are also storing a zero value, and then expecting to have two different results when decoding on a more modern browser.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 10 Limitations
 
-Not yet supported.
+* **Slower Reference Encoder** - IE10 does not support Map, so it falls back to a slower, list-based implementation.
+* **Limited File Decoding** - Internet Explorer 10 supports File types, but does not support the File constructor. If attempting to decode an encoded File object, json-complete will throw. However, in compat mode, the data will be decoded as a Blob type with `lastModified` and `name` properties added as normal properties.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 9 Limitations
 
-Not yet supported.
+* **Slower Reference Encoder** - IE10 does not support Map, so it falls back to a slower, list-based implementation.
+* **No Sticky and Unicode Regex Flags** - The sticky and unicode flags on RegExp objects are not supported. If attempting to decode a RegExp object with one or both of these flags, an error will be thrown. In compat mode, the decoder will instead generate a RegExp object without those flags.
 
 
 #### Internet Explorer 8 Limitations
@@ -458,6 +540,8 @@ Not yet supported.
   - Uint32Array
   - Float32Array
   - Float64Array
+  - BigInt64Array
+  - BigUint64Array
 * Reference Types - Any value that is stored in a variable via a pointer, internally. The equality operator checks the reference, not the value.
   - All Object-like Types
   - All Array-like Types
@@ -501,20 +585,35 @@ Not yet supported.
 - [x] Convert the output to string and allow the decoder to accept a string
 - [x] Update decoding error messages for types not supported in a given environment
 - [x] Release 1.0.0 publicly
+- [x] Add support for BigInt64Array and BigUint64Array.
+- [x] Split out and add if checks around Arbitrary Attached Data tests that use symbols.
+- [x] Explore String compressed form for internal arrays.
+- [x] Support IE11
+- [x] Support IE10
+- [x] Support IE9
+- [x] Write script that will convert between different data versions.
+- [x] Reserve several key characters for future use and make all simple types use the same key character.
+- [x] Normalize the key character usage across types, prepping for making allowing custom types.
+- [x] Reduced size of intro data by using comma-separated values.
+- [x] Generalize Simple Type identification.
+- [x] Explore simple numerical compression for Number and BigInt types (Base91 encoding for '0-9', '.', 'e', '-', '+')
 
 
 ## Future Plans
-- [ ] Add support for BigInt64Array and BigUint64Array.
+- [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey. Generalize all remaining types Types to do the same.
+- [ ] Switch from custom comparison functions with an Object.is polyfill.
+- [ ] Support saving property metadata like configurable and writable.
+- [ ] Support saving object metadata like seal and freeze.
+- [ ] Make it clear that only enumerable properties and Symbols will be saved.
+- [ ] Share no-ops across objects.
+- [ ] Change the 'Ignore built-in Symbols' code to work more natually using `propertyIsEnumerable`.
+- [ ] Support custom types.
 - [ ] Write node helpers that will translate to and from Blob/File types using Buffer and object data.
-- [ ] Split out and add if checks around Arbitrary Attached Data tests that use symbols.
-- [ ] Support IE11
-- [ ] Support IE10
-- [ ] Support IE9
+- [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.
 - [ ] Legacy version that has no support for Symbol, Keyed Collection Types, Typed Array types, ArrayBuffer, SharedArrayBuffer, Blob, File, or BigInt types and provides its own limited JSON.stringify and JSON.parse just for strings and arrays.
 - [ ] Support IE8 with legacy version
 - [ ] Support IE7 with legacy version
 - [ ] Support IE6 with legacy version
 - [ ] Create Promise wrapper so the asynchronous form can be used with Promises or await.
-- [ ] Explore String compressed form for internal arrays.
+- [ ] Create webpage for converting between versions and visually showing the difference between JSON output and json-complete output.
 - [ ] Move tests to [BrowserStack](https://www.browserstack.com/) to provide more coverage of available environments.
-- [ ] Update library export structure to allow more flexibility to only import the encoder or decoder portions.

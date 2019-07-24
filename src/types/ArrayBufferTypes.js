@@ -7,6 +7,7 @@ import getSystemName from '/utils/getSystemName.js';
 const genArrayBuffer = (type) => {
     return {
         _systemName: getSystemName(new type()),
+        _compressionType: 2,
         _encodeValue: (reference, attachments) => {
             return encodeWithAttachments([Array.prototype.slice.call(new Uint8Array(reference))], attachments);
         },
@@ -29,14 +30,14 @@ const genArrayBuffer = (type) => {
 export default (typeObj) => {
     /* istanbul ignore else */
     if (typeof ArrayBuffer === 'function') {
-        typeObj.AB = genArrayBuffer(ArrayBuffer);
+        typeObj.W = genArrayBuffer(ArrayBuffer);
     }
 
     // Support does not exist or was removed from most environments due to Spectre and Meltdown vulnerabilities
     // https://caniuse.com/#feat=sharedarraybuffer
     /* istanbul ignore else */
     if (typeof SharedArrayBuffer === 'function') {
-        typeObj.Sh = genArrayBuffer(SharedArrayBuffer);
+        typeObj.X = genArrayBuffer(SharedArrayBuffer);
     }
 
     return typeObj;
