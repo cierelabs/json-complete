@@ -335,6 +335,12 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 
 
+## Benchmarks
+
+Extensive comparisons between json-complete and over 30 other methods of creating serialized data have been compared. Please view the [benchmarking results](docs/benchmarks/README.md)
+
+
+
 ## Library Size
 
 | Compression | ES Module  | CommonJS |

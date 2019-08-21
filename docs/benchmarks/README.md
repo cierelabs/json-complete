@@ -16,69 +16,69 @@ Here we compare relative speed for encoding and decoding various types of data i
 
 Links to all tested libraries below.
 
-## Node (11.4.0) - [Data](./data/NodeRun.json)
+## Node (11.4.0) - [Data](data/NodeRun.json)
 
 ### encode singleValue
-![Node - encode - singleValue](./data/node-encode-singleValue.svg)
+![Node - encode - singleValue](data/node-encode-singleValue.svg)
 
 ### decode singleValue
-![Node - decode - singleValue](./data/node-decode-singleValue.svg)
+![Node - decode - singleValue](data/node-decode-singleValue.svg)
 
 ### encode smallData
-![Node - encode - smallData](./data/node-encode-smallData.svg)
+![Node - encode - smallData](data/node-encode-smallData.svg)
 
 ### decode smallData
-![Node - decode - smallData](./data/node-decode-smallData.svg)
+![Node - decode - smallData](data/node-decode-smallData.svg)
 
 ### decode largeData
-![Node - decode - largeData](./data/node-decode-largeData.svg)
+![Node - decode - largeData](data/node-decode-largeData.svg)
 
 ### encode largeData
-![Node - encode - largeData](./data/node-encode-largeData.svg)
+![Node - encode - largeData](data/node-encode-largeData.svg)
 
 
 
-## Google Chrome (76) - [Data](./data/ChromeRun.json)
+## Google Chrome (76) - [Data](data/ChromeRun.json)
 
 ### encode singleValue
-![Chrome - encode - singleValue](./data/chrome-encode-singleValue.svg)
+![Chrome - encode - singleValue](data/chrome-encode-singleValue.svg)
 
 ### decode singleValue
-![Chrome - decode - singleValue](./data/chrome-decode-singleValue.svg)
+![Chrome - decode - singleValue](data/chrome-decode-singleValue.svg)
 
 ### encode smallData
-![Chrome - encode - smallData](./data/chrome-encode-smallData.svg)
+![Chrome - encode - smallData](data/chrome-encode-smallData.svg)
 
 ### decode smallData
-![Chrome - decode - smallData](./data/chrome-decode-smallData.svg)
+![Chrome - decode - smallData](data/chrome-decode-smallData.svg)
 
 ### decode largeData
-![Chrome - decode - largeData](./data/chrome-decode-largeData.svg)
+![Chrome - decode - largeData](data/chrome-decode-largeData.svg)
 
 ### encode largeData
-![Chrome - encode - largeData](./data/chrome-encode-largeData.svg)
+![Chrome - encode - largeData](data/chrome-encode-largeData.svg)
 
 
 
-## Firefox (68) - [Data](./data/FirefoxRun.json)
+## Firefox (68) - [Data](data/FirefoxRun.json)
 
 ### encode singleValue
-![Firefox - encode - singleValue](./data/firefox-encode-singleValue.svg)
+![Firefox - encode - singleValue](data/firefox-encode-singleValue.svg)
 
 ### decode singleValue
-![Firefox - decode - singleValue](./data/firefox-decode-singleValue.svg)
+![Firefox - decode - singleValue](data/firefox-decode-singleValue.svg)
 
 ### encode smallData
-![Firefox - encode - smallData](./data/firefox-encode-smallData.svg)
+![Firefox - encode - smallData](data/firefox-encode-smallData.svg)
 
 ### decode smallData
-![Firefox - decode - smallData](./data/firefox-decode-smallData.svg)
+![Firefox - decode - smallData](data/firefox-decode-smallData.svg)
 
 ### decode largeData
-![Firefox - decode - largeData](./data/firefox-decode-largeData.svg)
+![Firefox - decode - largeData](data/firefox-decode-largeData.svg)
 
 ### encode largeData
-![Firefox - encode - largeData](./data/firefox-encode-largeData.svg)
+![Firefox - encode - largeData](data/firefox-encode-largeData.svg)
 
 
 ## Library Links
@@ -87,7 +87,6 @@ Links to all tested libraries below.
 * [@msgpack/msgpack](https://www.npmjs.com/package/@msgpack/msgpack)
 * [altjson](https://www.npmjs.com/package/altjson)
 * [bson](https://www.npmjs.com/package/bson)
-* [coffeescript](https://www.npmjs.com/package/coffeescript)
 * [fast-json-stable-stringify](https://www.npmjs.com/package/fast-json-stable-stringify)
 * [fast-safe-stringify](https://www.npmjs.com/package/fast-safe-stringify)
 * [flatted](https://www.npmjs.com/package/flatted)
