@@ -1,0 +1,1661 @@
+[
+    {
+        "lib": "altjson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 1179749,
+            "rme": "1.56"
+        }
+    },
+    {
+        "lib": "altjson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 240349,
+            "rme": "55.03"
+        }
+    },
+    {
+        "lib": "altjson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 107204,
+            "rme": "1.91"
+        }
+    },
+    {
+        "lib": "altjson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 133621,
+            "rme": "2.89"
+        }
+    },
+    {
+        "lib": "altjson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 325,
+            "rme": "3.80"
+        }
+    },
+    {
+        "lib": "altjson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 489,
+            "rme": "4.56"
+        }
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 1824523,
+            "rme": "1.65"
+        }
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 168018,
+            "rme": "0.60"
+        }
+    },
+    {
+        "lib": "fast-json-stable-stringify",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 1138,
+            "rme": "2.79"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 4675967,
+            "rme": "3.27"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 4141429,
+            "rme": "0.95"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 1037202,
+            "rme": "3.77"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 672375,
+            "rme": "2.11"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 4306,
+            "rme": "3.54"
+        }
+    },
+    {
+        "lib": "JSON (native)",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 3030,
+            "rme": "0.97"
+        }
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 2637671,
+            "rme": "0.68"
+        }
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 421061,
+            "rme": "0.79"
+        }
+    },
+    {
+        "lib": "fast-safe-stringify",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 2209,
+            "rme": "0.69"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 394938,
+            "rme": "4.55"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 533703,
+            "rme": "1.92"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 116872,
+            "rme": "1.11"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 77793,
+            "rme": "0.91"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 387,
+            "rme": "6.45"
+        }
+    },
+    {
+        "lib": "flatted",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 446,
+            "rme": "1.29"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 359176,
+            "rme": "0.72"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 2839674,
+            "rme": "0.91"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 28882,
+            "rme": "1.58"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 145121,
+            "rme": "5.14"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 587,
+            "rme": "2.68"
+        }
+    },
+    {
+        "lib": "gson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 1781,
+            "rme": "4.47"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 75169,
+            "rme": "5.16"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 75988,
+            "rme": "0.67"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 77345,
+            "rme": "2.21"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 42639,
+            "rme": "0.84"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 115,
+            "rme": "1.11"
+        }
+    },
+    {
+        "lib": "bson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 229,
+            "rme": "1.73"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 85751,
+            "rme": "6.64"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 86463,
+            "rme": "2.27"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 25129,
+            "rme": "3.89"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 4812,
+            "rme": "1.07"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 181,
+            "rme": "8.79"
+        }
+    },
+    {
+        "lib": "json-complete",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 122,
+            "rme": "6.00"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 581240,
+            "rme": "6.31"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 61366,
+            "rme": "1.44"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 52403,
+            "rme": "1.76"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 8782,
+            "rme": "1.88"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 122,
+            "rme": "5.97"
+        }
+    },
+    {
+        "lib": "ison",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 66.69,
+            "rme": "1.17"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 127732,
+            "rme": "11.09"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 32139,
+            "rme": "1.54"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 18131,
+            "rme": "3.07"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 5446,
+            "rme": "1.25"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 269,
+            "rme": "3.43"
+        }
+    },
+    {
+        "lib": "json-literal",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 111,
+            "rme": "7.96"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 44927,
+            "rme": "2.09"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 183196,
+            "rme": "1.38"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 44094,
+            "rme": "2.28"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 105084,
+            "rme": "3.57"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 1840,
+            "rme": "4.06"
+        }
+    },
+    {
+        "lib": "json-helpers",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 1046,
+            "rme": "1.64"
+        }
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 126954,
+            "rme": "2.31"
+        }
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 101828,
+            "rme": "1.38"
+        }
+    },
+    {
+        "lib": "json-stringify-safe",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 1031,
+            "rme": "0.66"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 268383,
+            "rme": "9.57"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 131236,
+            "rme": "1.52"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 46831,
+            "rme": "1.59"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 55997,
+            "rme": "1.24"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 517,
+            "rme": "3.40"
+        }
+    },
+    {
+        "lib": "json-cycle",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 1341,
+            "rme": "5.30"
+        }
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 207707,
+            "rme": "7.01"
+        }
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 38191,
+            "rme": "1.36"
+        }
+    },
+    {
+        "lib": "json-stable-stringify",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 136,
+            "rme": "6.87"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 39163,
+            "rme": "1.37"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 50657,
+            "rme": "1.19"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 80437,
+            "rme": "2.34"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 115357,
+            "rme": "0.69"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 37.32,
+            "rme": "0.96"
+        }
+    },
+    {
+        "lib": "json-stringify-date",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 294,
+            "rme": "2.80"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 187466,
+            "rme": "1.47"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 698221,
+            "rme": "1.47"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 23887,
+            "rme": "1.12"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 84307,
+            "rme": "1.49"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 73.58,
+            "rme": "2.25"
+        }
+    },
+    {
+        "lib": "json3",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 700,
+            "rme": "3.05"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 73875,
+            "rme": "7.82"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 173460,
+            "rme": "1.57"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 45104,
+            "rme": "1.29"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 20505,
+            "rme": "1.92"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 35.06,
+            "rme": "1.53"
+        }
+    },
+    {
+        "lib": "json7",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 97.88,
+            "rme": "13.41"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 81213,
+            "rme": "10.32"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 180693,
+            "rme": "1.05"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 49393,
+            "rme": "1.37"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 22020,
+            "rme": "1.56"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 36.12,
+            "rme": "2.58"
+        }
+    },
+    {
+        "lib": "json5",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 98.05,
+            "rme": "5.68"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 424611,
+            "rme": "5.40"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 413846,
+            "rme": "1.72"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 38633,
+            "rme": "1.60"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 45497,
+            "rme": "2.20"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 89.59,
+            "rme": "3.65"
+        }
+    },
+    {
+        "lib": "jsonify",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 399,
+            "rme": "1.88"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 123101,
+            "rme": "13.56"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 50709,
+            "rme": "2.59"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 50934,
+            "rme": "9.33"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 54801,
+            "rme": "1.58"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 304,
+            "rme": "0.94"
+        }
+    },
+    {
+        "lib": "MessagePack",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 133,
+            "rme": "3.01"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 502477,
+            "rme": "2.03"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 110123,
+            "rme": "2.32"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 41168,
+            "rme": "2.70"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 24010,
+            "rme": "1.35"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 94.08,
+            "rme": "1.16"
+        }
+    },
+    {
+        "lib": "kson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 436,
+            "rme": "5.21"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 50686,
+            "rme": "12.43"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 44795,
+            "rme": "3.33"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 26728,
+            "rme": "0.93"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 87716,
+            "rme": "9.40"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 101,
+            "rme": "21.86"
+        }
+    },
+    {
+        "lib": "pson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 103,
+            "rme": "4.06"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 147730,
+            "rme": "7.21"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 117073,
+            "rme": "1.94"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 127627,
+            "rme": "3.49"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 78278,
+            "rme": "3.33"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 1865,
+            "rme": "8.99"
+        }
+    },
+    {
+        "lib": "qjson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 773,
+            "rme": "4.62"
+        }
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 42556,
+            "rme": "1.70"
+        }
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 38903,
+            "rme": "1.63"
+        }
+    },
+    {
+        "lib": "serialize-javascript",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 777,
+            "rme": "6.14"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 87644,
+            "rme": "1.66"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 143590,
+            "rme": "1.64"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 33900,
+            "rme": "2.40"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 79149,
+            "rme": "5.62"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 92,
+            "rme": "4.26"
+        }
+    },
+    {
+        "lib": "rrjson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 925,
+            "rme": "2.41"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 69180,
+            "rme": "5.72"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 52390,
+            "rme": "1.49"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 26183,
+            "rme": "2.11"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 8248,
+            "rme": "1.96"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 101,
+            "rme": "9.98"
+        }
+    },
+    {
+        "lib": "rson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 125,
+            "rme": "9.32"
+        }
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 46714,
+            "rme": "3.24"
+        }
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 15325,
+            "rme": "3.25"
+        }
+    },
+    {
+        "lib": "serialize-to-js",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 49.81,
+            "rme": "7.27"
+        }
+    },
+    {
+        "lib": "snapshot",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "snapshot",
+        "op": "decode",
+        "data": "smallData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "snapshot",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Unsupported"
+    },
+    {
+        "lib": "snapshot",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 30065,
+            "rme": "3.41"
+        }
+    },
+    {
+        "lib": "snapshot",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 41179,
+            "rme": "14.41"
+        }
+    },
+    {
+        "lib": "snapshot",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 298,
+            "rme": "9.20"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 96371,
+            "rme": "18.33"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 269749,
+            "rme": "3.16"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 11214,
+            "rme": "2.48"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 35605,
+            "rme": "7.45"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 188,
+            "rme": "18.16"
+        }
+    },
+    {
+        "lib": "resurrect-js",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 519,
+            "rme": "15.52"
+        }
+    },
+    {
+        "lib": "xson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 138483,
+            "rme": "4.11"
+        }
+    },
+    {
+        "lib": "xson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": "Failed"
+    },
+    {
+        "lib": "xson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 18532,
+            "rme": "2.22"
+        }
+    },
+    {
+        "lib": "xson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 2048,
+            "rme": "4.15"
+        }
+    },
+    {
+        "lib": "xson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 976,
+            "rme": "6.20"
+        }
+    },
+    {
+        "lib": "xson",
+        "op": "decode",
+        "data": "largeData",
+        "result": "Failed"
+    },
+    {
+        "lib": "telejson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 47585,
+            "rme": "6.50"
+        }
+    },
+    {
+        "lib": "telejson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 41111,
+            "rme": "2.51"
+        }
+    },
+    {
+        "lib": "telejson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 15741,
+            "rme": "3.28"
+        }
+    },
+    {
+        "lib": "telejson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 7047,
+            "rme": "2.54"
+        }
+    },
+    {
+        "lib": "telejson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 254,
+            "rme": "7.43"
+        }
+    },
+    {
+        "lib": "telejson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 288,
+            "rme": "11.61"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "encode",
+        "data": "singleValue",
+        "result": {
+            "hz": 99796,
+            "rme": "9.95"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "decode",
+        "data": "singleValue",
+        "result": {
+            "hz": 51468,
+            "rme": "2.83"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "encode",
+        "data": "smallData",
+        "result": {
+            "hz": 31468,
+            "rme": "3.21"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "decode",
+        "data": "smallData",
+        "result": {
+            "hz": 21521,
+            "rme": "2.61"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "encode",
+        "data": "largeData",
+        "result": {
+            "hz": 803,
+            "rme": "13.22"
+        }
+    },
+    {
+        "lib": "zson",
+        "op": "decode",
+        "data": "largeData",
+        "result": {
+            "hz": 241,
+            "rme": "5.07"
+        }
+    }
+]

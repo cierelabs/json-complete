@@ -335,6 +335,12 @@ On the other hand, Symbols stored in value positions, not key positions, will no
 
 
 
+## Benchmarks
+
+Extensive comparisons between json-complete and over 30 other methods of creating serialized data have been compared. Please view the [benchmarking results](docs/benchmarks/README.md).
+
+
+
 ## Library Size
 
 | Compression | ES Module  | CommonJS |
@@ -597,9 +603,11 @@ Not yet supported.
 - [x] Reduced size of intro data by using comma-separated values.
 - [x] Generalize Simple Type identification.
 - [x] Explore simple numerical compression for Number and BigInt types (Base91 encoding for '0-9', '.', 'e', '-', '+')
+- [x] Add Benchmarks
 
 
 ## Future Plans
+- [ ] Add feature comparisons across multiple libraries
 - [ ] Allow Simple, Wrapped Primitive, and Keyed Collection types to define their own identification with a hook that will be called in getItemKey. Generalize all remaining types Types to do the same.
 - [ ] Switch from custom comparison functions with an Object.is polyfill.
 - [ ] Support saving property metadata like configurable and writable.

@@ -1,0 +1,191 @@
+<svg viewBox="0 0 1000 685" xmlns="http://www.w3.org/2000/svg" style="font-family: sans-serif;">
+<rect x="0" y="0" width="1000" height="685" fill="#eee"></rect>
+<text font-size="16" x="50%" y="14" dominant-baseline="middle" text-anchor="middle">largeData - decode (ops/sec)</text>
+
+<g transform="translate(150 25)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">altjson</text>
+    <rect x="0" y="0" width="136.37128712871288" height="16" fill="#000"></rect>
+    <text x="131.37128712871288" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">489</text>
+</g>
+
+<g transform="translate(150 45)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">bson</text>
+    <rect x="0" y="0" width="63.86303630363036" height="16" fill="#000"></rect>
+    <text x="68.86303630363037" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">229</text>
+</g>
+
+<g transform="translate(150 65)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">fast-json-stable-stringify</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 85)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">fast-safe-stringify</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 105)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">flatted</text>
+    <rect x="0" y="0" width="124.37953795379539" height="16" fill="#000"></rect>
+    <text x="119.37953795379539" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">446</text>
+</g>
+
+<g transform="translate(150 125)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">gson</text>
+    <rect x="0" y="0" width="496.6815181518152" height="16" fill="#000"></rect>
+    <text x="491.6815181518152" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">1,781</text>
+</g>
+
+<g transform="translate(150 145)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">ison</text>
+    <rect x="0" y="0" width="18.598366336633664" height="16" fill="#000"></rect>
+    <text x="23.598366336633664" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">66.69</text>
+</g>
+
+<g transform="translate(150 165)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="bold">JSON (native)</text>
+    <rect x="0" y="0" width="845" height="16" fill="#000"></rect>
+    <text x="840" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">3,030</text>
+</g>
+
+<g transform="translate(150 185)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="bold">json-complete</text>
+    <rect x="0" y="0" width="34.023102310231025" height="16" fill="#000"></rect>
+    <text x="39.023102310231025" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">122</text>
+</g>
+
+<g transform="translate(150 205)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-cycle</text>
+    <rect x="0" y="0" width="373.9752475247525" height="16" fill="#000"></rect>
+    <text x="368.9752475247525" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">1,341</text>
+</g>
+
+<g transform="translate(150 225)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-helpers</text>
+    <rect x="0" y="0" width="291.7062706270627" height="16" fill="#000"></rect>
+    <text x="286.7062706270627" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">1,046</text>
+</g>
+
+<g transform="translate(150 245)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-literal</text>
+    <rect x="0" y="0" width="30.955445544554454" height="16" fill="#000"></rect>
+    <text x="35.95544554455445" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">111</text>
+</g>
+
+<g transform="translate(150 265)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-stable-stringify</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 285)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-stringify-date</text>
+    <rect x="0" y="0" width="81.99009900990099" height="16" fill="#000"></rect>
+    <text x="86.99009900990099" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">294</text>
+</g>
+
+<g transform="translate(150 305)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json-stringify-safe</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 325)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json3</text>
+    <rect x="0" y="0" width="195.21452145214522" height="16" fill="#000"></rect>
+    <text x="190.21452145214522" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">700</text>
+</g>
+
+<g transform="translate(150 345)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json5</text>
+    <rect x="0" y="0" width="27.343976897689767" height="16" fill="#000"></rect>
+    <text x="32.34397689768977" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">98.05</text>
+</g>
+
+<g transform="translate(150 365)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">json7</text>
+    <rect x="0" y="0" width="27.296567656765674" height="16" fill="#000"></rect>
+    <text x="32.296567656765674" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">97.88</text>
+</g>
+
+<g transform="translate(150 385)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">jsonify</text>
+    <rect x="0" y="0" width="111.27227722772278" height="16" fill="#000"></rect>
+    <text x="106.27227722772278" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">399</text>
+</g>
+
+<g transform="translate(150 405)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">kson</text>
+    <rect x="0" y="0" width="121.59075907590758" height="16" fill="#000"></rect>
+    <text x="116.59075907590758" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">436</text>
+</g>
+
+<g transform="translate(150 425)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">MessagePack</text>
+    <rect x="0" y="0" width="37.09075907590759" height="16" fill="#000"></rect>
+    <text x="42.09075907590759" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">133</text>
+</g>
+
+<g transform="translate(150 445)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">pson</text>
+    <rect x="0" y="0" width="28.724422442244222" height="16" fill="#000"></rect>
+    <text x="33.72442244224422" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">103</text>
+</g>
+
+<g transform="translate(150 465)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">qjson</text>
+    <rect x="0" y="0" width="215.5726072607261" height="16" fill="#000"></rect>
+    <text x="210.5726072607261" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">773</text>
+</g>
+
+<g transform="translate(150 485)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">resurrect-js</text>
+    <rect x="0" y="0" width="144.73762376237624" height="16" fill="#000"></rect>
+    <text x="139.73762376237624" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">519</text>
+</g>
+
+<g transform="translate(150 505)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">rrjson</text>
+    <rect x="0" y="0" width="257.96204620462044" height="16" fill="#000"></rect>
+    <text x="252.96204620462044" y="9" font-size="10" fill="#fff" alignment-baseline="middle" text-anchor="end">925</text>
+</g>
+
+<g transform="translate(150 525)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">rson</text>
+    <rect x="0" y="0" width="34.85973597359736" height="16" fill="#000"></rect>
+    <text x="39.85973597359736" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">125</text>
+</g>
+
+<g transform="translate(150 545)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">serialize-javascript</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 565)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">serialize-to-js</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 585)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">snapshot</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Unsupported</text>
+</g>
+
+<g transform="translate(150 605)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">telejson</text>
+    <rect x="0" y="0" width="80.31683168316832" height="16" fill="#000"></rect>
+    <text x="85.31683168316832" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">288</text>
+</g>
+
+<g transform="translate(150 625)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">xson</text>
+    <text x="0" y="9" font-size="10" fill="#f00" alignment-baseline="middle" text-anchor="start">Failed</text>
+</g>
+
+<g transform="translate(150 645)">
+    <text x="-5" y="9" font-size="10" alignment-baseline="middle" text-anchor="end" font-weight="normal">zson</text>
+    <rect x="0" y="0" width="67.2095709570957" height="16" fill="#000"></rect>
+    <text x="72.2095709570957" y="9" font-size="10" fill="#000" alignment-baseline="middle" text-anchor="start">241</text>
+</g>
+
+<text font-size="12" x="50%" y="673" dominant-baseline="middle" text-anchor="middle">Larger is better</text>
+
+</svg>
