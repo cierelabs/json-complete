@@ -1,7 +1,7 @@
-const test = require('tape');
-const jsonComplete = require('/main.js');
-const StandardObjectTests = require('/tests/StandardObjectTests.js');
-const testHelpers = require('/tests/testHelpers.js');
+import test from '/tests/tape.js';
+import testHelpers from '/tests/testHelpers.js';
+import StandardObjectTests from '/tests/StandardObjectTests.js';
+import jsonComplete from '/main.js';
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;

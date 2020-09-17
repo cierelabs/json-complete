@@ -1,7 +1,8 @@
+const { Readable, Transform } = require('stream'); // Built-in
 const browserify = require('browserify');
 const browserSync = require('browser-sync');
 const del = require('del');
-const fs = require('fs');
+const fs = require('fs'); // Built-in
 const gulp = require('gulp');
 const gulpBabel = require('gulp-babel');
 const gulpBrotli = require('gulp-brotli');
@@ -11,39 +12,45 @@ const gulpRename = require('gulp-rename');
 const gulpTape = require('gulp-tape');
 const gulpTerser = require('gulp-terser');
 const gulpZopfliGreen = require('gulp-zopfli-green');
-const path = require('path');
+const path = require('path'); // Built-in
 const rollup = require('rollup');
 const rollupPluginRootImport = require('rollup-plugin-root-import');
 const vinylBuffer = require('vinyl-buffer');
 const vinylSourceStream = require('vinyl-source-stream');
 
-// const rollupPluginNodeBuiltins = require('rollup-plugin-node-builtins');
-// const rollupPluginNodeGlobals = require('rollup-plugin-node-globals');
-// const rollupPluginNodeResolve = require('rollup-plugin-node-resolve');
-// const rollupPluginCommonjs = require('rollup-plugin-commonjs');
-
-const absoluteSourcePath = `${__dirname}/src`;
-const browserOutputFiles = './_testing/browser/**/*';
-const browserOutputPath = './_testing/browser';
-const browserWatchFiles = './src/**/*.*';
-const compressionPath = './_testing/compression';
-const distFiles = './dist/**/*';
-const distMinFiles = './dist/*.min.js';
-const distPath = './dist';
-const libraryEntry = './src/main.js';
-const nodeOutputFiles = './_testing/node/tests/FeatureTests/*.js';
-const nodeOutputPath = './_testing/node/tests';
-const rootJavascriptFiles = './src/**/*.js';
-const rootPath = './src';
-const testEntry = './src/tests/tests.js';
-const testOutputPath = './_testing/node';
-const testPage = './src/tests/browser-tester.html';
-const testSourceFiles = './src/tests/**/*.js';
+const p = {
+    src: `${__dirname}/src`,
+    testSrc: './src/tests',
+    dist: './dist',
+    testBrowser: './_testing/browser',
+    testNode: './_testing/node',
+    compression: './_testing/compression',
+};
 
 function onError(e) {
     console.error(e); // eslint-disable-line no-console
     this.emit('end');
 }
+
+const updateContents = (fn) => {
+    const transformer = new Transform({
+        objectMode: true,
+    });
+
+    transformer._transform = (file, enc, cb) => {
+        if (file.isBuffer()) {
+            const changes = fn(String(file.contents), file);
+
+            if (changes || changes === '') {
+                file.contents = Buffer.from(changes);
+            }
+        }
+
+        cb(null, file);
+    };
+
+    return transformer;
+};
 
 const babelModern = (stream) => {
     stream = stream.pipe(gulpBabel({
@@ -64,19 +71,26 @@ const babelModern = (stream) => {
     return stream;
 };
 
-const js = (options) => {
-    const format = options.format || 'esm';
+const babelNodePassthrough = (stream) => {
+    stream = stream.pipe(gulpBabel({
+        plugins: [
+            ['module-resolver', { root: [p.src] }],
+            'babel-plugin-transform-esm-to-cjs'
+        ],
+    }));
+
+    return stream;
+};
+
+const jsBuild = (options) => {
+    const format = options.format || 'iife';
 
     return rollup.rollup({
-        input: options.entry,
+        input: options.src,
         plugins: [
             rollupPluginRootImport({
-                root: absoluteSourcePath,
+                root: p.src,
             }),
-            // rollupPluginNodeGlobals(),
-            // rollupPluginNodeBuiltins(),
-            // rollupPluginNodeResolve(),
-            // rollupPluginCommonjs(),
         ],
     }).then((bundler) => {
         return bundler.generate({
@@ -87,20 +101,21 @@ const js = (options) => {
 
         // Can't just return the stream in this case
         return new Promise((resolve) => {
-            let stream = gulpFile('json_complete.js', output[0].code, { src: true });
+            let stream = gulpFile(options.filename, output[0].code, { src: true });
 
-            stream = stream.pipe(gulpRename({
-                suffix: `.${options.format}`,
-            }));
-
+            // ESM output guarantees a certain level of ES support, which the library itself is tied to
             if (format !== 'esm') {
                 stream = babelModern(stream);
             }
 
-            if (options.unminify && !options.stopExport) {
-                stream = stream.pipe(gulp.dest(options.destination));
-            }
+            stream = stream.pipe(updateContents((contents) => {
+                return ['/* @license BSL-1.0 https://git.io/fpQEc */', contents].join('\n');
+            }));
 
+            // Export unminified
+            stream = stream.pipe(gulp.dest(options.dest));
+
+            // Export minified
             if (options.minify) {
                 stream = stream.pipe(gulpTerser({
                     mangle: {
@@ -113,7 +128,7 @@ const js = (options) => {
                         inline: true,
                     },
                     output: {
-                        preamble: '/* @license BSL-1.0 https://git.io/fpQEc */',
+                        comments: 'some',
                     },
                 }));
 
@@ -123,9 +138,7 @@ const js = (options) => {
                     suffix: '.min',
                 }));
 
-                if (!options.stopExport) {
-                    stream = stream.pipe(gulp.dest(options.destination));
-                }
+                stream = stream.pipe(gulp.dest(options.dest));
             }
 
             stream = stream.on('end', resolve);
@@ -135,80 +148,68 @@ const js = (options) => {
     });
 };
 
+const genCompression = (fn) => {
+    let stream = gulp.src(`${p.dist}/*.min.js`);
+    stream = stream.pipe(gulp.dest(p.compression));
+    stream = fn(stream);
+    stream = stream.pipe(gulp.dest(p.compression));
+    return stream;
+};
+
 
 
 gulp.task('clear-browser', () => {
-    return del([
-        browserOutputFiles,
-    ]);
+    return del([p.testBrowser]);
 });
 
-// Cannot get rollup plugins to import all require statement code, resulting in require statements in the output which causes the script to fail
-// gulp.task('test-browser-js-tests_rollup_test', () => {
-//     let stream = js({
-//         entry: testEntry,
-//         filename: 'tests.js',
-//         format: 'cjs',
-//         unminify: true,
-//         minify: false,
-//         stopExport: true,
-//     });
+gulp.task('build-browser-js-tape', () => {
+    // http://stackoverflow.com/a/36042506
+    const s = new Readable();
+    s.push('"";'); // No contents required, because require option adds the exported dependencies anyway
+    s.push(null);
 
-//     stream = stream.pipe(gulpRename({
-//         basename: 'tests',
-//     }));
-//     stream = stream.pipe(gulp.dest(browserOutputPath));
-
-//     return stream;
-// });
-
-gulp.task('test-browser-js-tests', () => {
-    var b = browserify({
-        entries: testEntry,
+    let stream = browserify(s, {
+        require: 'tape',
         debug: false,
-    });
-    b.transform('babelify', {
-        plugins: [
-            ['module-resolver', { root: [rootPath] }],
-            'babel-plugin-transform-esm-to-cjs',
-        ],
-    });
-
-    // Forces older v4 version of Buffer to be used
-    // https://github.com/browserify/browserify/pull/1678
-    b.require(require.resolve('buffer/'), { expose: 'buffer' });
-
-    let stream = b.bundle();
+    }).bundle();
     stream = stream.on('error', onError);
-    stream = stream.pipe(vinylSourceStream('tests.js'));
+    stream = stream.pipe(vinylSourceStream('tapeImporter.js'));
     stream = stream.pipe(vinylBuffer());
     stream = stream.on('error', onError);
     stream = babelModern(stream);
-    stream = stream.pipe(gulp.dest(browserOutputPath));
+    stream = stream.pipe(gulp.dest(p.testBrowser));
 
     return stream;
 });
 
-gulp.task('test-browser-html', () => {
-    return gulp.src(testPage)
-        .pipe(gulpRename({
-            basename: 'index',
-        }))
-        .pipe(gulp.dest(browserOutputPath));
+gulp.task('build-browser-js-tests', () => {
+    return jsBuild({
+        src: `${p.testSrc}/tests.js`,
+        format: 'iife',
+        minify: false,
+        filename: 'tests.js',
+        dest: p.testBrowser,
+    });
 });
 
-gulp.task('test-browser-builder', gulp.parallel('test-browser-js-tests', 'test-browser-html'));
+gulp.task('build-browser-html', () => {
+    let stream = gulp.src(`${p.testSrc}/index.html`);
+    stream = stream.pipe(gulp.dest(p.testBrowser));
+    return stream;
+});
+
+gulp.task('build-browser', gulp.parallel('build-browser-js-tape', 'build-browser-js-tests', 'build-browser-html'));
 
 gulp.task('test-serve', () => {
     browserSync.init({
-        files: [browserOutputFiles],
+        files: [`${p.testBrowser}/**/*`],
         reloadDebounce: 1000,
         port: 4000,
         ui: {
             port: 5001,
         },
         server: {
-            baseDir: browserOutputPath,
+            baseDir: p.testBrowser,
         },
         ghostMode: false,
         snippetOptions: {
@@ -221,46 +222,34 @@ gulp.task('test-serve', () => {
         },
     });
 
-    gulp.watch(browserWatchFiles, gulp.series('test-browser-builder')).on('change', browserSync.reload);
+    gulp.watch(`${p.src}/**/*.*`, gulp.series('build-browser')).on('change', browserSync.reload);
 });
 
 gulp.task('test-browser', gulp.series(
     'clear-browser',
-    'test-browser-builder',
+    'build-browser',
     'test-serve',
 ));
 
 
 
+
 gulp.task('clear-node', () => {
-    return del([
-        testOutputPath,
+    return del([p.testNode]);
+});
+
+gulp.task('build-node-js', () => {
+    let stream = gulp.src([
+        `${p.src}/**/*.js`,
+        `!${p.testSrc}/tests.js`, // Don't need a specific start file to import all the other tests for node, unlike the Browser
     ]);
-});
-
-gulp.task('test-node-js-library', () => {
-    return gulp.src([rootJavascriptFiles, `!${testSourceFiles}`])
-        .pipe(gulpBabel({
-            plugins: [
-                ['module-resolver', { root: [rootPath] }],
-                'babel-plugin-transform-esm-to-cjs'
-            ],
-        }))
-        .pipe(gulp.dest(testOutputPath));
-});
-
-gulp.task('test-node-js-test', () => {
-    return gulp.src([testSourceFiles])
-        .pipe(gulpBabel({
-            plugins: [
-                ['module-resolver', { root: [rootPath] }],
-            ],
-        }))
-        .pipe(gulp.dest(nodeOutputPath));
+    stream = babelNodePassthrough(stream);
+    stream = stream.pipe(gulp.dest(p.testNode));
+    return stream;
 });
 
 gulp.task('test-node', () => {
-    return gulp.src([nodeOutputFiles])
+    return gulp.src(`${p.testNode}/tests/FeatureTests/*.js`)
         .pipe(gulpTape({
             bail: true,
             nyc: true,
@@ -270,7 +259,7 @@ gulp.task('test-node', () => {
 
 gulp.task('test', gulp.series(
     'clear-node',
-    gulp.parallel('test-node-js-library', 'test-node-js-test'),
+    'build-node-js',
     'test-node',
     'clear-node'
 ));
@@ -278,32 +267,27 @@ gulp.task('test', gulp.series(
 
 
 gulp.task('clear-compression', () => {
-    return del([
-        compressionPath,
-    ]);
+    return del([p.compression]);
 });
 
 gulp.task('compress-gzip', () => {
-    return gulp.src(distMinFiles)
-        .pipe(gulp.dest(compressionPath))
-        .pipe(gulpGzip({
+    return genCompression((stream) => {
+        return stream.pipe(gulpGzip({
             extension: 'zip',
-        }))
-        .pipe(gulp.dest(compressionPath));
+        }));
+    });
 });
 
 gulp.task('compress-zopfli', () => {
-    return gulp.src(distMinFiles)
-        .pipe(gulp.dest(compressionPath))
-        .pipe(gulpZopfliGreen())
-        .pipe(gulp.dest(compressionPath));
+    return genCompression((stream) => {
+        return stream.pipe(gulpZopfliGreen());
+    });
 });
 
 gulp.task('compress-brotli', () => {
-    return gulp.src(distMinFiles)
-        .pipe(gulp.dest(compressionPath))
-        .pipe(gulpBrotli.compress())
-        .pipe(gulp.dest(compressionPath));
+    return genCompression((stream) => {
+        return stream.pipe(gulpBrotli.compress());
+    });
 });
 
 gulp.task('compress-calculate', (end) => {
@@ -342,13 +326,13 @@ gulp.task('compress-calculate', (end) => {
         end();
     };
 
-    fs.readdir(compressionPath, (err, files) => {
+    fs.readdir(p.compression, (err, files) => {
         let fileCount = files.length;
 
         const manifest = {};
 
         files.forEach((file) => {
-            fs.stat(path.join(compressionPath, file), (err, stats) => {
+            fs.stat(path.join(p.compression, file), (err, stats) => {
                 manifest[file] = stats.size;
                 fileCount -= 1;
 
@@ -370,35 +354,32 @@ gulp.task('compression-report', gulp.series(
 
 
 gulp.task('clear-dist', () => {
-    return del([
-        distFiles,
-    ]);
+    return del([`${p.dist}/**/*`]);
 });
 
 gulp.task('prod-esm', () => {
-    return js({
-        entry: libraryEntry,
-        filename: 'json_complete.js',
+    return jsBuild({
+        src: `${p.src}/main.js`,
+        filename: 'json_complete.esm.js',
         format: 'esm',
         unminify: true,
         minify: true,
-        destination: distPath,
+        dest: p.dist,
     });
 });
 
 gulp.task('prod-cjs', () => {
-    return js({
-        entry: libraryEntry,
-        filename: 'json_complete.js',
+    return jsBuild({
+        src: `${p.src}/main.js`,
+        filename: 'json_complete.cjs.js',
         format: 'cjs',
         unminify: true,
         minify: true,
-        destination: distPath,
+        dest: p.dist,
     });
 });
 
 gulp.task('prod', gulp.series(
     'clear-dist',
     gulp.parallel('prod-esm', 'prod-cjs'),
-    'compression-report'
 ));
