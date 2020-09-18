@@ -1,4 +1,3 @@
-import attachIndices from '/utils/attachIndices.js';
 import attachKeys from '/utils/attachKeys.js';
 import decodePointer from '/utils/decodePointer.js';
 import encodeWithAttachments from '/utils/encodeWithAttachments.js';
@@ -21,7 +20,7 @@ const genArrayBuffer = (type) => {
             return buffer;
         },
         _build: (store, dataItem) => {
-            attachIndices(store, dataItem);
+            // No indices because actual indices are used to fill the buffer, so regular index attachments are actually keys
             attachKeys(store, dataItem, 1, 2);
         },
     };

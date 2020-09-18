@@ -1,5 +1,5 @@
-const test = require('tape');
-const convertTo = require('/convertTo.js');
+import test from '/tests/tape.js';
+import convertTo from '/convertTo.js';
 
 // Generator:
 // console.log(encode(true))

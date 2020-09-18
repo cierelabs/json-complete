@@ -1,29 +1,43 @@
 import getSystemName from '/utils/getSystemName.js';
 
-const canUseNormalMap = (encodeSymbolKeys) => {
+let canUseNormalMap = (encodeSymbolKeys) => {
     // Map not supported at all or is some kind of polyfill, ignore
     if (typeof Map !== 'function' || getSystemName(new Map()) !== 'Map') {
         return false;
     }
 
-    // Even though Maps are supported, Symbols are not supported at all or we are ignoring Symbol keys, so assume Map works normally
-    // Even if Symbols are used after this point, it will error out somewhere else anyway
-    if (typeof Symbol !== 'function' || getSystemName(Symbol()) !== 'Symbol' || !encodeSymbolKeys) {
-        return true;
+    // Safari 14, which supports BigInts for the first time, can non-deterministically save duplicate keys in maps for the same value BigInt
+    // This test should be forwards compatible with future versions of Safari that fix this.
+    // https://bugs.webkit.org/show_bug.cgi?id=216667
+    if (typeof BigInt === 'function' && getSystemName(BigInt(1)) === 'BigInt') {
+        const box = new Map();
+        for (let i = 0; i < 10; i += 1) {
+            box.set(BigInt(1), i);
+        }
+
+        if (box.size !== 1) {
+            return false;
+        }
     }
 
     // Versions of Microsoft Edge before 18 support both Symbols and Maps, but can occasionally (randomly) allow Map keys to be duplicated if they are obtained from Object keys
     // Here, the code statistically attempts to detect the possibility of key duplication
     // With 50 set operations, the chances of a successfully detecting this failure case is at least 99.999998% likely
     // https://github.com/Microsoft/ChakraCore/issues/5852
-    const obj = {};
-    obj[Symbol()] = 1;
-    const box = new Map();
-    for (let i = 0; i < 50; i += 1) {
-        box.set(Object.getOwnPropertySymbols(obj)[0], {});
+    if (encodeSymbolKeys && typeof Symbol === 'function' && getSystemName(Symbol()) === 'Symbol') {
+        const obj = {};
+        obj[Symbol()] = 1;
+        const box = new Map();
+        for (let i = 0; i < 50; i += 1) {
+            box.set(Object.getOwnPropertySymbols(obj)[0], {});
+        }
+
+        if (box.size !== 1) {
+            return false;
+        }
     }
 
-    return box.size === 1;
+    return true;
 };
 
 export default (encodeSymbolKeys) => {

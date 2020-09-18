@@ -1,5 +1,5 @@
-const test = require('tape');
-const jsonComplete = require('/main.js');
+import test from '/tests/tape.js';
+import jsonComplete from '/main.js';
 
 const decode = jsonComplete.decode;
 

@@ -155,7 +155,7 @@ const getAllKeys = (obj) => {
     return keys;
 };
 
-module.exports = {
+export default {
     systemName: systemName,
     isNanValue: isNanValue,
     isNegativeZero: isNegativeZero,

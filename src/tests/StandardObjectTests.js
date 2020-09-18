@@ -1,11 +1,11 @@
-const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
-const jsonComplete = require('/main.js');
+import test from '/tests/tape.js';
+import testHelpers from '/tests/testHelpers.js';
+import jsonComplete from '/main.js';
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
 
-module.exports = (name, expectedSystemName, generater, compatMode) => {
+export default (name, expectedSystemName, generater, compatMode) => {
     test(`${name}: Arbitrary Attached Data with String Key`, (t) => {
         t.plan(2);
 
