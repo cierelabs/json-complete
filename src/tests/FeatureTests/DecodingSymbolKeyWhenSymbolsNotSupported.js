@@ -1,6 +1,6 @@
-const test = require('tape');
-const testHelpers = require('/tests/testHelpers.js');
-const jsonComplete = require('/main.js');
+import test from '/tests/tape.js';
+import testHelpers from '/tests/testHelpers.js';
+import jsonComplete from '/main.js';
 
 const decode = jsonComplete.decode;
 
@@ -49,6 +49,10 @@ if (typeof Symbol === 'function') {
             const decoded = decode(encodedSymbolKeyObject, {
                 compat: true,
             });
+
+            // Tape now relies on Symbol existing in globalThis, so restore it early here
+            globalThis.Symbol = oldSymbol;
+
             t.deepEqual(decoded, {k: 2});
         } catch (e) {
             t.ok(false);

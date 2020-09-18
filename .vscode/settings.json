@@ -1,0 +1,11 @@
+{
+    "search.exclude": {
+        "**/_testing": true,
+        "**/dist": true
+    },
+    "files.watcherExclude": {
+        "**/_testing/**": true,
+        "**/dist/**": true
+    },
+    "git.ignoreLimitWarning": true
+}

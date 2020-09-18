@@ -1,7 +1,7 @@
-const test = require('tape');
-const jsonComplete = require('/main.js');
-const StandardObjectTests = require('/tests/StandardObjectTests.js');
-const testHelpers = require('/tests/testHelpers.js');
+import test from '/tests/tape.js';
+import jsonComplete from '/main.js';
+import StandardObjectTests from '/tests/StandardObjectTests.js';
+import testHelpers from '/tests/testHelpers.js';
 
 const encode = jsonComplete.encode;
 const decode = jsonComplete.decode;
@@ -20,7 +20,7 @@ if (typeof SharedArrayBuffer === 'function') {
 
         t.equal(testHelpers.systemName(decoded), '[object SharedArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded), a);
     });
 
     test('SharedArrayBuffer: Empty Cells', (t) => {
@@ -76,7 +76,7 @@ if (typeof SharedArrayBuffer === 'function') {
 
         t.equal(testHelpers.systemName(decoded), '[object SharedArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded), a);
         t.equal(decoded[0], 5);
         t.equal(decoded[8], 9);
         t.equal(decoded['0'], 5);
