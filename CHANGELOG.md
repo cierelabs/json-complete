@@ -1,4 +1,4 @@
-## 2.0.1 (September 17th, 2020)
+## 2.0.1 (September 18th, 2020)
 
 * Minor Bugfix Breaking Change: For ArrayBuffers and SharedArrayBuffers, the Tape testing framework did not previously notice inequalities between such objects with integer keys and those without.
   - For these two types of objects, there are no integer keys like Arrays, and any attached index keys are actually in the form of string keys.
