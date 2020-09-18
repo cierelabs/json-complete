@@ -20,7 +20,7 @@ if (typeof SharedArrayBuffer === 'function') {
 
         t.equal(testHelpers.systemName(decoded), '[object SharedArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded), a);
     });
 
     test('SharedArrayBuffer: Empty Cells', (t) => {
@@ -76,7 +76,7 @@ if (typeof SharedArrayBuffer === 'function') {
 
         t.equal(testHelpers.systemName(decoded), '[object SharedArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded), a);
         t.equal(decoded[0], 5);
         t.equal(decoded[8], 9);
         t.equal(decoded['0'], 5);

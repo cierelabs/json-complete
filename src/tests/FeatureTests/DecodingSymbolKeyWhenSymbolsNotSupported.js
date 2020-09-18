@@ -49,6 +49,10 @@ if (typeof Symbol === 'function') {
             const decoded = decode(encodedSymbolKeyObject, {
                 compat: true,
             });
+
+            // Tape now relies on Symbol existing in globalThis, so restore it early here
+            globalThis.Symbol = oldSymbol;
+
             t.deepEqual(decoded, {k: 2});
         } catch (e) {
             t.ok(false);

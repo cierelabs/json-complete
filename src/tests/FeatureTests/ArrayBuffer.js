@@ -10,13 +10,13 @@ if (typeof ArrayBuffer === 'function') {
     test('ArrayBuffer: Normal', (t) => {
         t.plan(3);
 
-        const a = new Uint8Array([1, 2]).buffer;
+        const a = new Uint8Array([5, 6]).buffer;
 
         const decoded = decode(encode([a]))[0];
 
         t.equal(testHelpers.systemName(decoded), '[object ArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded).buffer, a);
     });
 
     test('ArrayBuffer: Empty Cells', (t) => {
@@ -49,7 +49,7 @@ if (typeof ArrayBuffer === 'function') {
 
         const a = new Uint8Array([1]).buffer;
 
-        t.deepEqual(new Uint8Array(decode(encode(a))), new Uint8Array([1]));
+        t.deepEqual(new Uint8Array(decode(encode(a))).buffer, a);
     });
 
     test('ArrayBuffer: Index Key', (t) => {
@@ -63,7 +63,7 @@ if (typeof ArrayBuffer === 'function') {
 
         t.equal(testHelpers.systemName(decoded), '[object ArrayBuffer]');
         t.equal(decoded.byteLength, 2);
-        t.deepEqual(new Uint8Array(decoded), [1, 2]);
+        t.deepEqual(new Uint8Array(decoded).buffer, a);
         t.equal(decoded[0], 5);
         t.equal(decoded[8], 9);
         t.equal(decoded['0'], 5);

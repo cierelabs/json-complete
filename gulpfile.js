@@ -74,7 +74,7 @@ const babelModern = (stream) => {
 const babelNodePassthrough = (stream) => {
     stream = stream.pipe(gulpBabel({
         plugins: [
-            ['module-resolver', { root: [p.src] }],
+            ['babel-plugin-module-resolver', { root: [p.src] }],
             'babel-plugin-transform-esm-to-cjs'
         ],
     }));
@@ -85,6 +85,16 @@ const babelNodePassthrough = (stream) => {
 const jsBuild = (options) => {
     const format = options.format || 'iife';
 
+    const outputOptions = {
+        format: format,
+    };
+
+    if (format === 'cjs') {
+        outputOptions.output = {
+            exports: 'default',
+        };
+    }
+
     return rollup.rollup({
         input: options.src,
         plugins: [
@@ -93,9 +103,7 @@ const jsBuild = (options) => {
             }),
         ],
     }).then((bundler) => {
-        return bundler.generate({
-            format: format,
-        });
+        return bundler.generate(outputOptions);
     }).then((bundlerOutput) => {
         const { output } = bundlerOutput;
 
@@ -103,14 +111,22 @@ const jsBuild = (options) => {
         return new Promise((resolve) => {
             let stream = gulpFile(options.filename, output[0].code, { src: true });
 
+            stream = stream.pipe(updateContents((contents) => {
+                // Because json-complete is constructed such that the `export default` is exactly the same as `module.exports`, we can use them interchangably.
+                // Unfortunately, Rollup can't know this. We added the `output.exports` of default to silence a warning, but that causes the output to not add `module.exports` at all.
+                // Rather than file a bug and wait, and to avoid future incompatibility with Rollup changes, we just manually change the file to do what it should do when exporting cjs files.
+                if (format === 'cjs') {
+                    contents = contents.replace(/export default /, 'module.exports = ');
+                }
+
+                // Add the license info to the top of the file
+                return ['/* @license BSL-1.0 https://git.io/fpQEc */', contents].join('\n');
+            }));
+
             // ESM output guarantees a certain level of ES support, which the library itself is tied to
             if (format !== 'esm') {
                 stream = babelModern(stream);
             }
-
-            stream = stream.pipe(updateContents((contents) => {
-                return ['/* @license BSL-1.0 https://git.io/fpQEc */', contents].join('\n');
-            }));
 
             // Export unminified
             stream = stream.pipe(gulp.dest(options.dest));
